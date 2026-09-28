@@ -33,3 +33,11 @@ Route::post('estudio/sesiones', [\App\Http\Controllers\SesionEstudioController::
 Route::patch('estudio/sesiones/{sesion}/finalizar', [\App\Http\Controllers\SesionEstudioController::class, 'finalizar'])->name('estudio.sesiones.finalizar');
 Route::post('estudio/sesiones/{sesion}/intervalos', [\App\Http\Controllers\SesionEstudioController::class, 'registrarIntervalo'])->name('estudio.sesiones.intervalos.store');
 Route::delete('estudio/sesiones/{sesion}', [\App\Http\Controllers\SesionEstudioController::class, 'destroy'])->name('estudio.sesiones.destroy');
+
+// ---- Calendario (agente de calendario) ----
+Route::get('calendario', [\App\Http\Controllers\CalendarioController::class, 'index'])->name('calendario.index');
+Route::get('calendario/eventos', [\App\Http\Controllers\CalendarioController::class, 'eventos'])->name('calendario.eventos');
+Route::patch('calendario/tareas/{tarea}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaTarea'])->name('calendario.tareas.fecha');
+Route::patch('calendario/recordatorios/{recordatorio}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaRecordatorio'])->name('calendario.recordatorios.fecha');
+
+// ---- Tablero de tareas (agente de tablero) ----

@@ -1,0 +1,226 @@
+<?php
+
+namespace App\Services\Calendario;
+
+use App\Enums\EstadoTarea;
+use App\Models\Nota;
+use App\Models\Recordatorio;
+use App\Models\SesionEstudio;
+use App\Models\Tarea;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+
+/**
+ * Arma los eventos del calendario (formato de FullCalendar) y los conteos
+ * por día de la tira semanal. Una consulta por tipo, sin N+1.
+ * El rango es [desde, hasta): el fin no se incluye.
+ */
+class EventosCalendario
+{
+    public const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
+
+    /**
+     * @param  list<string>  $tipos  capas a incluir
+     * @return list<array<string, mixed>>
+     */
+    public function eventos(Carbon $desde, Carbon $hasta, array $tipos = self::TIPOS): array
+    {
+        $eventos = [];
+
+        if (in_array('tarea', $tipos, true)) {
+            $tareas = Tarea::query()
+                ->where('fecha_limite', '>=', $desde->toDateString())
+                ->where('fecha_limite', '<', $hasta->toDateString())
+                ->orderBy('id')
+                ->get();
+
+            foreach ($tareas as $tarea) {
+                $eventos[] = $this->eventoTarea($tarea);
+            }
+        }
+
+        if (in_array('recordatorio', $tipos, true)) {
+            $recordatorios = Recordatorio::query()
+                ->where('recordar_en', '>=', $desde)
+                ->where('recordar_en', '<', $hasta)
+                ->orderBy('recordar_en')
+                ->get();
+
+            foreach ($recordatorios as $recordatorio) {
+                $eventos[] = [
+                    'id' => 'recordatorio-'.$recordatorio->id,
+                    'title' => $recordatorio->mensaje,
+                    'start' => $recordatorio->recordar_en->format('Y-m-d\TH:i:s'),
+                    'allDay' => false,
+                    'url' => route('recordatorios.edit', $recordatorio),
+                    'editable' => $recordatorio->avisado_en === null,
+                    'classNames' => array_values(array_filter([
+                        'ev-tipo-recordatorio',
+                        $recordatorio->avisado_en ? 'ev-hecho' : null,
+                    ])),
+                    'extendedProps' => [
+                        'tipo' => 'recordatorio',
+                        'recordatorioId' => $recordatorio->id,
+                        'tareaId' => $recordatorio->tarea_id,
+                        'avisado' => $recordatorio->avisado_en !== null,
+                    ],
+                ];
+            }
+        }
+
+        if (in_array('nota', $tipos, true)) {
+            $notas = Nota::query()
+                ->where('fecha', '>=', $desde->toDateString())
+                ->where('fecha', '<', $hasta->toDateString())
+                ->orderBy('id')
+                ->get();
+
+            foreach ($notas as $nota) {
+                $eventos[] = [
+                    'id' => 'nota-'.$nota->id,
+                    'title' => Str::limit(trim(preg_replace('/\s+/', ' ', $nota->contenido)), 60),
+                    'start' => $nota->fecha->toDateString(),
+                    'allDay' => true,
+                    'url' => route('notas.edit', $nota),
+                    'editable' => false,
+                    'classNames' => ['ev-tipo-nota'],
+                    'extendedProps' => ['tipo' => 'nota', 'notaId' => $nota->id, 'fijada' => $nota->fijada],
+                ];
+            }
+        }
+
+        if (in_array('sesion', $tipos, true)) {
+            $sesiones = SesionEstudio::query()
+                ->where('iniciada_en', '>=', $desde)
+                ->where('iniciada_en', '<', $hasta)
+                ->orderBy('iniciada_en')
+                ->get();
+
+            foreach ($sesiones as $sesion) {
+                $evento = [
+                    'id' => 'sesion-'.$sesion->id,
+                    'title' => $sesion->tema ?: 'Sesión de estudio',
+                    'start' => $sesion->iniciada_en->format('Y-m-d\TH:i:s'),
+                    'allDay' => false,
+                    'url' => route('estudio.historial'),
+                    'editable' => false,
+                    'classNames' => ['ev-tipo-sesion'],
+                    'extendedProps' => [
+                        'tipo' => 'sesion',
+                        'sesionId' => $sesion->id,
+                        'estado' => $sesion->estado->etiqueta(),
+                        'foco_min' => $sesion->foco_min,
+                    ],
+                ];
+
+                if ($sesion->finalizada_en) {
+                    $evento['end'] = $sesion->finalizada_en->format('Y-m-d\TH:i:s');
+                }
+
+                $eventos[] = $evento;
+            }
+        }
+
+        return $eventos;
+    }
+
+    /** Evento de una tarea con fecha límite (todo el día). */
+    public function eventoTarea(Tarea $tarea): array
+    {
+        $completada = $tarea->estado === EstadoTarea::Completada;
+        $vencida = $tarea->estaVencida();
+
+        return [
+            'id' => 'tarea-'.$tarea->id,
+            'title' => $tarea->titulo,
+            'start' => $tarea->fecha_limite->toDateString(),
+            'allDay' => true,
+            'url' => route('tareas.edit', $tarea),
+            'editable' => ! $completada,
+            'classNames' => array_values(array_filter([
+                'ev-tipo-tarea',
+                'ev-prio-'.$tarea->prioridad->value,
+                $completada ? 'ev-hecho' : null,
+                $vencida ? 'ev-vencida' : null,
+            ])),
+            'extendedProps' => [
+                'tipo' => 'tarea',
+                'tareaId' => $tarea->id,
+                'prioridad' => $tarea->prioridad->value,
+                'prioridadEtiqueta' => $tarea->prioridad->etiqueta(),
+                'estado' => $tarea->estado->value,
+                'estadoEtiqueta' => $tarea->estado->etiqueta(),
+                'proyecto' => $tarea->proyecto,
+                'vencida' => $vencida,
+                'completada' => $completada,
+            ],
+        ];
+    }
+
+    /**
+     * Conteos por día y tipo para la tira semanal.
+     *
+     * @return array<string, array<string, int>> p. ej. ['2026-09-28' => ['tarea' => 2]]
+     */
+    public function conteosPorDia(Carbon $desde, Carbon $hasta): array
+    {
+        $conteos = [];
+
+        $agregar = function (string $tipo, $filas) use (&$conteos) {
+            foreach ($filas as $fila) {
+                $conteos[Carbon::parse($fila->dia)->toDateString()][$tipo] = (int) $fila->total;
+            }
+        };
+
+        $agregar('tarea', Tarea::query()
+            ->selectRaw('fecha_limite as dia, count(*) as total')
+            ->where('fecha_limite', '>=', $desde->toDateString())
+            ->where('fecha_limite', '<', $hasta->toDateString())
+            ->groupBy('fecha_limite')
+            ->get());
+
+        $agregar('recordatorio', Recordatorio::query()
+            ->selectRaw('date(recordar_en) as dia, count(*) as total')
+            ->where('recordar_en', '>=', $desde)
+            ->where('recordar_en', '<', $hasta)
+            ->groupByRaw('date(recordar_en)')
+            ->get());
+
+        $agregar('nota', Nota::query()
+            ->selectRaw('fecha as dia, count(*) as total')
+            ->where('fecha', '>=', $desde->toDateString())
+            ->where('fecha', '<', $hasta->toDateString())
+            ->groupBy('fecha')
+            ->get());
+
+        $agregar('sesion', SesionEstudio::query()
+            ->selectRaw('date(iniciada_en) as dia, count(*) as total')
+            ->where('iniciada_en', '>=', $desde)
+            ->where('iniciada_en', '<', $hasta)
+            ->groupByRaw('date(iniciada_en)')
+            ->get());
+
+        return $conteos;
+    }
+
+    /**
+     * Los 7 días de la semana actual (lunes a domingo) con sus conteos.
+     *
+     * @return list<array{fecha: Carbon, hoy: bool, conteos: array<string, int>}>
+     */
+    public function semanaActual(): array
+    {
+        $lunes = today()->startOfWeek(Carbon::MONDAY);
+        $conteos = $this->conteosPorDia($lunes, $lunes->copy()->addWeek());
+
+        return collect(range(0, 6))->map(function (int $i) use ($lunes, $conteos) {
+            $dia = $lunes->copy()->addDays($i);
+
+            return [
+                'fecha' => $dia,
+                'hoy' => $dia->isToday(),
+                'conteos' => $conteos[$dia->toDateString()] ?? [],
+            ];
+        })->all();
+    }
+}

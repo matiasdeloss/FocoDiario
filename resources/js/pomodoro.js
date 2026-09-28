@@ -1,43 +1,18 @@
 /*
- * Temporizador de estudio (Pomodoro y variantes).
+ * Tarjeta del temporizador en la vista Estudio (formulario, tiempo grande y botones).
  *
- * Dónde se guarda cada cosa:
- *  - Configuración (tiempos, estilo, tarea, contexto, tema): localStorage. Es de un solo usuario y
- *    un solo navegador, y solo sirve para precargar el formulario.
- *  - Estado de la sesión en curso (fase, marcas de tiempo, pausas): localStorage. Así un refresco
- *    o cerrar la pestaña no lo pierde, y al volver se recalcula contra el reloj.
- *  - Lo que ya ocurrió (sesión e intervalos): el servidor, con reintentos si no hay red.
- * La lógica de fases está en pomodoro-logica.js.
+ * El motor (fases, guardado, envío al servidor, avisos, sincronía entre pestañas) vive en
+ * pomodoro-motor.js y lo comparte con el mini-temporizador de la barra superior; esta tarjeta
+ * solo dibuja lo que el motor publica y le pide acciones.
+ * Configuración (tiempos, estilo, tarea, contexto, tema): localStorage, solo para precargar el formulario.
  */
 import {
-    avanzar, crearEstado, DESCANSO, estaPausado, FOCO, formatearTiempo, formatearTranscurrido,
-    iniciarSiguienteFoco, LIBRE, pausar, reanudar, reiniciar, restanteMs, saltar, terminar, transcurridoMs,
-} from './pomodoro-logica.js';
+    acciones as accionesMotor, CLAVE_CONFIG, CLAVE_SONIDO, descartar, encabezados, escribir, estadoGuardado,
+    finalizarEnServidor, iniciarEstado, iniciarMotor, leer, prepararAudio, sonidoActivo, suscribir, terminarSesion,
+} from './pomodoro-motor.js';
+import { DESCANSO, describir, estaPausado, FOCO, formatearTiempo, LIBRE, transcurridoMs } from './pomodoro-logica.js';
 
-const CLAVE_CONFIG = 'focodiario.estudio.config';
-const CLAVE_ESTADO = 'focodiario.estudio.estado';
-const CLAVE_PENDIENTES = 'focodiario.estudio.pendientes';
-const CLAVE_SONIDO = 'focodiario.estudio.sonido';
 const CONFIG_INICIAL = { foco: 25, descanso: 5, largo: 15, ciclos: 4, estilo: 'clasico', tarea_id: '', contexto_id: '', tema: '' };
-
-function leer(clave, porDefecto) {
-    try {
-        const crudo = window.localStorage.getItem(clave);
-
-        return crudo === null ? porDefecto : JSON.parse(crudo);
-    } catch {
-        return porDefecto;
-    }
-}
-
-function escribir(clave, valor) {
-    try {
-        if (valor === null || valor === undefined) window.localStorage.removeItem(clave);
-        else window.localStorage.setItem(clave, JSON.stringify(valor));
-    } catch {
-        // Sin almacenamiento: el temporizador sigue funcionando, solo que sin recordar.
-    }
-}
 
 const config = () => ({ ...CONFIG_INICIAL, ...leer(CLAVE_CONFIG, {}) });
 
@@ -63,114 +38,7 @@ function iniciarTemporizador(raiz) {
     };
     const presets = JSON.parse(raiz.dataset.presets);
     const urlSesiones = raiz.dataset.urlSesiones;
-    const tituloOriginal = document.title;
-    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
-    const ahoraMs = () => Date.now();
-
-    let estado = leer(CLAVE_ESTADO, null);
-    let pendientes = leer(CLAVE_PENDIENTES, []);
-    let enVuelo = false;
-    let contextoAudio = null;
-    let temporizador = null;
-
-    /* --- Sonido y avisos --- */
-    const sonidoActivo = () => leer(CLAVE_SONIDO, true) === true;
-
-    function sonar() {
-        if (!sonidoActivo()) return;
-
-        try {
-            contextoAudio ??= new (window.AudioContext || window.webkitAudioContext)();
-            [0, 0.22].forEach((retraso) => {
-                const oscilador = contextoAudio.createOscillator();
-                const volumen = contextoAudio.createGain();
-                const inicio = contextoAudio.currentTime + retraso;
-
-                oscilador.type = 'sine';
-                oscilador.frequency.value = 880;
-                volumen.gain.setValueAtTime(0.0001, inicio);
-                volumen.gain.exponentialRampToValueAtTime(0.2, inicio + 0.02);
-                volumen.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.18);
-                oscilador.connect(volumen).connect(contextoAudio.destination);
-                oscilador.start(inicio);
-                oscilador.stop(inicio + 0.2);
-            });
-        } catch {
-            // El navegador no permite audio: se sigue sin sonido.
-        }
-    }
-
-    function avisar(titulo, cuerpo) {
-        sonar();
-
-        if ('Notification' in window && Notification.permission === 'granted') {
-            try {
-                new Notification(titulo, { body: cuerpo });
-            } catch {
-                // Algunos navegadores móviles exigen un service worker: se ignora.
-            }
-        }
-    }
-
-    function avisarPorEventos(eventos) {
-        const ultimo = eventos.filter((e) => e.completado).at(-1);
-
-        if (!ultimo) return;
-
-        if (ultimo.tipo === FOCO) avisar('Foco terminado', 'Hora de descansar.');
-        else if (ultimo.tipo === DESCANSO) avisar('Terminó el descanso', 'Iniciá el siguiente foco cuando estés listo.');
-    }
-
-    /* --- Comunicación con el servidor --- */
-    const encabezados = () => ({
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-CSRF-TOKEN': csrf(),
-    });
-
-    async function vaciarPendientes() {
-        if (enVuelo) return;
-
-        enVuelo = true;
-
-        try {
-            while (pendientes.length > 0) {
-                const { sesionId, evento } = pendientes[0];
-                const cuerpo = {
-                    ...evento,
-                    inicio: new Date(evento.inicio).toISOString(),
-                    fin: new Date(evento.fin).toISOString(),
-                };
-                const respuesta = await fetch(`${urlSesiones}/${sesionId}/intervalos`, {
-                    method: 'POST', headers: encabezados(), body: JSON.stringify(cuerpo),
-                });
-
-                // Errores del cliente (sesión borrada, datos inválidos) no se arreglan reintentando.
-                if (respuesta.ok || (respuesta.status >= 400 && respuesta.status < 500 && respuesta.status !== 419)) {
-                    pendientes.shift();
-                    escribir(CLAVE_PENDIENTES, pendientes);
-                } else {
-                    break;
-                }
-            }
-        } catch {
-            // Sin red: quedan en la cola y se reintentan.
-        } finally {
-            enVuelo = false;
-        }
-    }
-
-    function encolar(eventos) {
-        if (!estado && eventos.length === 0) return;
-
-        const sesionId = estado?.sesionId ?? sesionAnterior;
-
-        eventos.forEach((evento) => pendientes.push({ sesionId, evento }));
-        escribir(CLAVE_PENDIENTES, pendientes);
-        vaciarPendientes();
-    }
-
-    let sesionAnterior = estado?.sesionId ?? null;
+    let estado = null;
 
     /* --- Formulario --- */
     function mostrarErrores(mensajes) {
@@ -224,10 +92,10 @@ function iniciarTemporizador(raiz) {
     [campos.tarea, campos.contexto, campos.tema].forEach((c) => c.addEventListener('change', () => escribir(CLAVE_CONFIG, leerFormulario())));
 
     /* --- Dibujo --- */
-    const NOMBRES_FASE = { [FOCO]: 'Foco', [DESCANSO]: 'Descanso', [LIBRE]: 'Tiempo libre' };
+    function dibujar(foto) {
+        estado = foto.estado;
 
-    function dibujar() {
-        const ahora = ahoraMs();
+        const ahora = foto.ahora;
         const activo = estado !== null;
         const c = activo ? estado.config : leerFormulario();
 
@@ -238,19 +106,18 @@ function iniciarTemporizador(raiz) {
 
         let texto = formatearTiempo(c.foco * 60_000);
         let etiqueta = 'Listo para empezar';
-        let ayuda = 'Elegí los tiempos y qué vas a trabajar. El tiempo sigue corriendo aunque cambies de pestaña.';
+        let ayuda = 'Elegí los tiempos y qué vas a trabajar. El tiempo sigue corriendo aunque cambies de pestaña o de sección.';
 
         if (activo) {
+            const d = describir(estado, ahora);
+
+            texto = d.texto;
+            etiqueta = d.nombre;
+
             if (estado.fase === LIBRE) {
-                texto = formatearTranscurrido(transcurridoMs(estado, ahora));
-                etiqueta = 'Tiempo libre';
                 ayuda = 'El descanso terminó. Este tiempo se registra hasta que empieces el siguiente foco.';
             } else {
-                texto = formatearTiempo(restanteMs(estado, ahora));
-                etiqueta = estado.fase === FOCO
-                    ? 'Foco'
-                    : (estado.descansoLargo ? 'Descanso largo' : 'Descanso corto');
-                ayuda = estaPausado(estado)
+                ayuda = d.pausado
                     ? 'En pausa. El tiempo en pausa no cuenta como foco ni como descanso.'
                     : (estado.fase === FOCO ? 'Una sola tarea, sin distracciones.' : 'Pararte, tomar agua y mirar lejos. Sin celular.');
             }
@@ -286,8 +153,6 @@ function iniciarTemporizador(raiz) {
 
             boton.hidden = !visibles.includes(clave);
         });
-
-        document.title = activo ? `${texto} · ${NOMBRES_FASE[estado.fase]} · FocoDiario` : tituloOriginal;
     }
 
     const minutos = (seg) => `${Math.round(seg / 60)} min`;
@@ -302,34 +167,7 @@ function iniciarTemporizador(raiz) {
         return partes.join(' · ');
     }
 
-    /* --- Ciclo de vida --- */
-    function guardar() {
-        escribir(CLAVE_ESTADO, estado);
-    }
-
-    function tic() {
-        if (estado) {
-            const resultado = avanzar(estado, ahoraMs());
-
-            estado = resultado.estado;
-
-            if (resultado.eventos.length > 0) {
-                guardar();
-                encolar(resultado.eventos);
-                avisarPorEventos(resultado.eventos);
-            }
-        }
-
-        if (pendientes.length > 0 && !enVuelo && ahoraMs() % 30_000 < 300) vaciarPendientes();
-
-        dibujar();
-    }
-
-    function programar() {
-        clearInterval(temporizador);
-        temporizador = setInterval(tic, 250);
-    }
-
+    /* --- Acciones --- */
     async function iniciar() {
         mostrarErrores([]);
 
@@ -347,8 +185,7 @@ function iniciarTemporizador(raiz) {
         const boton = q('[data-p-accion="iniciar"]');
 
         boton.disabled = true;
-        // Crear el contexto de audio dentro del clic, para que el navegador permita sonar después.
-        try { contextoAudio ??= new (window.AudioContext || window.webkitAudioContext)(); } catch { /* sin audio */ }
+        prepararAudio();
 
         try {
             const respuesta = await fetch(urlSesiones, {
@@ -369,55 +206,26 @@ function iniciarTemporizador(raiz) {
             }
 
             escribir(CLAVE_CONFIG, c);
-            sesionAnterior = datos.id;
-            estado = crearEstado(datos.id, { foco: c.foco, descanso: c.descanso, largo: c.largo, ciclos: c.ciclos }, ahoraMs());
-            guardar();
+            iniciarEstado(datos.id, { foco: c.foco, descanso: c.descanso, largo: c.largo, ciclos: c.ciclos });
         } catch {
             mostrarErrores(['No se pudo conectar con el servidor. Revisá tu conexión y probá de nuevo.']);
         } finally {
             boton.disabled = false;
-            dibujar();
         }
-    }
-
-    async function finalizarEnServidor(sesionId) {
-        await vaciarPendientes();
-
-        try {
-            await fetch(`${urlSesiones}/${sesionId}/finalizar`, { method: 'PATCH', headers: encabezados() });
-        } catch {
-            // Si falla, la sesión queda "en curso" y se cierra sola al iniciar la próxima.
-        }
-    }
-
-    function aplicar(resultado) {
-        estado = resultado.estado;
-        guardar();
-        encolar(resultado.eventos);
-        dibujar();
     }
 
     const acciones = {
         iniciar,
-        pausar: () => { estado = pausar(estado, ahoraMs()); guardar(); dibujar(); },
-        reanudar: () => { estado = reanudar(estado, ahoraMs()); guardar(); dibujar(); },
-        reiniciar: () => { estado = reiniciar(estado, ahoraMs()); guardar(); dibujar(); },
-        saltar: () => aplicar(saltar(estado, ahoraMs())),
-        'siguiente-foco': () => aplicar(iniciarSiguienteFoco(estado, ahoraMs())),
+        pausar: accionesMotor.pausar,
+        reanudar: accionesMotor.reanudar,
+        reiniciar: accionesMotor.reiniciar,
+        saltar: accionesMotor.saltar,
+        'siguiente-foco': accionesMotor.siguienteFoco,
         terminar: async () => {
-            if (!window.confirm('¿Terminar la sesión? Lo que está en curso se registra tal como está.')) return;
-
-            const sesionId = estado.sesionId;
-            const resultado = terminar(estado, ahoraMs());
-
-            estado = null;
-            escribir(CLAVE_ESTADO, null);
-            sesionAnterior = sesionId;
-            encolar(resultado.eventos);
-            dibujar();
-            await finalizarEnServidor(sesionId);
-            mostrarErrores([]);
-            q('[data-p="terminada"]').hidden = false;
+            if (await terminarSesion()) {
+                mostrarErrores([]);
+                q('[data-p="terminada"]').hidden = false;
+            }
         },
     };
 
@@ -451,25 +259,23 @@ function iniciarTemporizador(raiz) {
     });
     estadoNotificaciones();
 
-    // Al volver a la pestaña se recalcula al instante, sin esperar el siguiente tic.
-    document.addEventListener('visibilitychange', tic);
-    window.addEventListener('focus', tic);
-
     /* --- Arranque --- */
     const sesionActivaServidor = raiz.dataset.sesionActiva ? Number(raiz.dataset.sesionActiva) : null;
 
     aplicarConfig(config());
+    iniciarMotor();
 
-    if (estado && estado.sesionId !== sesionActivaServidor) {
+    const guardado = estadoGuardado();
+
+    if (guardado && guardado.sesionId !== sesionActivaServidor) {
         // La sesión guardada ya no está en curso en el servidor (se borró o se cerró): se descarta.
-        estado = null;
-        escribir(CLAVE_ESTADO, null);
-    } else if (!estado && sesionActivaServidor) {
+        descartar();
+    } else if (!guardado && sesionActivaServidor) {
         // Quedó una sesión abierta sin estado local (otro navegador o datos borrados): se cierra.
         finalizarEnServidor(sesionActivaServidor);
     }
 
-    if (!estado) {
+    if (!estadoGuardado()) {
         const preset = new URLSearchParams(window.location.search).get('preset');
 
         if (preset && presets[preset]) {
@@ -478,9 +284,7 @@ function iniciarTemporizador(raiz) {
         }
     }
 
-    programar();
-    vaciarPendientes();
-    tic();
+    suscribir(dibujar);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

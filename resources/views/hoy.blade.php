@@ -8,9 +8,9 @@
         <p class="text-secondary mb-0">{{ now()->translatedFormat('l j \d\e F \d\e Y') }}</p>
     </div>
 
-    @include('hoy._nota-rapida')
+    @include('hoy._semana')
 
-    @include('hoy._recomendaciones')
+    @include('hoy._nota-rapida')
 
     @include('hoy._recomendaciones')
 

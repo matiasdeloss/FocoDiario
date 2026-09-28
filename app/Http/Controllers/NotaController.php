@@ -10,6 +10,7 @@ use App\Models\Nota;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Response;
 
 class NotaController extends Controller
@@ -47,7 +48,10 @@ class NotaController extends Controller
     public function create(Request $request): View
     {
         return view('notas.crear', [
-            'nota' => new Nota(['contexto_id' => $request->integer('contexto') ?: null]),
+            'nota' => new Nota([
+                'contexto_id' => $request->integer('contexto') ?: null,
+                'fecha' => Carbon::hasFormat((string) $request->query('fecha'), 'Y-m-d') ? $request->query('fecha') : null,
+            ]),
             'destinos' => Contexto::opciones(),
         ]);
     }

@@ -38,11 +38,11 @@ Se ofrecen como métodos con reglas simples, respaldados por lo ya investigado e
 No se afirma que un estilo sea mejor que otro: se registra cuál se usó y con qué concentración, para que Matías lo compare con sus propios datos.
 
 ## Orden de construcción sugerido
-1. Módulos base (Tareas, Recordatorios, Registro): en curso.
-2. Contextos y notas rápidas (migración, modelo, campo en Inicio).
-3. Pomodoro y selector de estilos, con registro de bloques.
-4. Calendario en Inicio con tareas, recordatorios y notas.
-5. Reemplazar `tareas.proyecto` por `contexto_id`.
+1. [x] Módulos base (Tareas, Recordatorios, Registro).
+2. [x] Contextos y notas rápidas (migración, modelo, campo en Inicio).
+3. [x] Pomodoro y selector de estilos, con registro de bloques (vista Estudio).
+4. [ ] Calendario en Inicio con tareas, recordatorios y notas.
+5. [ ] Reemplazar `tareas.proyecto` por `contexto_id`.
 
 ## Preguntas abiertas
 - ¿El calendario es mensual, semanal, o se alterna? (sugerencia: semanal por defecto en celular, mensual en pantallas grandes).

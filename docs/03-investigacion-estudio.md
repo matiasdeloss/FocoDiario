@@ -21,7 +21,7 @@
 ## Sueño (con fuentes)
 - Consenso de la AASM y la Sleep Research Society: los adultos sanos deberían dormir **7 horas o más por noche**; dormir 6 horas o menos es insuficiente para mantener la salud y la seguridad. No fijan un tope superior. ([consenso AASM/SRS](http://jcsm.aasm.org/doi/10.5664/jcsm.4758), [resumen AASM](https://aasm.org/seven-or-more-hours-of-sleep-per-night-a-health-necessity-for-adults))
 - Efecto en el aprendizaje: un metaanálisis encontró que la privación de sueño perjudica la memoria tanto **antes** de aprender (Hedges' g ≈ 0,62, efecto mayor) como **después** de aprender (g ≈ 0,28). Es decir, dormir mal dificulta incorporar información nueva y consolidar lo estudiado. ([metaanálisis, PMC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8893218/))
-- Aplicación: la app debería registrar hora de dormir y despertar, y avisar cuando el promedio baje de 7 h. Estudiar hasta tarde a costa de dormir es contraproducente.
+- Aplicación: la app **recomienda** una hora para acostarse y despertar (no se registra a mano) a partir de la hora habitual de arranque del día, apuntando a 8 horas dentro del rango de 7 a 9. Estudiar hasta tarde a costa de dormir es contraproducente. Nota: el consenso dice "7 horas o más" y no fija tope; el rango de 7 a 9 h es una hipótesis de trabajo.
 
 ## Horas de foco profundo por día (con fuentes)
 - Ericsson, Krampe y Tesch-Römer (1993) encontraron que incluso violinistas de élite sostenían unas **3,5–4 horas diarias** de práctica deliberada, en sesiones de **no más de 60–90 minutos**, con descansos. ([artículo original, notas](https://notes.andymatuschak.org/zEkCRJXM9NYCXxzFoDaNhL), [resumen](https://fs.blog/deliberate-practice-guide/))
@@ -97,7 +97,7 @@ Idea central: estudiar bien no es leer pasivamente muchas horas, sino usar un m�
 - Por la tarde o noche temprana: más fuerza, flexibilidad y función pulmonar, y menos riesgo de lesión.
 
 **Aplicación en FocoDiario**
-- Calcular el cronotipo con la hora real de dormir y despertar en días libres (ya se registran).
+- Cronotipo: como el sueño ya no se registra, el cálculo por punto medio del sueño no está disponible. Las recomendaciones usan pico, valle y recuperación de forma orientativa; si más adelante se estima el cronotipo con la hora de la primera y última actividad, se ajustarían.
 - Sugerir bloques de foco profundo en el pico, tareas administrativas en el valle y tareas creativas en la recuperación.
 - Después de cada Pomodoro, proponer un descanso con movimiento y sin celular.
 - Registrar la hora del día de cada bloque de foco y mostrar en qué franjas rinde más (puntuación propia de concentración de 1 a 5).

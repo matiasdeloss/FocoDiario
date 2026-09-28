@@ -20,6 +20,10 @@
                     aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            {{-- En /estudio la tarjeta principal ya es el temporizador: no se duplica. --}}
+            @unless (request()->routeIs('estudio.index'))
+                @include('layouts._pomodoro-widget')
+            @endunless
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -42,6 +46,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('estudio.*') ? 'active' : '' }}" href="{{ route('estudio.index') }}">Estudio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}">Calendario</a>
                     </li>
                 </ul>
             </div>

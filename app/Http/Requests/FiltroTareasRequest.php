@@ -18,6 +18,7 @@ class FiltroTareasRequest extends FormRequest
         return [
             'estado' => ['nullable', Rule::enum(EstadoTarea::class)],
             'proyecto' => ['nullable', 'string', 'max:255'],
+            'vista' => ['nullable', 'in:lista,tablero'],
         ];
     }
 
@@ -25,6 +26,7 @@ class FiltroTareasRequest extends FormRequest
     {
         return [
             'estado.enum' => 'El estado del filtro no es válido.',
+            'vista.in' => 'La vista elegida no es válida.',
             'proyecto.max' => 'El proyecto del filtro es demasiado largo.',
         ];
     }

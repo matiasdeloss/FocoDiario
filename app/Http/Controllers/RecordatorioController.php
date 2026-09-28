@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 
 class RecordatorioController extends Controller
 {
@@ -22,9 +23,14 @@ class RecordatorioController extends Controller
         return view('recordatorios.index', ['recordatorios' => $recordatorios]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('recordatorios.crear', $this->datosFormulario(new Recordatorio));
+        // ?fecha=AAAA-MM-DD precarga el día a las 09:00 (viene del calendario).
+        $fecha = Carbon::hasFormat((string) $request->query('fecha'), 'Y-m-d') ? $request->query('fecha') : null;
+
+        return view('recordatorios.crear', $this->datosFormulario(new Recordatorio([
+            'recordar_en' => $fecha ? Carbon::parse($fecha.' 09:00') : null,
+        ])));
     }
 
     public function store(RecordatorioRequest $request): RedirectResponse

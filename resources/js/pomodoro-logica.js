@@ -229,3 +229,30 @@ export function formatearTranscurrido(ms) {
 
     return h > 0 ? `${h}:${dos(m)}:${dos(s)}` : `${dos(m)}:${dos(s)}`;
 }
+
+/**
+ * Datos listos para mostrar de una fase (los usan la tarjeta de Estudio y el mini-temporizador):
+ * nombre completo, nombre corto, texto del tiempo y progreso 0..1 (null en el tiempo libre).
+ */
+export function describir(estado, ahora) {
+    const pausado = estaPausado(estado);
+
+    if (estado.fase === LIBRE) {
+        return {
+            fase: LIBRE, nombre: 'Tiempo libre', corta: 'Libre', pausado: false, progreso: null,
+            texto: formatearTranscurrido(transcurridoMs(estado, ahora)),
+        };
+    }
+
+    const total = estado.planificadoSeg * MS;
+    const progreso = total > 0 ? Math.min(1, transcurridoMs(estado, ahora) / total) : 0;
+
+    return {
+        fase: estado.fase,
+        nombre: estado.fase === FOCO ? 'Foco' : (estado.descansoLargo ? 'Descanso largo' : 'Descanso corto'),
+        corta: estado.fase === FOCO ? 'Foco' : 'Descanso',
+        pausado,
+        progreso,
+        texto: formatearTiempo(restanteMs(estado, ahora)),
+    };
+}

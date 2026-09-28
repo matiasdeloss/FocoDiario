@@ -1,6 +1,8 @@
 import 'bootstrap';
 import htmx from 'htmx.org';
 import './pomodoro.js';
+import './tablero.js';
+import './pomodoro-widget.js';
 
 window.htmx = htmx;
 
@@ -16,3 +18,8 @@ document.addEventListener('htmx:configRequest', (evento) => {
         evento.detail.headers['X-CSRF-TOKEN'] = token;
     }
 });
+
+// El calendario (FullCalendar) solo se descarga en su página.
+if (document.querySelector('[data-calendario]')) {
+    import('./calendario.js');
+}

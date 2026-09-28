@@ -6,6 +6,7 @@ use App\Enums\TipoCategoria;
 use App\Models\BloqueTiempo;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
+use App\Services\Calendario\EventosCalendario;
 use App\Services\Recomendaciones\MotorRecomendaciones;
 use Illuminate\Contracts\View\View;
 
@@ -31,6 +32,7 @@ class HoyController extends Controller
             'recordatorios' => Recordatorio::pendientes()->orderBy('recordar_en')->limit(5)->get(),
             'horasAprovechadas' => round($minutosAprovechados / 60, 1),
             'recomendaciones' => $motor->generar()->take(5),
+            'semana' => app(EventosCalendario::class)->semanaActual(),
         ]);
     }
 }

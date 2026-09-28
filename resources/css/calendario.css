@@ -1,0 +1,219 @@
+/*
+ * Calendario (FullCalendar): se carga solo en /calendario.
+ * Usa las variables --foco-* de app.css. Sin gradientes; bordes en vez de sombras.
+ * Colores por tipo: tarea = verde (acento), recordatorio = ámbar, nota = azul, estudio = ciruela.
+ */
+
+.fc {
+    --fc-border-color: var(--foco-borde);
+    --fc-page-bg-color: var(--foco-papel);
+    --fc-neutral-bg-color: var(--foco-papel-hundido);
+    --fc-neutral-text-color: var(--foco-texto-suave);
+    --fc-today-bg-color: var(--foco-acento-suave);
+    --fc-now-indicator-color: var(--foco-rojo-texto);
+    --fc-event-border-color: transparent;
+    --fc-list-event-hover-bg-color: var(--foco-papel-hundido);
+    --fc-more-link-bg-color: transparent;
+    --fc-highlight-color: var(--foco-acento-suave);
+    font-family: var(--foco-fuente);
+    font-size: var(--foco-texto-sm);
+}
+
+.fc a { color: inherit; text-decoration: none; }
+
+/* Barra de herramientas */
+.fc .fc-toolbar { gap: var(--foco-espacio-2); margin-bottom: var(--foco-espacio-3) !important; }
+.fc .fc-toolbar-title {
+    font-family: var(--foco-fuente-titulo);
+    font-size: var(--foco-texto-lg);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-transform: capitalize;
+}
+.fc .fc-button {
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+    padding: 0 var(--foco-espacio-3);
+    background: transparent;
+    border: 1px solid var(--foco-borde-fuerte);
+    border-radius: var(--foco-radio-sm);
+    color: var(--foco-texto);
+    font-weight: 500;
+    text-transform: none;
+    transition-property: background-color, border-color, color, transform;
+    transition-duration: 150ms, 150ms, 150ms, 100ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.fc .fc-button:hover { background: var(--foco-papel-hundido); color: var(--foco-texto); border-color: var(--foco-borde-fuerte); }
+.fc .fc-button:active:not(:disabled) { transform: scale(0.96); }
+.fc .fc-button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--foco-acento-anillo); }
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background: var(--foco-acento);
+    border-color: var(--foco-acento);
+    color: #fff;
+}
+.fc .fc-button-primary:disabled { background: transparent; color: var(--foco-texto-suave); opacity: 0.5; }
+.fc .fc-button-group > .fc-button { border-radius: 0; }
+.fc .fc-button-group > .fc-button:first-child { border-radius: var(--foco-radio-sm) 0 0 var(--foco-radio-sm); }
+.fc .fc-button-group > .fc-button:last-child { border-radius: 0 var(--foco-radio-sm) var(--foco-radio-sm) 0; }
+.fc .fc-button .fc-icon { font-size: 1.25em; }
+
+/* Encabezados de columna y celdas */
+.fc .fc-col-header-cell { background: var(--foco-papel-hundido); }
+.fc .fc-col-header-cell-cushion {
+    padding: var(--foco-espacio-2);
+    font-size: var(--foco-texto-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--foco-texto-suave);
+}
+.fc .fc-daygrid-day-number { padding: var(--foco-espacio-2); font-variant-numeric: tabular-nums; color: var(--foco-texto); }
+.fc .fc-day-other .fc-daygrid-day-number { color: var(--foco-texto-suave); opacity: 0.7; }
+.fc .fc-day-today { background: var(--foco-acento-suave); }
+.fc .fc-day-today .fc-daygrid-day-number {
+    margin: 4px;
+    padding: 0;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--foco-radio-sm);
+    background: var(--foco-acento);
+    color: #fff;
+    font-weight: 600;
+}
+.fc .fc-daygrid-day-frame { min-height: 6rem; }
+.fc .fc-daygrid-more-link {
+    padding: 2px var(--foco-espacio-2);
+    font-weight: 500;
+    color: var(--foco-acento);
+}
+.fc .fc-timegrid-slot-label-cushion { font-variant-numeric: tabular-nums; }
+.fc .fc-scrollgrid { border-radius: var(--foco-radio-sm); overflow: hidden; border-color: var(--foco-borde); }
+
+/* Eventos */
+.fc .fc-event {
+    border: 0;
+    border-left: 4px solid var(--ev-borde, var(--foco-acento));
+    border-radius: 6px;
+    background: var(--ev-fondo, var(--foco-acento-suave));
+    color: var(--ev-texto, var(--foco-texto));
+    margin-block: 1px;
+    cursor: pointer;
+    transition: opacity 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+.fc .fc-event:hover { filter: brightness(0.97); }
+.fc .fc-event:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 1px; }
+.fc .fc-event-main, .fc .fc-event-title { padding: 1px 4px; font-weight: 500; }
+.fc .fc-daygrid-event { padding: 1px 2px; white-space: nowrap; overflow: hidden; }
+.fc .fc-daygrid-dot-event .fc-event-title { font-weight: 500; }
+.fc .fc-daygrid-block-event .fc-event-time, .fc .fc-daygrid-dot-event .fc-event-time { font-variant-numeric: tabular-nums; }
+.fc .fc-event-time { font-weight: 600; }
+.ev-icono { margin-right: 4px; font-size: 0.85em; vertical-align: -0.05em; }
+
+/* Colores por tipo (fondo pastel + texto oscuro, AA) */
+.ev-tipo-tarea { --ev-fondo: var(--foco-verde-fondo); --ev-texto: var(--foco-verde-texto); --ev-borde: var(--foco-acento); }
+.ev-tipo-recordatorio { --ev-fondo: var(--foco-ambar-fondo); --ev-texto: var(--foco-ambar-texto); --ev-borde: var(--foco-ambar-texto); }
+.ev-tipo-nota { --ev-fondo: var(--foco-azul-fondo); --ev-texto: var(--foco-azul-texto); --ev-borde: var(--foco-azul-texto); }
+.ev-tipo-sesion { --ev-fondo: var(--tipo-sesion-fondo); --ev-texto: var(--tipo-sesion-texto); --ev-borde: var(--tipo-sesion-texto); }
+
+/* La prioridad de la tarea se lee en el borde izquierdo */
+.ev-tipo-tarea.ev-prio-alta { --ev-borde: var(--foco-rojo-texto); }
+.ev-tipo-tarea.ev-prio-media { --ev-borde: var(--foco-ambar-texto); }
+.ev-tipo-tarea.ev-prio-baja { --ev-borde: var(--foco-azul-texto); }
+
+/* Vencida: fondo rojo suave */
+.ev-vencida { --ev-fondo: var(--foco-rojo-fondo); --ev-texto: var(--foco-rojo-texto); --ev-borde: var(--foco-rojo-texto); }
+
+/* Completada o ya avisada: atenuada y tachada */
+.fc .ev-hecho { --ev-fondo: var(--foco-gris-fondo); --ev-texto: var(--foco-gris-texto); --ev-borde: var(--foco-borde-fuerte); opacity: 0.7; }
+.fc .ev-hecho .fc-event-title, .fc .ev-hecho .fc-list-event-title a { text-decoration: line-through; }
+
+/* Vista de lista */
+.fc .fc-list { border-color: var(--foco-borde); border-radius: var(--foco-radio-sm); overflow: hidden; }
+.fc .fc-list-day-cushion { background: var(--foco-papel-hundido); font-weight: 600; }
+.fc .fc-list-event td { padding: var(--foco-espacio-3); }
+.fc .fc-list-event-title a { color: var(--foco-texto); font-weight: 500; }
+.fc .fc-list-event-dot { border-color: var(--ev-borde, var(--foco-acento)); }
+.fc .fc-list-empty { background: transparent; color: var(--foco-texto-suave); }
+
+/* Arrastre */
+.fc .fc-event-dragging { opacity: 0.85; }
+.fc .fc-highlight { background: var(--foco-acento-suave); }
+
+/* Celular: barra de herramientas en dos filas y controles cómodos al tacto */
+@media (max-width: 767.98px) {
+    .fc .fc-toolbar { flex-wrap: wrap; justify-content: center; }
+    .fc .fc-toolbar-title { flex-basis: 100%; order: -1; text-align: center; font-size: var(--foco-texto-base); }
+    .fc .fc-button { min-height: 2.75rem; }
+}
+
+/* Filtros por tipo */
+.calendario-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: var(--foco-espacio-2); border: 0; padding: 0; margin: 0; }
+.filtro-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--foco-espacio-2);
+    min-height: 2.5rem;
+    padding: 0 var(--foco-espacio-3);
+    background: var(--foco-papel);
+    border: 1px solid var(--foco-borde-fuerte);
+    border-radius: var(--foco-radio-sm);
+    font-size: var(--foco-texto-sm);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition-property: background-color, border-color, color, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.filtro-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.filtro-chip:hover { background: var(--foco-papel-hundido); }
+.filtro-chip:has(input:checked) { background: var(--foco-acento-suave); border-color: var(--foco-acento); color: var(--foco-acento-hover); }
+.filtro-chip:has(input:not(:checked)) { color: var(--foco-texto-suave); }
+.filtro-chip:has(input:not(:checked)) .filtro-punto { background: transparent; }
+.filtro-chip:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--foco-acento-anillo); }
+.filtro-punto { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--punto); border: 1.5px solid var(--punto); }
+
+/* Panel de tareas sin fecha */
+.panel-sin-fecha { position: sticky; top: 1rem; transition: border-color 150ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms cubic-bezier(0.2, 0, 0, 1); }
+.panel-sin-fecha.panel-destino { border-color: var(--foco-acento); background: var(--foco-acento-suave); border-style: dashed; }
+.panel-sin-fecha-lista { display: grid; gap: var(--foco-espacio-2); max-height: 60vh; overflow-y: auto; }
+.tarea-arrastrable {
+    background: var(--foco-papel-hundido);
+    border: 1px solid var(--foco-borde);
+    border-radius: var(--foco-radio-sm);
+    padding: var(--foco-espacio-2);
+    display: grid;
+    gap: var(--foco-espacio-2);
+}
+.tarea-arrastrable-cabeza {
+    display: flex;
+    align-items: center;
+    gap: var(--foco-espacio-2);
+    min-height: 2.5rem;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    border-radius: 6px;
+}
+.tarea-arrastrable-cabeza:active { cursor: grabbing; }
+.tarea-arrastrable-asa { color: var(--foco-texto-suave); }
+.tarea-arrastrable-titulo { flex: 1; min-width: 0; font-weight: 500; color: var(--foco-texto); text-decoration: none; overflow-wrap: anywhere; }
+.tarea-arrastrable-titulo:hover { text-decoration: underline; }
+.tarea-arrastrable-fecha { min-height: 2.5rem; }
+
+@media (max-width: 991.98px) {
+    .panel-sin-fecha { position: static; }
+    .panel-sin-fecha-lista { max-height: none; }
+    /* En celular el arrastre es por pulsación larga: se deja pasar el desplazamiento */
+    .tarea-arrastrable-cabeza { touch-action: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc .fc-button:active:not(:disabled) { transform: none; }
+}

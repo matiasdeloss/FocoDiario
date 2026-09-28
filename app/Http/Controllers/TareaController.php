@@ -9,15 +9,23 @@ use App\Http\Requests\FiltroTareasRequest;
 use App\Http\Requests\TareaRequest;
 use App\Models\Tarea;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 
 class TareaController extends Controller
 {
+    private const COMPLETADAS_EN_TABLERO = 10;
+
     public function index(FiltroTareasRequest $request): View
     {
         $filtros = $request->validated();
+
+        if (($filtros['vista'] ?? 'lista') === 'tablero') {
+            return $this->tablero($filtros['proyecto'] ?? null);
+        }
 
         $tareas = Tarea::query()
             ->when($filtros['estado'] ?? null, fn ($consulta, $estado) => $consulta->where('estado', $estado))
@@ -34,12 +42,51 @@ class TareaController extends Controller
             'estados' => EstadoTarea::cases(),
             'estadoFiltro' => $filtros['estado'] ?? null,
             'proyectoFiltro' => $filtros['proyecto'] ?? null,
+            'vista' => 'lista',
         ]);
     }
 
-    public function create(): View
+    /** Vista de tablero: una columna por estado; la de completadas muestra solo las más recientes. */
+    private function tablero(?string $proyecto): View
     {
+        $filtrarProyecto = fn ($consulta) => $consulta->when($proyecto, fn ($c) => $c->where('proyecto', $proyecto));
+
+        $abiertas = $filtrarProyecto(Tarea::query()->abiertas())
+            ->orderByRaw('fecha_limite is null')
+            ->orderBy('fecha_limite')
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy(fn (Tarea $tarea) => $tarea->estado->value);
+
+        $completadas = $filtrarProyecto(Tarea::query()->where('estado', EstadoTarea::Completada))
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->limit(self::COMPLETADAS_EN_TABLERO)
+            ->get();
+
+        $totalCompletadas = $filtrarProyecto(Tarea::query()->where('estado', EstadoTarea::Completada))->count();
+
+        $columnas = collect(EstadoTarea::cases())->map(fn (EstadoTarea $estado) => [
+            'estado' => $estado,
+            'tareas' => $estado === EstadoTarea::Completada ? $completadas : ($abiertas[$estado->value] ?? collect()),
+            'ocultas' => $estado === EstadoTarea::Completada ? max(0, $totalCompletadas - $completadas->count()) : 0,
+        ]);
+
+        return view('tareas.index', [
+            'columnas' => $columnas,
+            'total' => $abiertas->flatten()->count() + $totalCompletadas,
+            'proyectos' => $this->proyectos(),
+            'proyectoFiltro' => $proyecto,
+            'estadoFiltro' => null,
+            'vista' => 'tablero',
+        ]);
+    }
+
+    public function create(Request $request): View
+    {
+        // ?fecha=AAAA-MM-DD precarga la fecha límite (viene del calendario).
         return view('tareas.crear', $this->datosFormulario(new Tarea([
+            'fecha_limite' => Carbon::hasFormat((string) $request->query('fecha'), 'Y-m-d') ? $request->query('fecha') : null,
             'prioridad' => PrioridadTarea::Media,
             'estado' => EstadoTarea::Pendiente,
         ])));
@@ -81,9 +128,13 @@ class TareaController extends Controller
     }
 
     /** Cambia el estado con un clic. Con HTMX devuelve solo la fila actualizada. */
-    public function cambiarEstado(CambiarEstadoTareaRequest $request, Tarea $tarea): View|RedirectResponse
+    public function cambiarEstado(CambiarEstadoTareaRequest $request, Tarea $tarea): View|RedirectResponse|JsonResponse
     {
         $tarea->update($request->validated());
+
+        if ($request->expectsJson()) {
+            return response()->json(['estado' => $tarea->estado->value]);
+        }
 
         if ($request->header('HX-Request')) {
             return view('tareas._fila', ['tarea' => $tarea]);

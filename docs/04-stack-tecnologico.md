@@ -21,12 +21,14 @@
 ```
 FocoDiario/
 ├── app/
-│   ├── Models/          # Categoria, Tarea, Recordatorio, BloqueTiempo, Dia
-│   ├── Http/Controllers/
-│   └── Services/        # cálculos de estadísticas y cronotipo
+│   ├── Enums/           # tipos y estados con etiqueta()
+│   ├── Models/          # Categoria, Tarea, Recordatorio, BloqueTiempo, Contexto, Nota, SesionEstudio, IntervaloEstudio
+│   ├── Http/Controllers/ y Http/Requests/
+│   └── Services/        # ResumenRegistro, ResumenEstudio, RegistroEstudio y Recomendaciones/ (una clase por regla)
 ├── database/migrations/
 ├── resources/views/     # Blade + fragments HTMX
-├── resources/js/        # pomodoro.js
+├── resources/js/        # pomodoro.js y pomodoro-logica.js (fases, con pruebas en Node)
+├── config/estudio.php   # fichas de métodos de estudio y fuentes
 └── docs/
 ```
 
@@ -36,24 +38,34 @@ Tomadas de `02-requisitos-y-funcionalidades.md`:
 - `tareas`: título, proyecto, fecha límite, prioridad, estado.
 - `recordatorios`: fecha y hora, mensaje, tarea opcional.
 - `bloques_tiempo`: inicio, fin, categoría, tarea opcional, origen (manual / pomodoro), concentración (1 a 5, fase 3).
-- `dias`: fecha, hora de despertar, hora de dormir.
+- `contextos`: nombre, tipo, contexto padre, color.
+- `notas`: contenido, contexto opcional, fecha opcional, fijada.
+- `sesiones_estudio` e `intervalos_estudio`: sesiones de Pomodoro y sus fases (foco, descanso, tiempo libre).
+- (`dias` se creó y luego se eliminó: el sueño no se registra a mano.)
 
 ## Pantallas del MVP
-1. Hoy: tareas del día, Pomodoro y registro rápido de bloques.
+1. Hoy: nota rápida, recomendaciones, métricas, próximas tareas y recordatorios.
 2. Tareas: lista y alta, con filtros por proyecto y estado.
 3. Recordatorios.
-4. Registro del día: bloques, hora de despertar y de dormir.
+4. Registro del día: bloques y resumen de horas.
+5. Notas y Contextos.
+6. Recomendaciones.
+7. Estudio: temporizador, historial y métodos.
 
 ## Pasos para arrancar
 1. [x] Proyecto Laravel creado, base MySQL `focodiario` y `.env` configurado.
 2. [x] Sitio enlazado en Herd (`focodiario.test` responde).
 3. [x] Migraciones, modelos, enums y factories de las entidades.
-4. [ ] Módulo Tareas (CRUD con HTMX).
-5. [ ] Pomodoro (JS vanilla) con registro de ciclos completados.
-6. [ ] Registro del día y resumen simple de horas.
+4. [x] Módulo Tareas (CRUD con HTMX).
+5. [x] Pomodoro (JS vanilla) con registro de ciclos completados, en la vista Estudio.
+6. [x] Registro del día y resumen de horas.
+7. [x] Contextos, notas rápidas y recomendaciones.
+8. [ ] Calendario en Hoy, contexto en las tareas, estadísticas semanales y exportación de datos.
 
 ## Ubicación del proyecto (hecho)
 El código vive en `Proyectos\FocoDiario`. Herd lo sirve en `http://focodiario.test` mediante `herd link focodiario`. La base `focodiario` está en el MySQL de Laragon (usuario `root`, sin contraseña, solo local) y las migraciones base ya corrieron.
 
 ## Pendiente de decidir
 - Cómo se hará el respaldo de la base (exportar a `.sql` o a JSON).
+- Si la configuración del Pomodoro, hoy en el navegador (localStorage), pasa a la base de datos.
+- Si el tiempo libre debe seguir registrándose cuando se cierra el navegador (hoy ese intervalo se pierde).
