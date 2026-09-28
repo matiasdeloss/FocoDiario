@@ -73,7 +73,7 @@
     </div>
 
     <div class="row g-3">
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="tarjeta h-100">
                 <h2 class="tarjeta-titulo px-4 pt-4 mb-3">Bloques del día</h2>
                 @if ($bloques->isEmpty())
@@ -124,46 +124,5 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="tarjeta p-4 h-100">
-                <h2 class="tarjeta-titulo">Datos del día</h2>
-                <form method="POST" action="{{ route('registro.dia') }}" novalidate>
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="fecha" value="{{ $fechaTexto }}">
-                    <div class="row g-3 mb-3">
-                        <div class="col-6">
-                            <label for="desperto_a" class="form-label">Me desperté</label>
-                            <input type="time" id="desperto_a" name="desperto_a"
-                                   value="{{ old('desperto_a', $dia?->desperto_a?->format('H:i')) }}"
-                                   class="form-control @error('desperto_a') is-invalid @enderror">
-                            @error('desperto_a') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-6">
-                            <label for="durmio_a" class="form-label">Me dormí</label>
-                            <input type="time" id="durmio_a" name="durmio_a"
-                                   value="{{ old('durmio_a', $dia?->durmio_a?->format('H:i')) }}"
-                                   class="form-control @error('durmio_a') is-invalid @enderror">
-                            @error('durmio_a') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-foco-suave">Guardar datos</button>
-                </form>
-
-                <div class="lista-fila mt-4">
-                    <span>Horas despierto</span>
-                    <span class="lista-fila-meta">
-                        @if ($dia?->minutosDespierto() !== null)
-                            {{ Duracion::formatear($dia->minutosDespierto()) }}
-                        @else
-                            Falta un dato
-                        @endif
-                    </span>
-                </div>
-                @if ($dia?->durmio_a && ! $dia->durmio_a->isSameDay($fecha))
-                    <p class="small text-secondary mb-0">La hora de dormir cae después de medianoche.</p>
-                @endif
-            </div>
-        </div>
     </div>
 @endsection

@@ -34,8 +34,15 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('registro.*') ? 'active' : '' }}" href="{{ route('registro.index') }}">Registro</a>
                     </li>
-                    {{-- menu:notas --}}
-                    {{-- menu:recomendaciones --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('notas.*', 'contextos.*') ? 'active' : '' }}" href="{{ route('notas.index') }}">Notas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('recomendaciones.*') ? 'active' : '' }}" href="{{ route('recomendaciones.index') }}">Recomendaciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('estudio.*') ? 'active' : '' }}" href="{{ route('estudio.index') }}">Estudio</a>
+                    </li>
                 </ul>
             </div>
         </div>

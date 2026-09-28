@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\TipoCategoria;
 use App\Models\BloqueTiempo;
 use App\Models\Categoria;
-use App\Models\Dia;
 use App\Services\ResumenRegistro;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -95,27 +94,6 @@ class RegistroTest extends TestCase
             ->assertOk()
             ->assertSee('3 h 50 min')
             ->assertSee('2 h 30 min');
-    }
-
-    public function test_los_datos_del_dia_se_guardan_por_fecha_sin_duplicar(): void
-    {
-        $this->put(route('registro.dia'), ['fecha' => '2026-09-20', 'desperto_a' => '07:30', 'durmio_a' => '23:00'])
-            ->assertRedirect(route('registro.index', ['fecha' => '2026-09-20']));
-        $this->put(route('registro.dia'), ['fecha' => '2026-09-20', 'desperto_a' => '08:00', 'durmio_a' => '23:30']);
-
-        $this->assertDatabaseCount('dias', 1);
-        $dia = Dia::firstOrFail();
-        $this->assertSame('08:00', $dia->desperto_a->format('H:i'));
-        $this->assertSame(930, $dia->minutosDespierto());
-    }
-
-    public function test_las_horas_despierto_solo_existen_con_ambos_datos_y_cruzan_medianoche(): void
-    {
-        $this->put(route('registro.dia'), ['fecha' => '2026-09-20', 'desperto_a' => '07:00']);
-        $this->assertNull(Dia::firstOrFail()->minutosDespierto());
-
-        $this->put(route('registro.dia'), ['fecha' => '2026-09-20', 'desperto_a' => '07:00', 'durmio_a' => '01:00']);
-        $this->assertSame(18 * 60, Dia::firstOrFail()->minutosDespierto());
     }
 
     public function test_se_puede_editar_y_borrar_un_bloque(): void

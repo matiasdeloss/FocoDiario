@@ -1,5 +1,6 @@
 import 'bootstrap';
 import htmx from 'htmx.org';
+import './pomodoro.js';
 
 window.htmx = htmx;
 

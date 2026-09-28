@@ -8,6 +8,12 @@
         <p class="text-secondary mb-0">{{ now()->translatedFormat('l j \d\e F \d\e Y') }}</p>
     </div>
 
+    @include('hoy._nota-rapida')
+
+    @include('hoy._recomendaciones')
+
+    @include('hoy._recomendaciones')
+
     <div class="row g-3 mb-3">
         <div class="col-6 col-md-3">
             <div class="tarjeta p-3 p-md-4 h-100">
@@ -39,11 +45,11 @@
         <div class="col-md-4">
             <div class="tarjeta p-4 h-100 text-center">
                 <h2 class="tarjeta-titulo">Pomodoro</h2>
-                <div class="pomodoro-tiempo mb-4">25:00</div>
-                <button type="button" class="btn btn-foco" disabled>
-                    <i class="bi bi-play-fill"></i> Iniciar
-                </button>
-                <p class="small text-secondary mt-3 mb-0">Disponible en el próximo paso.</p>
+                <div class="pomodoro-tiempo mb-2" data-pomodoro-resumen>25:00</div>
+                <p class="small text-secondary mb-4" data-pomodoro-resumen-detalle>Foco 25 min, descanso 5 min</p>
+                <a href="{{ route('estudio.index') }}" class="btn btn-foco">
+                    <i class="bi bi-play-fill"></i> Ir a Estudio
+                </a>
             </div>
         </div>
 
