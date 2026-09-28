@@ -33,6 +33,13 @@ class Tarea extends Model
         return $query->where('estado', '!=', EstadoTarea::Completada);
     }
 
+    public function estaVencida(): bool
+    {
+        return $this->estado !== EstadoTarea::Completada
+            && $this->fecha_limite !== null
+            && $this->fecha_limite->lt(today());
+    }
+
     public function recordatorios(): HasMany
     {
         return $this->hasMany(Recordatorio::class);

@@ -40,6 +40,9 @@
     </nav>
 
     <main class="container-fluid px-3 px-lg-5 py-4">
+        @if (session('estado'))
+            <div class="aviso-foco" role="status">{{ session('estado') }}</div>
+        @endif
         @yield('contenido')
     </main>
 </body>

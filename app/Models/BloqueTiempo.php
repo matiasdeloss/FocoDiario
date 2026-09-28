@@ -36,4 +36,9 @@ class BloqueTiempo extends Model
     {
         return $this->belongsTo(Tarea::class);
     }
+
+    public function duracionEnMinutos(): int
+    {
+        return max(0, (int) $this->inicio->diffInMinutes($this->fin, true));
+    }
 }

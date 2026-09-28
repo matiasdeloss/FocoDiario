@@ -49,7 +49,7 @@
 
         <div class="col-md-4">
             <div class="tarjeta p-4 h-100">
-                <h2 class="tarjeta-titulo">Próximas tareas</h2>
+                <h2 class="tarjeta-titulo d-flex justify-content-between">Próximas tareas <a href="{{ route('tareas.index') }}" class="text-decoration-none text-lowercase fw-normal">ver todas</a></h2>
                 @forelse ($proximasTareas as $tarea)
                     <div class="lista-fila">
                         <span>{{ $tarea->titulo }}</span>
@@ -63,7 +63,7 @@
 
         <div class="col-md-4">
             <div class="tarjeta p-4 h-100">
-                <h2 class="tarjeta-titulo">Recordatorios</h2>
+                <h2 class="tarjeta-titulo d-flex justify-content-between">Recordatorios <a href="{{ route('recordatorios.index') }}" class="text-decoration-none text-lowercase fw-normal">ver todos</a></h2>
                 @forelse ($recordatorios as $recordatorio)
                     <div class="lista-fila">
                         <span>{{ $recordatorio->mensaje }}</span>

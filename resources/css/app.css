@@ -370,3 +370,30 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* ---------- Módulos: tareas, recordatorios y registro ---------- */
+
+/* Aviso de acción realizada (mensaje flash) */
+.aviso-foco {
+    background: var(--foco-acento-suave);
+    border: 1px solid var(--foco-acento);
+    border-radius: var(--foco-radio-sm);
+    color: var(--foco-acento-hover);
+    padding: var(--foco-espacio-3) var(--foco-espacio-4);
+    margin-bottom: var(--foco-espacio-4);
+}
+
+/* Formularios de una sola columna: ancho cómodo para leer */
+.formulario-angosto { max-width: 42rem; }
+
+/* Tarea completada o recordatorio avisado */
+.texto-tachado { text-decoration: line-through; color: var(--foco-texto-suave); }
+
+/* Fecha vencida */
+.texto-vencida { color: var(--foco-rojo-texto); font-weight: 600; }
+
+/* Botón de ícono del estado actual */
+.btn-icono.activo { background: var(--foco-acento-suave); color: var(--foco-acento); border-color: var(--foco-acento); }
+
+/* Selector de estado dentro de la tabla: íconos más juntos */
+.tabla-foco .btn-icono { width: 2.25rem; height: 2.25rem; }
