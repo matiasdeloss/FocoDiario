@@ -1,0 +1,66 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+    --foco-acento: #2f6f5e;
+    --foco-fondo: #f6f5f1;
+}
+
+/* Fondo de cuaderno cuadriculado: dos capas de líneas finas sobre papel claro. */
+body {
+    --cuadricula: 32px;
+    --linea-cuadricula: rgba(120, 100, 60, 0.08);
+
+    background-color: #f8f1df;
+    background-image:
+        linear-gradient(var(--linea-cuadricula) 1px, transparent 1px),
+        linear-gradient(90deg, var(--linea-cuadricula) 1px, transparent 1px);
+    background-size: var(--cuadricula) var(--cuadricula);
+    background-attachment: fixed;
+}
+
+.navbar-foco {
+    background-color: #fffbee;
+    border-bottom: 1px solid #e6dcc0;
+}
+
+.navbar-foco .navbar-brand {
+    color: var(--foco-acento);
+    font-weight: 700;
+}
+
+.navbar-foco .nav-link.active {
+    color: var(--foco-acento);
+    font-weight: 600;
+}
+
+.tarjeta {
+    background: #fffbee;
+    border: 1px solid #e6dcc0;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(90, 70, 20, 0.08);
+}
+
+.metrica-valor {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.pomodoro-tiempo {
+    font-size: 3.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--foco-acento);
+}
+
+.btn-foco {
+    --bs-btn-bg: var(--foco-acento);
+    --bs-btn-border-color: var(--foco-acento);
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: #255a4c;
+    --bs-btn-hover-border-color: #255a4c;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-disabled-bg: var(--foco-acento);
+    --bs-btn-disabled-border-color: var(--foco-acento);
+}
