@@ -25,9 +25,15 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('hoy') ? 'active' : '' }}" href="{{ route('hoy') }}">Hoy</a>
                     </li>
-                    <li class="nav-item"><span class="nav-link disabled">Tareas</span></li>
-                    <li class="nav-item"><span class="nav-link disabled">Recordatorios</span></li>
-                    <li class="nav-item"><span class="nav-link disabled">Registro</span></li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('tareas.*') ? 'active' : '' }}" href="{{ route('tareas.index') }}">Tareas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('recordatorios.*') ? 'active' : '' }}" href="{{ route('recordatorios.index') }}">Recordatorios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('registro.*') ? 'active' : '' }}" href="{{ route('registro.index') }}">Registro</a>
+                    </li>
                 </ul>
             </div>
         </div>
