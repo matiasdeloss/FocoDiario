@@ -882,3 +882,64 @@ tr.htmx-request { opacity: 0.6; }
 .semana-dia-puntos { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 6px; }
 .semana-punto { display: inline-flex; align-items: center; gap: 3px; font-size: 0.7rem; font-variant-numeric: tabular-nums; color: var(--foco-texto-suave); }
 .semana-punto i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--punto); }
+
+/* ---------- Pie de página ---------- */
+/* La página ocupa al menos toda la altura: el pie queda abajo aunque el contenido sea corto. */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+body > main { flex: 1 0 auto; }
+
+.footer-foco {
+    flex-shrink: 0;
+    margin-top: var(--foco-espacio-6);
+    padding-block: var(--foco-espacio-5);
+    background-color: var(--foco-papel);
+    border-top: 1px solid var(--foco-borde);
+}
+
+.footer-foco-contenido {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--foco-espacio-4) var(--foco-espacio-6);
+}
+
+.footer-foco-marca {
+    font-family: var(--foco-fuente-titulo);
+    font-size: var(--foco-texto-lg);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--foco-acento);
+    text-decoration: none;
+}
+
+.footer-foco-marca:hover { color: var(--foco-acento-hover); }
+
+.footer-foco-texto { font-size: var(--foco-texto-sm); color: var(--foco-texto-suave); text-wrap: pretty; }
+
+.footer-foco-enlaces { display: flex; flex-wrap: wrap; gap: var(--foco-espacio-1) var(--foco-espacio-4); }
+
+.footer-foco-enlaces a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    font-size: var(--foco-texto-sm);
+    color: var(--foco-texto-suave);
+    text-decoration: none;
+    transition: color 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.footer-foco-enlaces a:hover { color: var(--foco-acento); text-decoration: underline; text-underline-offset: 0.2em; }
+
+.footer-foco-pie {
+    margin-top: var(--foco-espacio-4);
+    padding-top: var(--foco-espacio-4);
+    border-top: 1px solid var(--foco-borde);
+    font-size: var(--foco-texto-xs);
+    color: var(--foco-texto-suave);
+}

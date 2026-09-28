@@ -12,8 +12,6 @@
 
     @include('hoy._nota-rapida')
 
-    @include('hoy._recomendaciones')
-
     <div class="row g-3 mb-3">
         <div class="col-6 col-md-3">
             <div class="tarjeta p-3 p-md-4 h-100">
@@ -81,4 +79,6 @@
             </div>
         </div>
     </div>
+
+    @include('hoy._recomendaciones')
 @endsection

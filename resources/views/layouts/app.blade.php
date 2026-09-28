@@ -61,5 +61,28 @@
         @endif
         @yield('contenido')
     </main>
+
+    <footer class="footer-foco">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="footer-foco-contenido">
+                <div>
+                    <a class="footer-foco-marca" href="{{ route('hoy') }}">
+                        <i class="bi bi-bullseye"></i> FocoDiario
+                    </a>
+                    <p class="footer-foco-texto mb-0">Menos ocio, más foco. Un día a la vez.</p>
+                </div>
+                <nav class="footer-foco-enlaces" aria-label="Secciones">
+                    <a href="{{ route('tareas.index') }}">Tareas</a>
+                    <a href="{{ route('estudio.index') }}">Estudio</a>
+                    <a href="{{ route('calendario.index') }}">Calendario</a>
+                    <a href="{{ route('notas.index') }}">Notas</a>
+                    <a href="{{ route('recomendaciones.index') }}">Recomendaciones</a>
+                </nav>
+            </div>
+            <p class="footer-foco-pie mb-0">
+                &copy; {{ now()->year }} FocoDiario &middot; Uso personal. Tus datos se guardan en tu equipo.
+            </p>
+        </div>
+    </footer>
 </body>
 </html>
