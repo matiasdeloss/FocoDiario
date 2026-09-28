@@ -34,6 +34,8 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('registro.*') ? 'active' : '' }}" href="{{ route('registro.index') }}">Registro</a>
                     </li>
+                    {{-- menu:notas --}}
+                    {{-- menu:recomendaciones --}}
                 </ul>
             </div>
         </div>

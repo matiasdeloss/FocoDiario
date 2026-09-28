@@ -16,3 +16,7 @@ Route::resource('registro', RegistroController::class);
 Route::patch('tareas/{tarea}/estado', [TareaController::class, 'cambiarEstado'])->name('tareas.estado');
 Route::patch('recordatorios/{recordatorio}/avisar', [RecordatorioController::class, 'avisar'])->name('recordatorios.avisar');
 Route::put('dia', [RegistroController::class, 'guardarDia'])->name('registro.dia');
+
+// ---- Notas y contextos (agente de notas) ----
+
+// ---- Recomendaciones (agente de recomendaciones) ----
