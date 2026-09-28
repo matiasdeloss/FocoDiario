@@ -4,32 +4,32 @@
 
 @section('contenido')
     <div class="mb-4">
-        <h1 class="h3 mb-1">Hoy</h1>
+        <h1 class="pagina-titulo">Hoy</h1>
         <p class="text-secondary mb-0">{{ now()->translatedFormat('l j \d\e F \d\e Y') }}</p>
     </div>
 
     <div class="row g-3 mb-3">
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100">
-                <div class="text-secondary small">Tareas abiertas</div>
+            <div class="tarjeta p-3 p-md-4 h-100">
+                <div class="metrica-etiqueta">Tareas abiertas</div>
                 <div class="metrica-valor">{{ $tareasAbiertas }}</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100">
-                <div class="text-secondary small">Horas aprovechadas hoy</div>
+            <div class="tarjeta p-3 p-md-4 h-100">
+                <div class="metrica-etiqueta">Horas aprovechadas hoy</div>
                 <div class="metrica-valor">{{ $horasAprovechadas }}</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100">
-                <div class="text-secondary small">Recordatorios pendientes</div>
+            <div class="tarjeta p-3 p-md-4 h-100">
+                <div class="metrica-etiqueta">Recordatorios pendientes</div>
                 <div class="metrica-valor">{{ $recordatorios->count() }}</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100">
-                <div class="text-secondary small">Pomodoros hoy</div>
+            <div class="tarjeta p-3 p-md-4 h-100">
+                <div class="metrica-etiqueta">Pomodoros hoy</div>
                 <div class="metrica-valor">0</div>
             </div>
         </div>
@@ -38,8 +38,8 @@
     <div class="row g-3">
         <div class="col-md-4">
             <div class="tarjeta p-4 h-100 text-center">
-                <h2 class="h6 text-secondary text-uppercase mb-3">Pomodoro</h2>
-                <div class="pomodoro-tiempo mb-3">25:00</div>
+                <h2 class="tarjeta-titulo">Pomodoro</h2>
+                <div class="pomodoro-tiempo mb-4">25:00</div>
                 <button type="button" class="btn btn-foco" disabled>
                     <i class="bi bi-play-fill"></i> Iniciar
                 </button>
@@ -49,28 +49,28 @@
 
         <div class="col-md-4">
             <div class="tarjeta p-4 h-100">
-                <h2 class="h6 text-secondary text-uppercase mb-3">Próximas tareas</h2>
+                <h2 class="tarjeta-titulo">Próximas tareas</h2>
                 @forelse ($proximasTareas as $tarea)
-                    <div class="d-flex justify-content-between border-bottom py-2">
+                    <div class="lista-fila">
                         <span>{{ $tarea->titulo }}</span>
-                        <span class="small text-secondary">{{ $tarea->fecha_limite?->format('d/m') }}</span>
+                        <span class="lista-fila-meta">{{ $tarea->fecha_limite?->format('d/m') }}</span>
                     </div>
                 @empty
-                    <p class="text-secondary mb-0">No tenés tareas abiertas. Cuando cargues una, aparece acá.</p>
+                    <p class="estado-vacio">No tenés tareas abiertas. Cuando cargues una, aparece acá.</p>
                 @endforelse
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="tarjeta p-4 h-100">
-                <h2 class="h6 text-secondary text-uppercase mb-3">Recordatorios</h2>
+                <h2 class="tarjeta-titulo">Recordatorios</h2>
                 @forelse ($recordatorios as $recordatorio)
-                    <div class="d-flex justify-content-between border-bottom py-2">
+                    <div class="lista-fila">
                         <span>{{ $recordatorio->mensaje }}</span>
-                        <span class="small text-secondary">{{ $recordatorio->recordar_en->format('d/m H:i') }}</span>
+                        <span class="lista-fila-meta">{{ $recordatorio->recordar_en->format('d/m H:i') }}</span>
                     </div>
                 @empty
-                    <p class="text-secondary mb-0">Sin recordatorios pendientes.</p>
+                    <p class="estado-vacio">Sin recordatorios pendientes.</p>
                 @endforelse
             </div>
         </div>
