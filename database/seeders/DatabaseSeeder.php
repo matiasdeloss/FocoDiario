@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategoriaSeeder::class,
             ContextoSeeder::class,
+            EstudianteTecnologiaSeeder::class,
         ]);
     }
 }
