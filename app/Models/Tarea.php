@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['titulo', 'proyecto', 'fecha_limite', 'prioridad', 'estado'])]
+#[Fillable(['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'estado'])]
 class Tarea extends Model
 {
     /** @use HasFactory<TareaFactory> */

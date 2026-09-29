@@ -69,8 +69,8 @@ final readonly class ContextoRecomendacion
                 ->where(fn ($consulta) => $consulta->whereNull('fecha_limite')->orWhereDate('fecha_limite', '<=', $hoy))
                 ->exists(),
             tareasCompletadasHoy: Tarea::where('estado', EstadoTarea::Completada)->whereDate('updated_at', $hoy)->count(),
-            recordatoriosAtrasados: Recordatorio::pendientes()->where('recordar_en', '<', $ahora)->orderBy('recordar_en')->limit(5)->get(),
-            recordatoriosProximos: Recordatorio::pendientes()->whereBetween('recordar_en', [$ahora, $ahora->addHour()])->orderBy('recordar_en')->limit(5)->get(),
+            recordatoriosAtrasados: Recordatorio::pendientes()->conFecha()->where('recordar_en', '<', $ahora)->orderBy('recordar_en')->limit(5)->get(),
+            recordatoriosProximos: Recordatorio::pendientes()->conFecha()->whereBetween('recordar_en', [$ahora, $ahora->addHour()])->orderBy('recordar_en')->limit(5)->get(),
             hizoEjercicioHoy: $bloquesHoy->contains(
                 fn (BloqueTiempo $bloque) => str_contains(mb_strtolower($bloque->categoria->nombre), 'ejercicio'),
             ),

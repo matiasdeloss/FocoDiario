@@ -8,7 +8,6 @@ use App\Models\Recordatorio;
 use App\Models\SesionEstudio;
 use App\Models\Tarea;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 /**
  * Arma los eventos del calendario (formato de FullCalendar) y los conteos
@@ -18,6 +17,10 @@ use Illuminate\Support\Str;
 class EventosCalendario
 {
     public const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
+
+    public function __construct(private readonly TarjetasCalendario $tarjetas)
+    {
+    }
 
     /**
      * @param  list<string>  $tipos  capas a incluir
@@ -47,24 +50,7 @@ class EventosCalendario
                 ->get();
 
             foreach ($recordatorios as $recordatorio) {
-                $eventos[] = [
-                    'id' => 'recordatorio-'.$recordatorio->id,
-                    'title' => $recordatorio->mensaje,
-                    'start' => $recordatorio->recordar_en->format('Y-m-d\TH:i:s'),
-                    'allDay' => false,
-                    'url' => route('recordatorios.edit', $recordatorio),
-                    'editable' => $recordatorio->avisado_en === null,
-                    'classNames' => array_values(array_filter([
-                        'ev-tipo-recordatorio',
-                        $recordatorio->avisado_en ? 'ev-hecho' : null,
-                    ])),
-                    'extendedProps' => [
-                        'tipo' => 'recordatorio',
-                        'recordatorioId' => $recordatorio->id,
-                        'tareaId' => $recordatorio->tarea_id,
-                        'avisado' => $recordatorio->avisado_en !== null,
-                    ],
-                ];
+                $eventos[] = $this->eventoRecordatorio($recordatorio);
             }
         }
 
@@ -76,16 +62,7 @@ class EventosCalendario
                 ->get();
 
             foreach ($notas as $nota) {
-                $eventos[] = [
-                    'id' => 'nota-'.$nota->id,
-                    'title' => Str::limit(trim(preg_replace('/\s+/', ' ', $nota->contenido)), 60),
-                    'start' => $nota->fecha->toDateString(),
-                    'allDay' => true,
-                    'url' => route('notas.edit', $nota),
-                    'editable' => false,
-                    'classNames' => ['ev-tipo-nota'],
-                    'extendedProps' => ['tipo' => 'nota', 'notaId' => $nota->id, 'fijada' => $nota->fijada],
-                ];
+                $eventos[] = $this->eventoNota($nota);
             }
         }
 
@@ -124,6 +101,50 @@ class EventosCalendario
         return $eventos;
     }
 
+    /** Evento de un recordatorio con fecha (con hora). Editable mientras no esté avisado. */
+    public function eventoRecordatorio(Recordatorio $recordatorio): array
+    {
+        return [
+            'id' => 'recordatorio-'.$recordatorio->id,
+            'title' => $recordatorio->mensaje !== '' ? $recordatorio->mensaje : 'Sin título',
+            'start' => $recordatorio->recordar_en->format('Y-m-d\TH:i:s'),
+            'allDay' => false,
+            'editable' => $recordatorio->avisado_en === null,
+            'classNames' => array_values(array_filter([
+                'ev-tipo-recordatorio',
+                $recordatorio->avisado_en ? 'ev-hecho' : null,
+            ])),
+            'extendedProps' => [
+                'tipo' => 'recordatorio',
+                'recordatorioId' => $recordatorio->id,
+                'tareaId' => $recordatorio->tarea_id,
+                'avisado' => $recordatorio->avisado_en !== null,
+                'tarjeta' => $this->tarjetas->datos($recordatorio),
+            ],
+        ];
+    }
+
+    /** Evento de una nota con fecha (todo el día). */
+    public function eventoNota(Nota $nota): array
+    {
+        $titulo = $nota->tituloVisible();
+
+        return [
+            'id' => 'nota-'.$nota->id,
+            'title' => $titulo !== '' ? $titulo : 'Sin título',
+            'start' => $nota->fecha->toDateString(),
+            'allDay' => true,
+            'editable' => true,
+            'classNames' => ['ev-tipo-nota'],
+            'extendedProps' => [
+                'tipo' => 'nota',
+                'notaId' => $nota->id,
+                'fijada' => $nota->fijada,
+                'tarjeta' => $this->tarjetas->datos($nota),
+            ],
+        ];
+    }
+
     /** Evento de una tarea con fecha límite (todo el día). */
     public function eventoTarea(Tarea $tarea): array
     {
@@ -132,10 +153,9 @@ class EventosCalendario
 
         return [
             'id' => 'tarea-'.$tarea->id,
-            'title' => $tarea->titulo,
+            'title' => $tarea->titulo !== '' ? $tarea->titulo : 'Sin título',
             'start' => $tarea->fecha_limite->toDateString(),
             'allDay' => true,
-            'url' => route('tareas.edit', $tarea),
             'editable' => ! $completada,
             'classNames' => array_values(array_filter([
                 'ev-tipo-tarea',
@@ -153,6 +173,7 @@ class EventosCalendario
                 'proyecto' => $tarea->proyecto,
                 'vencida' => $vencida,
                 'completada' => $completada,
+                'tarjeta' => $this->tarjetas->datos($tarea),
             ],
         ];
     }

@@ -24,7 +24,6 @@
                 {{ $etiqueta }}
             </label>
         @endforeach
-        <button type="button" class="btn btn-foco ms-auto" data-abrir-modal><i class="bi bi-plus-lg"></i> Agregar</button>
     </fieldset>
 
     <div class="row g-3" data-calendario
@@ -32,9 +31,10 @@
          data-url-eventos="{{ route('calendario.eventos') }}"
          data-url-tarea="{{ route('calendario.tareas.fecha', ['tarea' => '__ID__']) }}"
          data-url-recordatorio="{{ route('calendario.recordatorios.fecha', ['recordatorio' => '__ID__']) }}"
-         data-url-tarea-nueva="{{ route('tareas.create') }}"
-         data-url-recordatorio-nuevo="{{ route('recordatorios.create') }}"
-         data-url-nota-nueva="{{ route('notas.create') }}">
+         data-url-nota="{{ route('calendario.notas.fecha', ['nota' => '__ID__']) }}"
+         data-url-tarjetas="{{ route('calendario.tarjetas.store') }}"
+         data-url-tarjeta="{{ route('calendario.tarjetas.update', ['tipo' => '__TIPO__', 'id' => '__ID__']) }}"
+         data-url-pagina="{{ route('calendario.tarjetas.index', ['tipo' => '__TIPO__']) }}">
         <div class="col-lg-9">
             <div class="tarjeta p-2 p-md-3">
                 <div id="calendario" aria-label="Calendario"></div>
@@ -43,35 +43,68 @@
 
         <div class="col-lg-3">
             <aside class="tarjeta p-3 panel-sin-fecha" id="panel-sin-fecha" aria-labelledby="panel-sin-fecha-titulo">
-                <h2 class="tarjeta-titulo" id="panel-sin-fecha-titulo">Tareas sin fecha</h2>
-                <p class="small text-secondary">Arrastrá una tarea a un día para darle fecha límite, o elegí la fecha en su campo. Para quitarla, arrastrala de vuelta acá.</p>
+                <h2 class="tarjeta-titulo" id="panel-sin-fecha-titulo">Por ubicar</h2>
+
+                <div class="panel-crear" role="group" aria-label="Crear una tarjeta nueva">
+                    <button type="button" class="crear-boton tipo-tarea" data-crear="tarea"><i class="bi bi-check2-square" aria-hidden="true"></i> Nueva tarea</button>
+                    <button type="button" class="crear-boton tipo-recordatorio" data-crear="recordatorio"><i class="bi bi-bell" aria-hidden="true"></i> Nuevo recordatorio</button>
+                    <button type="button" class="crear-boton tipo-nota" data-crear="nota"><i class="bi bi-journal-text" aria-hidden="true"></i> Nueva nota</button>
+                </div>
+
+                <p class="small text-secondary mt-3 mb-2">Arrastrá una tarjeta a un día para ubicarla, o elegí su fecha en el campo. Para quitarle la fecha, arrastrá el evento de vuelta acá.</p>
+
+                <div class="panel-filtros" role="group" aria-label="Filtrar el panel por tipo">
+                    <button type="button" class="panel-filtro" data-panel-filtro="" aria-pressed="true">Todo</button>
+                    <button type="button" class="panel-filtro tipo-tarea" data-panel-filtro="tarea" aria-pressed="false"><span class="filtro-punto" aria-hidden="true"></span>Tareas</button>
+                    <button type="button" class="panel-filtro tipo-recordatorio" data-panel-filtro="recordatorio" aria-pressed="false"><span class="filtro-punto" aria-hidden="true"></span>Recordatorios</button>
+                    <button type="button" class="panel-filtro tipo-nota" data-panel-filtro="nota" aria-pressed="false"><span class="filtro-punto" aria-hidden="true"></span>Notas</button>
+                </div>
+
                 <ul class="panel-sin-fecha-lista list-unstyled mb-0" id="lista-sin-fecha">
-                    @foreach ($sinFecha as $tarea)
-                        @include('calendario._tarea-panel', ['tarea' => $tarea])
+                    @foreach ($tarjetas as $t)
+                        @include('calendario._tarjeta', ['t' => $t])
                     @endforeach
                 </ul>
-                <p class="estado-vacio small" id="sin-fecha-vacio" @if ($sinFecha->isNotEmpty()) hidden @endif>Todas tus tareas abiertas tienen fecha.</p>
+                <p class="estado-vacio small" id="sin-fecha-vacio" @if ($tarjetas->isNotEmpty()) hidden @endif>No hay nada por ubicar. Creá una tarjeta con los botones de arriba.</p>
+
+                <div class="panel-mas" id="panel-mas">
+                    @foreach (['tarea' => 'tareas', 'recordatorio' => 'recordatorios', 'nota' => 'notas'] as $tipo => $plural)
+                        <button type="button" class="btn btn-foco-suave btn-sm" data-ver-mas="{{ $tipo }}" @if (! $hayMas[$tipo]) hidden @endif>Ver más {{ $plural }}</button>
+                    @endforeach
+                </div>
             </aside>
         </div>
     </div>
 
-    <div class="modal fade" id="modal-dia" tabindex="-1" aria-labelledby="modal-dia-titulo" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content tarjeta">
-                <div class="modal-header border-0 pb-0">
-                    <h2 class="modal-title fs-5" id="modal-dia-titulo">Agregar al día</h2>
-                    <button type="button" class="btn-icono" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
-                </div>
-                <div class="modal-body">
-                    <label for="modal-dia-fecha" class="form-label">Día</label>
-                    <input type="date" id="modal-dia-fecha" class="form-control mb-3">
-                    <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-foco-suave" data-nuevo="tarea"><i class="bi bi-check2-square"></i> Nueva tarea</a>
-                        <a href="#" class="btn btn-foco-suave" data-nuevo="recordatorio"><i class="bi bi-bell"></i> Nuevo recordatorio</a>
-                        <a href="#" class="btn btn-foco-suave" data-nuevo="nota"><i class="bi bi-journal-text"></i> Nueva nota</a>
-                    </div>
-                </div>
-            </div>
+    {{-- Menú para elegir el tipo al tocar un día vacío --}}
+    <div class="popover-foco popover-tipos" id="popover-tipos" role="dialog" aria-label="Crear en este día" hidden>
+        <p class="popover-foco-titulo" id="popover-tipos-fecha"></p>
+        <div class="popover-tipos-botones">
+            <button type="button" class="crear-boton tipo-tarea" data-crear-en-dia="tarea"><i class="bi bi-check2-square" aria-hidden="true"></i> Tarea</button>
+            <button type="button" class="crear-boton tipo-recordatorio" data-crear-en-dia="recordatorio"><i class="bi bi-bell" aria-hidden="true"></i> Recordatorio</button>
+            <button type="button" class="crear-boton tipo-nota" data-crear-en-dia="nota"><i class="bi bi-journal-text" aria-hidden="true"></i> Nota</button>
+        </div>
+    </div>
+
+    {{-- Editor simple de un evento existente --}}
+    <div class="popover-foco popover-editor" id="popover-editor" role="dialog" aria-labelledby="editor-tipo" hidden>
+        <div class="editor-cabeza">
+            <span class="tarj-tipo" id="editor-tipo"></span>
+            <button type="button" class="btn-icono" data-editor-cerrar aria-label="Cerrar el editor"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <label class="visually-hidden" for="editor-titulo">Título</label>
+        <input type="text" id="editor-titulo" class="tarj-campo tarj-titulo" maxlength="255" placeholder="Título" autocomplete="off">
+        <label class="visually-hidden" for="editor-comentario">Comentario</label>
+        <textarea id="editor-comentario" class="tarj-campo tarj-comentario" rows="2" maxlength="5000" placeholder="Comentario"></textarea>
+        <label class="editor-etiqueta" for="editor-fecha" id="editor-fecha-etiqueta">Fecha</label>
+        <input type="date" id="editor-fecha" class="form-control form-control-sm">
+        <p class="small text-secondary mb-0" id="editor-fecha-ayuda" hidden></p>
+        <div class="editor-pie">
+            <a href="#" class="tarj-accion" id="editor-mas">
+                <i class="bi bi-sliders2" aria-hidden="true"></i> Más opciones
+            </a>
+            <span class="tarj-guardado" id="editor-guardado" role="status" aria-live="polite"></span>
+            <button type="button" class="btn-icono tarj-borrar" id="editor-borrar" aria-label="Eliminar" title="Eliminar"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </div>
     </div>
 @endsection

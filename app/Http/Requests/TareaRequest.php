@@ -18,6 +18,7 @@ class TareaRequest extends FormRequest
     {
         return [
             'titulo' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:5000'],
             'proyecto' => ['nullable', 'string', 'max:255'],
             'fecha_limite' => ['nullable', 'date'],
             'prioridad' => ['required', Rule::enum(PrioridadTarea::class)],
@@ -30,6 +31,7 @@ class TareaRequest extends FormRequest
         return [
             'titulo.required' => 'Escribí un título para la tarea.',
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
+            'descripcion.max' => 'El comentario no puede superar los 5000 caracteres.',
             'proyecto.max' => 'El proyecto no puede superar los 255 caracteres.',
             'fecha_limite.date' => 'La fecha límite no es una fecha válida.',
             'prioridad.required' => 'Elegí una prioridad.',

@@ -12,6 +12,13 @@
         @error('titulo') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
+    <div class="mb-3">
+        <label for="descripcion" class="form-label">Comentario <span class="text-secondary fw-normal">(opcional)</span></label>
+        <textarea id="descripcion" name="descripcion" rows="3" maxlength="5000"
+                  class="form-control @error('descripcion') is-invalid @enderror">{{ old('descripcion', $tarea->descripcion) }}</textarea>
+        @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
     <div class="row g-3 mb-3">
         <div class="col-md-6">
             <label for="proyecto" class="form-label">Proyecto <span class="text-secondary fw-normal">(opcional)</span></label>

@@ -24,8 +24,10 @@ class Recordatorios implements Regla
             );
         }
 
-        if ($contexto->recordatoriosProximos->isNotEmpty()) {
-            $proximo = $contexto->recordatoriosProximos->first();
+        // Los recordatorios sin fecha nunca llegan acá, pero se descartan por si acaso.
+        $proximo = $contexto->recordatoriosProximos->first(fn ($recordatorio) => $recordatorio->recordar_en !== null);
+
+        if ($proximo !== null) {
             $recomendaciones[] = new Recomendacion(
                 titulo: 'Recordatorio en la próxima hora',
                 mensaje: '"'.$proximo->mensaje.'" a las '.$proximo->recordar_en->format('H:i').'.',

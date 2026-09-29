@@ -74,8 +74,14 @@
                         <span class="lista-fila-meta">{{ $recordatorio->recordar_en->format('d/m H:i') }}</span>
                     </div>
                 @empty
-                    <p class="estado-vacio">Sin recordatorios pendientes.</p>
+                    <p class="estado-vacio">Sin recordatorios pendientes con fecha.</p>
                 @endforelse
+                @if ($recordatoriosSinFecha > 0)
+                    <p class="small text-secondary mt-2 mb-0">
+                        {{ $recordatoriosSinFecha }} {{ $recordatoriosSinFecha === 1 ? 'recordatorio sin fecha' : 'recordatorios sin fecha' }}:
+                        <a href="{{ route('calendario.index') }}">ubicarlos en el calendario</a>
+                    </p>
+                @endif
             </div>
         </div>
     </div>

@@ -15,7 +15,8 @@ class RecordatorioRequest extends FormRequest
     {
         return [
             'mensaje' => ['required', 'string', 'max:255'],
-            'recordar_en' => ['required', 'date'],
+            'descripcion' => ['nullable', 'string', 'max:5000'],
+            'recordar_en' => ['nullable', 'date'],
             'tarea_id' => ['nullable', 'integer', 'exists:tareas,id'],
         ];
     }
@@ -25,7 +26,7 @@ class RecordatorioRequest extends FormRequest
         return [
             'mensaje.required' => 'Escribí el mensaje del recordatorio.',
             'mensaje.max' => 'El mensaje no puede superar los 255 caracteres.',
-            'recordar_en.required' => 'Indicá cuándo querés que te lo recordemos.',
+            'descripcion.max' => 'El comentario no puede superar los 5000 caracteres.',
             'recordar_en.date' => 'La fecha y hora del recordatorio no son válidas.',
             'tarea_id.exists' => 'La tarea elegida ya no existe.',
             'tarea_id.integer' => 'La tarea elegida no es válida.',

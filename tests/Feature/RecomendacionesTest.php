@@ -170,6 +170,16 @@ class RecomendacionesTest extends TestCase
         $this->assertStringNotContainsString('Mañana', $proximo->mensaje);
     }
 
+    public function test_los_recordatorios_sin_fecha_se_ignoran_en_las_recomendaciones(): void
+    {
+        Recordatorio::create(['mensaje' => 'Sin ubicar', 'recordar_en' => null]);
+
+        $recomendaciones = $this->generar($this->a('11:00'));
+
+        $this->assertNull($this->buscar($recomendaciones, 'Recordatorios atrasados'));
+        $this->assertNull($this->buscar($recomendaciones, 'Recordatorio en la próxima hora'));
+    }
+
     public function test_momento_del_dia_cambia_segun_la_hora(): void
     {
         $this->assertNotNull($this->buscar($this->generar($this->a('09:00')), 'Momento de pico'));

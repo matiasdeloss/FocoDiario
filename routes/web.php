@@ -39,5 +39,13 @@ Route::get('calendario', [\App\Http\Controllers\CalendarioController::class, 'in
 Route::get('calendario/eventos', [\App\Http\Controllers\CalendarioController::class, 'eventos'])->name('calendario.eventos');
 Route::patch('calendario/tareas/{tarea}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaTarea'])->name('calendario.tareas.fecha');
 Route::patch('calendario/recordatorios/{recordatorio}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaRecordatorio'])->name('calendario.recordatorios.fecha');
+Route::patch('calendario/notas/{nota}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaNota'])->name('calendario.notas.fecha');
+Route::post('calendario/tarjetas', [\App\Http\Controllers\TarjetaCalendarioController::class, 'store'])->name('calendario.tarjetas.store');
+Route::get('calendario/tarjetas/{tipo}', [\App\Http\Controllers\TarjetaCalendarioController::class, 'index'])
+    ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->name('calendario.tarjetas.index');
+Route::patch('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaCalendarioController::class, 'update'])
+    ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.update');
+Route::delete('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaCalendarioController::class, 'destroy'])
+    ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.destroy');
 
 // ---- Tablero de tareas (agente de tablero) ----

@@ -853,10 +853,14 @@ tr.htmx-request { opacity: 0.6; }
     --tipo-sesion-fondo: #ece4f2;
     --tipo-sesion-texto: #5e3f7a;
 }
-.tipo-tarea { --punto: var(--foco-acento); }
-.tipo-recordatorio { --punto: var(--foco-ambar-texto); }
-.tipo-nota { --punto: var(--foco-azul-texto); }
-.tipo-sesion { --punto: var(--tipo-sesion-texto); }
+/* Cada tipo: punto de los chips, y fondo pastel / texto / borde de eventos, botones y tarjetas */
+.tipo-tarea { --punto: var(--foco-acento); --tipo-fondo: var(--foco-verde-fondo); --tipo-texto: var(--foco-verde-texto); --tipo-borde: var(--foco-acento); }
+.tipo-recordatorio { --punto: var(--foco-ambar-texto); --tipo-fondo: var(--foco-ambar-fondo); --tipo-texto: var(--foco-ambar-texto); --tipo-borde: var(--foco-ambar-texto); }
+.tipo-nota { --punto: var(--foco-azul-texto); --tipo-fondo: var(--foco-azul-fondo); --tipo-texto: var(--foco-azul-texto); --tipo-borde: var(--foco-azul-texto); }
+.tipo-sesion { --punto: var(--tipo-sesion-texto); --tipo-fondo: var(--tipo-sesion-fondo); --tipo-texto: var(--tipo-sesion-texto); --tipo-borde: var(--tipo-sesion-texto); }
+
+/* Encabezado de grupo dentro de una tabla (p. ej. recordatorios sin fecha) */
+.fila-grupo th { background: var(--foco-papel-hundido); font-size: var(--foco-texto-sm); font-weight: 600; }
 
 .semana-tira { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--foco-espacio-1); }
 .semana-dia {

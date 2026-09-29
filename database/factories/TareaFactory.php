@@ -16,6 +16,7 @@ class TareaFactory extends Factory
     {
         return [
             'titulo' => fake()->sentence(4),
+            'descripcion' => null,
             'proyecto' => fake()->optional()->word(),
             'fecha_limite' => fake()->optional()->dateTimeBetween('now', '+1 month'),
             'prioridad' => fake()->randomElement(PrioridadTarea::cases()),

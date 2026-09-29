@@ -16,7 +16,8 @@ class NotaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'contenido' => ['required', 'string', 'max:5000'],
+            'titulo' => ['nullable', 'string', 'max:255'],
+            'contenido' => ['required_without:titulo', 'nullable', 'string', 'max:5000'],
             'contexto_id' => ['nullable', 'integer', 'exists:contextos,id'],
             'fecha' => ['nullable', 'date'],
             'fijada' => ['nullable', 'boolean'],
@@ -27,6 +28,8 @@ class NotaRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'titulo.max' => 'El título no puede superar los 255 caracteres.',
+            'contenido.required_without' => 'Escribí la nota antes de guardar.',
             'contenido.required' => 'Escribí la nota antes de guardar.',
             'contenido.max' => 'La nota no puede superar los 5000 caracteres.',
             'contexto_id.exists' => 'El destino elegido no existe.',
@@ -40,6 +43,10 @@ class NotaRequest extends FormRequest
     public function datosNota(): array
     {
         $datos = collect($this->validated())->except('origen')->all();
+
+        if (array_key_exists('contenido', $datos) && $datos['contenido'] === null) {
+            $datos['contenido'] = '';
+        }
 
         if ($this->has('fijada')) {
             $datos['fijada'] = $this->boolean('fijada');

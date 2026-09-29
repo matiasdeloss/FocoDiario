@@ -6,8 +6,15 @@
     @endif
 
     <div class="mb-3">
+        <label for="titulo" class="form-label">Título <span class="text-secondary fw-normal">(opcional)</span></label>
+        <input type="text" id="titulo" name="titulo" value="{{ old('titulo', $nota->titulo) }}"
+               class="form-control @error('titulo') is-invalid @enderror" maxlength="255" autofocus>
+        @error('titulo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="mb-3">
         <label for="contenido" class="form-label">Nota</label>
-        <textarea id="contenido" name="contenido" rows="5" maxlength="5000" required autofocus
+        <textarea id="contenido" name="contenido" rows="5" maxlength="5000"
                   class="form-control @error('contenido') is-invalid @enderror">{{ old('contenido', $nota->contenido) }}</textarea>
         @error('contenido') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>

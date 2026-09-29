@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-#[Fillable(['contenido', 'contexto_id', 'fecha', 'fijada'])]
+#[Fillable(['titulo', 'contenido', 'contexto_id', 'fecha', 'fijada'])]
 class Nota extends Model
 {
     /** @use HasFactory<NotaFactory> */
@@ -24,6 +25,14 @@ class Nota extends Model
             'fecha' => 'date',
             'fijada' => 'boolean',
         ];
+    }
+
+    /** Título a mostrar: el propio o, en notas viejas, el contenido recortado. */
+    public function tituloVisible(): string
+    {
+        $titulo = trim((string) $this->titulo);
+
+        return $titulo !== '' ? $titulo : Str::limit(trim(preg_replace('/\s+/', ' ', (string) $this->contenido)), 60);
     }
 
     public function contexto(): BelongsTo

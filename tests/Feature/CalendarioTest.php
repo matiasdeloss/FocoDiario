@@ -25,7 +25,7 @@ class CalendarioTest extends TestCase
 
         $this->get(route('calendario.index'))
             ->assertOk()
-            ->assertSee('Tareas sin fecha')
+            ->assertSee('Por ubicar')
             ->assertSee('Sin fecha abierta')
             ->assertDontSee('Sin fecha hecha')
             ->assertDontSee('Con fecha puesta');
@@ -65,7 +65,7 @@ class CalendarioTest extends TestCase
         $this->assertSame('2026-10-12T08:30:00', $porTipo['recordatorio']['start']);
         $this->assertTrue($porTipo['nota']['allDay']);
         $this->assertSame('2026-10-20T11:00:00', $porTipo['sesion']['end']);
-        $this->assertStringContainsString('/tareas/', $porTipo['tarea']['url']);
+        $this->assertStringContainsString('/tareas/', $porTipo['tarea']['extendedProps']['tarjeta']['editar']);
     }
 
     public function test_las_tareas_completadas_y_vencidas_se_marcan(): void
@@ -128,7 +128,7 @@ class CalendarioTest extends TestCase
         $this->patchJson(route('calendario.tareas.fecha', $tarea), ['fecha' => null])
             ->assertOk()
             ->assertJsonPath('evento', null)
-            ->assertJsonPath('panel', fn ($html) => str_contains($html, 'data-tarea-id="'.$tarea->id.'"'));
+            ->assertJsonPath('panel', fn ($html) => str_contains($html, 'data-tipo="tarea" data-id="'.$tarea->id.'"'));
         $this->assertNull($tarea->fresh()->fecha_limite);
     }
 

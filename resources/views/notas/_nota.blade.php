@@ -1,5 +1,8 @@
 {{-- Tarjeta de una nota. Requiere: $nota, $destinos --}}
 <article id="nota-{{ $nota->id }}" class="nota-item {{ $nota->fijada ? 'nota-fijada' : '' }}">
+    @if ($nota->titulo)
+        <div class="fw-semibold">{{ $nota->titulo }}</div>
+    @endif
     <div class="nota-contenido">{{ $nota->contenido }}</div>
     <div class="nota-meta">
         @if ($nota->fijada)

@@ -13,6 +13,7 @@ class NotaFactory extends Factory
     public function definition(): array
     {
         return [
+            'titulo' => null,
             'contenido' => fake()->sentence(8),
             'contexto_id' => null,
             'fecha' => null,

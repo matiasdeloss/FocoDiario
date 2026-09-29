@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoTarea;
 use App\Http\Requests\EventosCalendarioRequest;
+use App\Http\Requests\FechaNotaRequest;
 use App\Http\Requests\FechaRecordatorioRequest;
 use App\Http\Requests\FechaTareaRequest;
+use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
 use App\Services\Calendario\EventosCalendario;
+use App\Services\Calendario\TarjetasCalendario;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,18 +19,13 @@ use Illuminate\Support\Carbon;
 
 class CalendarioController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, TarjetasCalendario $tarjetas): View
     {
         $datos = $request->validate(['fecha' => ['nullable', 'date_format:Y-m-d']]);
 
         return view('calendario.index', [
             'fechaInicial' => $datos['fecha'] ?? today()->toDateString(),
-            'sinFecha' => Tarea::abiertas()
-                ->whereNull('fecha_limite')
-                ->orderByRaw("case prioridad when 'alta' then 0 when 'media' then 1 else 2 end")
-                ->orderBy('id')
-                ->limit(100)
-                ->get(),
+            ...$tarjetas->panel(),
         ]);
     }
 
@@ -40,7 +38,7 @@ class CalendarioController extends Controller
     }
 
     /** Asigna o quita (fecha null) la fecha límite de una tarea. */
-    public function fechaTarea(FechaTareaRequest $request, Tarea $tarea, EventosCalendario $calendario): JsonResponse
+    public function fechaTarea(FechaTareaRequest $request, Tarea $tarea, EventosCalendario $calendario, TarjetasCalendario $tarjetas): JsonResponse
     {
         if ($tarea->estado === EstadoTarea::Completada) {
             return response()->json(['message' => 'Las tareas completadas no se pueden reasignar.'], 422);
@@ -50,17 +48,35 @@ class CalendarioController extends Controller
 
         return response()->json([
             'evento' => $tarea->fecha_limite ? $calendario->eventoTarea($tarea) : null,
-            'panel' => $tarea->fecha_limite ? null : view('calendario._tarea-panel', ['tarea' => $tarea])->render(),
+            'panel' => $tarea->fecha_limite ? null : $tarjetas->html($tarea),
         ]);
     }
 
-    /** Cambia el día (y la hora) de un recordatorio. */
-    public function fechaRecordatorio(FechaRecordatorioRequest $request, Recordatorio $recordatorio): JsonResponse
+    /** Asigna o quita (fecha null) la fecha de una nota. */
+    public function fechaNota(FechaNotaRequest $request, Nota $nota, EventosCalendario $calendario, TarjetasCalendario $tarjetas): JsonResponse
     {
-        $recordatorio->update([
-            'recordar_en' => Carbon::createFromFormat('Y-m-d\TH:i:s', $request->validated('recordar_en')),
-        ]);
+        $nota->update(['fecha' => $request->validated('fecha')]);
 
-        return response()->json(['recordar_en' => $recordatorio->recordar_en->format('Y-m-d\TH:i:s')]);
+        return response()->json([
+            'evento' => $nota->fecha ? $calendario->eventoNota($nota) : null,
+            'panel' => $nota->fecha ? null : $tarjetas->html($nota),
+        ]);
+    }
+
+    /** Cambia el día y la hora de un recordatorio, o lo devuelve al panel (recordar_en null). */
+    public function fechaRecordatorio(FechaRecordatorioRequest $request, Recordatorio $recordatorio, EventosCalendario $calendario, TarjetasCalendario $tarjetas): JsonResponse
+    {
+        if ($recordatorio->avisado_en !== null) {
+            return response()->json(['message' => 'Los recordatorios ya avisados no se pueden reubicar.'], 422);
+        }
+
+        $momento = $request->momento();
+        $recordatorio->update(['recordar_en' => $momento ? $tarjetas->fechaHora($momento) : null]);
+
+        return response()->json([
+            'recordar_en' => $recordatorio->recordar_en?->format('Y-m-d\TH:i:s'),
+            'evento' => $recordatorio->recordar_en ? $calendario->eventoRecordatorio($recordatorio) : null,
+            'panel' => $recordatorio->recordar_en ? null : $tarjetas->html($recordatorio),
+        ]);
     }
 }

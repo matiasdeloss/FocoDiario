@@ -29,7 +29,8 @@ class HoyController extends Controller
                 ->orderBy('fecha_limite')
                 ->limit(5)
                 ->get(),
-            'recordatorios' => Recordatorio::pendientes()->orderBy('recordar_en')->limit(5)->get(),
+            'recordatorios' => Recordatorio::pendientes()->conFecha()->orderBy('recordar_en')->limit(5)->get(),
+            'recordatoriosSinFecha' => Recordatorio::pendientes()->sinFecha()->count(),
             'horasAprovechadas' => round($minutosAprovechados / 60, 1),
             'recomendaciones' => $motor->generar()->take(5),
             'semana' => app(EventosCalendario::class)->semanaActual(),

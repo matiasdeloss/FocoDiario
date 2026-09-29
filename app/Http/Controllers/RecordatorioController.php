@@ -15,12 +15,21 @@ class RecordatorioController extends Controller
 {
     public function index(): View
     {
+        // Con fecha: pendientes primero y por fecha. Sin fecha ("por ubicar"): aparte, los más nuevos primero.
         $recordatorios = Recordatorio::with('tarea')
+            ->conFecha()
             ->orderByRaw('avisado_en is not null')
             ->orderBy('recordar_en')
             ->get();
 
-        return view('recordatorios.index', ['recordatorios' => $recordatorios]);
+        $sinFecha = Recordatorio::with('tarea')
+            ->sinFecha()
+            ->orderByRaw('avisado_en is not null')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('recordatorios.index', ['recordatorios' => $recordatorios, 'sinFecha' => $sinFecha]);
     }
 
     public function create(Request $request): View

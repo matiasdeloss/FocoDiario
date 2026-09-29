@@ -12,12 +12,19 @@
         @error('mensaje') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
+    <div class="mb-3">
+        <label for="descripcion" class="form-label">Comentario <span class="text-secondary fw-normal">(opcional)</span></label>
+        <textarea id="descripcion" name="descripcion" rows="3" maxlength="5000"
+                  class="form-control @error('descripcion') is-invalid @enderror">{{ old('descripcion', $recordatorio->descripcion) }}</textarea>
+        @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
     <div class="row g-3 mb-4">
         <div class="col-md-6">
-            <label for="recordar_en" class="form-label">Recordar en</label>
+            <label for="recordar_en" class="form-label">Recordar en <span class="text-secondary fw-normal">(opcional: sin fecha queda "por ubicar" en el calendario)</span></label>
             <input type="datetime-local" id="recordar_en" name="recordar_en"
                    value="{{ old('recordar_en', $recordatorio->recordar_en?->format('Y-m-d\TH:i')) }}"
-                   class="form-control @error('recordar_en') is-invalid @enderror" required>
+                   class="form-control @error('recordar_en') is-invalid @enderror">
             @error('recordar_en') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-6">

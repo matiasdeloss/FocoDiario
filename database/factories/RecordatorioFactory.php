@@ -20,4 +20,9 @@ class RecordatorioFactory extends Factory
             'avisado_en' => null,
         ];
     }
+
+    public function sinFecha(): static
+    {
+        return $this->state(['recordar_en' => null]);
+    }
 }

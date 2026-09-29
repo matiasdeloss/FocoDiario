@@ -1,14 +1,25 @@
 <tr id="recordatorio-{{ $recordatorio->id }}">
     <td>
         <div class="{{ $recordatorio->avisado_en ? 'texto-tachado' : 'fw-medium' }}">{{ $recordatorio->mensaje }}</div>
+        @if ($recordatorio->descripcion)
+            <div class="small text-secondary">{{ \Illuminate\Support\Str::limit($recordatorio->descripcion, 90) }}</div>
+        @endif
         @if ($recordatorio->tarea)
             <div class="small text-secondary"><i class="bi bi-link-45deg"></i> {{ $recordatorio->tarea->titulo }}</div>
         @endif
     </td>
-    <td class="text-nowrap">{{ $recordatorio->recordar_en->format('d/m/Y H:i') }}</td>
+    <td class="text-nowrap">
+        @if ($recordatorio->recordar_en)
+            {{ $recordatorio->recordar_en->format('d/m/Y H:i') }}
+        @else
+            <span class="text-secondary">Sin fecha</span>
+        @endif
+    </td>
     <td>
         @if ($recordatorio->avisado_en)
             <span class="badge-foco badge-estado-completada">Avisado</span>
+        @elseif ($recordatorio->recordar_en === null)
+            <span class="badge-foco badge-estado-pendiente">Por ubicar</span>
         @elseif ($recordatorio->recordar_en->isPast())
             <span class="badge-foco badge-estado-vencida">Atrasado</span>
         @else
