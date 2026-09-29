@@ -353,7 +353,7 @@
 .tarj-campo::placeholder { color: var(--foco-texto-suave); opacity: 1; }
 .tarj-campo:hover { background: color-mix(in srgb, var(--color-neutral-100) 70%, transparent); }
 .tarj-campo:focus { outline: 2px solid var(--foco-acento); outline-offset: 1px; background: var(--color-bg); }
-.tarj-titulo { text-overflow: ellipsis; font-family: var(--foco-fuente-titulo); font-size: 17px; font-weight: var(--font-heading-weight); line-height: 1.3; }
+.tarj-titulo { text-overflow: ellipsis; font-family: var(--foco-fuente-titulo); font-size: 17px; font-weight: 500; line-height: 1.3; }
 .tarj-comentario { font-size: var(--foco-texto-sm); color: var(--color-neutral-700); }
 
 .tarj-pie, .editor-pie { display: flex; align-items: center; gap: 4px; }
