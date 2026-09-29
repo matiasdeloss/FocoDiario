@@ -12,6 +12,14 @@ class DuracionesEnSegundosMigracionTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** Revierte solo esta migración, aunque después se agreguen otras más nuevas. */
+    private function revertirMigracionDeSegundos(): void
+    {
+        $this->artisan('migrate:rollback', [
+            '--path' => 'database/migrations/2026_10_02_000001_pasar_duraciones_de_estudio_a_segundos.php',
+        ])->assertExitCode(0);
+    }
+
     private function insertarSesionEnMinutos(): int
     {
         return DB::table('sesiones_estudio')->insertGetId([
@@ -23,7 +31,7 @@ class DuracionesEnSegundosMigracionTest extends TestCase
 
     public function test_al_subir_multiplica_por_60_las_filas_existentes(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 1])->assertExitCode(0);
+        $this->revertirMigracionDeSegundos();
 
         $this->assertTrue(Schema::hasColumns('sesiones_estudio', ['foco_min', 'descanso_min', 'descanso_largo_min']));
         $this->assertTrue(Schema::hasColumn('intervalos_estudio', 'planificado_min'));
@@ -60,7 +68,7 @@ class DuracionesEnSegundosMigracionTest extends TestCase
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        $this->artisan('migrate:rollback', ['--step' => 1])->assertExitCode(0);
+        $this->revertirMigracionDeSegundos();
 
         $fila = DB::table('sesiones_estudio')->first();
         // 5 s queda en 1 min (el mínimo que admite la columna anterior); 90 s redondea a 2 min; 180 min se conserva.

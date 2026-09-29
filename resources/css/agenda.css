@@ -1,0 +1,537 @@
+/*
+ * Agenda: planner semanal y hoja del día. Se carga solo en esas pantallas (entrada aparte de Vite).
+ * Las cajas son tarjetas de 18px sin borde gris; el color de la actividad aparece como fondo pastel en el título
+ * y como un filete fino (variables --caja-fondo, --caja-acento y --caja-texto, definidas en app.css según organic.css).
+ * Papel: cuadrícula suave dentro de las cajas y renglones en las hojas de texto, como en la tarjeta Nota rápida de Hoy.
+ */
+.agenda {
+    --renglon: 24px;
+    --agenda-suave: cubic-bezier(0.23, 1, 0.32, 1);
+    --agenda-cuadricula: color-mix(in srgb, var(--color-accent-800) 4.5%, transparent);
+    --agenda-renglon: color-mix(in srgb, var(--color-neutral-300) 70%, transparent);
+
+    --agenda-borde: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    --agenda-ramita: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='170' viewBox='0 0 120 170' fill='none' stroke='%23b5622b' stroke-opacity='.22' stroke-width='1.3' stroke-linecap='round'%3E%3Cpath d='M60 168V22'/%3E%3Cpath d='M60 40c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 66c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 92c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 118c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 144c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20z'/%3E%3C/svg%3E");
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 28px;
+    background-image: var(--agenda-ramita);
+    background-size: 120px 170px;
+    font-family: var(--font-body);
+    color: var(--color-text);
+}
+
+.agenda [hidden] { display: none !important; }
+
+.agenda :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* ---------- Tarjeta del planner ---------- */
+.plan-tarjeta {
+    position: relative;
+    padding: 20px 22px;
+    background-color: var(--color-neutral-100);
+    background-image:
+        linear-gradient(var(--agenda-cuadricula) 1px, transparent 1px),
+        linear-gradient(90deg, var(--agenda-cuadricula) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 11px 11px;
+    border: 1px solid var(--agenda-borde);
+    border-radius: 24px;
+}
+
+/* ---------- Encabezado del planner ---------- */
+.plan-cab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.plan-titulo-caja { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+.plan-info-caja { grid-column: span 2; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
+
+.plan-titulo {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.plan-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.plan-ir { margin: 0; }
+.plan-ir-campo {
+    height: 30px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: var(--color-bg);
+    color: var(--color-neutral-700);
+    font: inherit;
+    font-size: 13px;
+}
+
+.plan-datos { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.plan-datos > div { display: flex; align-items: baseline; gap: 10px; }
+.plan-datos dt {
+    min-width: 84px;
+    font-family: var(--font-heading);
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text);
+}
+.plan-datos dt::after { content: ":"; }
+.plan-datos dd { margin: 0; font-family: var(--font-heading); font-size: 20px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+
+.plan-leyenda { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; flex: 1 1 260px; min-width: 0; }
+.plan-leyenda-lista { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-leyenda-vacia { font-size: 13px; color: var(--color-neutral-700); }
+.plan-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 12px 3px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--caja-fondo);
+    color: var(--caja-texto);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ---------- Los siete días: grilla bento con alturas distintas ---------- */
+.plan-dias {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto minmax(150px, 1fr) minmax(150px, 1fr);
+    grid-template-areas:
+        "lunes martes miercoles"
+        "jueves viernes sabado"
+        "jueves viernes domingo";
+    gap: 16px;
+}
+
+.plan-dia-lunes { grid-area: lunes; align-self: start; min-height: 196px; }
+.plan-dia-martes { grid-area: martes; align-self: start; min-height: 244px; }
+.plan-dia-miercoles { grid-area: miercoles; align-self: start; min-height: 216px; }
+.plan-dia-jueves { grid-area: jueves; }
+.plan-dia-viernes { grid-area: viernes; }
+.plan-dia-sabado { grid-area: sabado; }
+.plan-dia-domingo { grid-area: domingo; }
+
+.plan-dia { display: flex; flex-direction: column; gap: 12px; transition: background-color 150ms var(--agenda-suave); }
+.plan-dia:has(.plan-dia-enlace:hover) { background-color: color-mix(in srgb, var(--color-accent-200) 45%, var(--color-neutral-100)); }
+.plan-dia:has(.plan-dia-enlace:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.plan-dia.es-hoy { border-color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); }
+
+.plan-dia-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.plan-dia-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; }
+.plan-dia-enlace { display: inline-flex; align-items: baseline; gap: 8px; color: inherit; text-decoration: none; }
+.plan-dia-enlace:focus-visible { outline: 0; }
+/* Toda la tarjeta lleva a la hoja del día. */
+.plan-dia-enlace::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-card); }
+.plan-dia-numero { font-family: var(--font-body); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--color-neutral-700); }
+.plan-dia.es-hoy .plan-dia-numero {
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-boton);
+    color: var(--color-on-accent);
+    font-weight: 600;
+}
+
+.plan-lineas { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-linea {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 10px 4px 9px;
+    border-left: 3px solid var(--caja-acento);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--caja-fondo) 45%, transparent);
+    color: var(--caja-texto);
+    font-size: 14px;
+    line-height: 1.4;
+}
+.plan-hora { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+.plan-linea-titulo { min-width: 0; overflow-wrap: anywhere; }
+.plan-cuenta { margin-left: auto; padding-left: 6px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.plan-linea.es-hecha { opacity: 0.65; }
+.plan-linea.es-hecha .plan-linea-titulo { text-decoration: line-through; }
+
+/* ---------- Notas y Pendiente de la semana ---------- */
+.plan-notas { display: flex; flex-direction: column; gap: 10px; padding: 22px; }
+.plan-notas-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
+.plan-notas-columnas > .plan-nota { padding: 0 22px 0 0; }
+.plan-notas-columnas > .plan-nota + .plan-nota {
+    padding: 0 0 0 22px;
+    border-left: 1.5px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+.plan-notas-pie { display: flex; justify-content: flex-end; min-height: 20px; }
+
+.plan-nota { display: flex; flex-direction: column; gap: 10px; }
+.plan-nota-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plan-nota-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; }
+.plan-nota .caja-texto { height: auto; field-sizing: content; min-height: calc(var(--renglon) * 8); }
+.plan-nota .caja-hoja[data-tipo="lista"] { min-height: calc(var(--renglon) * 8); }
+
+.plan-tipo { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-pill); background: var(--color-neutral-200); }
+.plan-tipo button {
+    height: 26px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-neutral-700);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.plan-tipo button[aria-pressed="true"] { background: var(--color-accent-200); color: var(--color-accent-800); }
+
+/* ---------- Hoja del día: encabezado y barra ---------- */
+.hoja-cab { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
+.hoja-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: center;
+    padding: 6px 12px 6px 10px;
+    border-radius: var(--radius-control);
+    background: var(--color-bg);
+    color: var(--color-accent-700);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.hoja-volver:hover { background: var(--color-neutral-200); color: var(--color-accent-800); }
+.hoja-titulos { display: flex; flex-direction: column; gap: 4px; margin-right: auto; }
+.hoja-kicker { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-neutral-700); }
+.hoja-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; }
+.hoja-dias { display: flex; gap: 8px; align-items: center; }
+
+.hoja-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.hoja-opciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.hoja-opciones .form-check { display: flex; align-items: center; gap: 8px; margin: 0; padding-left: 0; min-height: 32px; }
+.hoja-opciones .form-check-input { float: none; margin: 0; }
+.hoja-opciones .form-check-label { font-size: 13px; }
+.hoja-barra .guardado { margin-left: auto; }
+
+/* ---------- Indicador de guardado ---------- */
+.guardado { display: inline-flex; align-items: center; gap: 8px; min-height: 24px; font-size: 12px; color: var(--color-neutral-700); transition: opacity 200ms var(--agenda-suave); }
+.guardado[data-estado="inactivo"] { opacity: 0; }
+.guardado[data-estado="guardado"] .guardado-texto::before { content: "\f26e"; font-family: bootstrap-icons; margin-right: 6px; color: var(--color-accent-2-700); }
+.guardado[data-estado="error"] { padding: 2px 10px; border-radius: var(--radius-pill); background: var(--color-danger-bg); color: var(--color-danger-text); font-weight: 600; }
+.guardado[data-estado="reintentando"] { color: var(--color-warning-text); }
+.guardado-reintentar {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* ---------- Lienzo en cuadrícula ---------- */
+.lienzo {
+    position: relative;
+    min-height: 60vh;
+    padding: 0 8px;
+    border: 1px solid var(--agenda-borde);
+    border-radius: 24px;
+    background-color: var(--color-neutral-100);
+    background-image:
+        linear-gradient(var(--agenda-cuadricula) 1px, transparent 1px),
+        linear-gradient(90deg, var(--agenda-cuadricula) 1px, transparent 1px);
+    background-origin: content-box;
+    background-size: calc(100% / 12) var(--renglon);
+}
+.lienzo-vacio {
+    position: absolute;
+    inset: 48px 24px auto;
+    margin: 0;
+    text-align: center;
+    color: var(--color-neutral-700);
+    font-size: 14px;
+    pointer-events: none;
+}
+.lienzo-cajas { position: relative; }
+.lienzo .grid-stack-item-content { overflow: hidden; border-radius: 4px; }
+.lienzo .grid-stack-placeholder > .placeholder-content {
+    border-radius: var(--radius-card);
+    background-color: var(--color-accent-200);
+    opacity: 0.7;
+}
+.lienzo .grid-stack-item.ui-draggable-dragging { opacity: 0.92; cursor: grabbing; }
+.lienzo .grid-stack-item.ui-draggable-dragging .caja-cab { cursor: grabbing; }
+.lienzo:has(.grid-stack-item:focus-within) .lienzo-vacio { display: none; }
+
+/* Lo hecho: se ve atenuado y tachado, o se oculta con el interruptor (los espacios se conservan). */
+.lienzo.ocultar-hechas .grid-stack-item:has(.caja.es-hecha) { display: none; }
+.lienzo.ocultar-tildadas .caja-item.es-tildado { display: none; }
+
+/* ---------- Caja ---------- */
+.caja {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--color-neutral-100);
+    border-radius: 4px;
+    overflow: hidden;
+    color: var(--color-text);
+}
+/* Filete del color de la actividad (sin actividad no hay filete: superficie neutra). */
+.caja:not(.plan-nota)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 2px var(--caja-acento, var(--agenda-borde));
+    pointer-events: none;
+}
+.caja:not(.plan-nota):not([class*="actividad-"])::after { box-shadow: inset 0 0 0 2px var(--agenda-borde); }
+.caja.plan-nota { height: auto; overflow: visible; background: transparent; border-radius: 0; }
+
+.caja-cab {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 4px 6px 0 2px;
+    background: transparent;
+    color: var(--caja-texto, var(--color-text));
+    cursor: grab;
+    touch-action: none;
+}
+.caja-agarre {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 26px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 16px;
+    opacity: 0.75;
+    cursor: grab;
+}
+.caja-agarre:hover { opacity: 1; }
+.caja-titulo {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 6px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--caja-texto);
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: 19px;
+    line-height: 1.25;
+    text-align: center;
+    text-overflow: ellipsis;
+    cursor: text;
+}
+.caja-titulo::placeholder { color: color-mix(in srgb, var(--caja-texto) 68%, transparent); opacity: 1; }
+.caja-titulo:hover { background: color-mix(in srgb, var(--caja-texto) 8%, transparent); }
+.caja-titulo:focus { outline: 0; background: color-mix(in srgb, var(--color-neutral-100) 75%, transparent); }
+.caja-titulo:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 0; }
+.caja-hora {
+    flex: none;
+    padding: 1px 9px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-neutral-100) 72%, transparent);
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.caja-boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--caja-texto);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 150ms var(--agenda-suave);
+}
+.caja-boton:hover { background: color-mix(in srgb, var(--caja-texto) 12%, transparent); }
+.caja-boton[aria-pressed="true"] { background: var(--caja-texto); color: var(--caja-fondo); }
+
+.caja.es-hecha { opacity: 0.62; }
+.caja.es-hecha .caja-titulo { text-decoration: line-through; }
+
+/* ---------- Hoja con renglones (texto o lista) ---------- */
+.caja-hoja { position: relative; flex: 1 1 auto; min-height: 0; padding: 0 12px 4px; }
+.caja-hoja[data-tipo="lista"] {
+    overflow-y: auto;
+    background-image: linear-gradient(to bottom, transparent calc(var(--renglon) - 1px), var(--agenda-renglon) calc(var(--renglon) - 1px));
+    background-size: 100% var(--renglon);
+    background-attachment: local;
+}
+.plan-nota .caja-hoja { padding: 0; }
+
+.caja-texto {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: calc(var(--renglon) * 3);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    resize: none;
+    overflow-y: auto;
+    background-color: transparent;
+    background-image: linear-gradient(to bottom, transparent calc(var(--renglon) - 1px), var(--agenda-renglon) calc(var(--renglon) - 1px));
+    background-size: 100% var(--renglon);
+    background-attachment: local;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: var(--renglon);
+}
+.caja-texto::placeholder, .caja-item-texto::placeholder { color: var(--color-neutral-600); opacity: 1; }
+.caja-texto:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 2px; }
+
+.caja-items { margin: 0; padding: 0; list-style: none; }
+.caja-item { display: flex; align-items: flex-start; gap: 8px; min-height: var(--renglon); }
+.caja-check {
+    flex: none;
+    position: relative;
+    width: 18px;
+    height: 18px;
+    margin: 3px 0 0;
+    appearance: none;
+    border: 1.5px solid var(--color-neutral-600);
+    border-radius: 5px;
+    background: transparent;
+    cursor: pointer;
+}
+.caja-check:checked { background: var(--color-accent-2-600); border-color: var(--color-accent-2-600); }
+.caja-check:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 9px;
+    border: solid var(--color-on-accent);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.caja-item-texto {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: auto;
+    min-height: var(--renglon);
+    padding: 0;
+    border: 0;
+    outline: 0;
+    resize: none;
+    overflow: hidden;
+    field-sizing: content;
+    background: transparent;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: var(--renglon);
+}
+.caja-item-texto:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 2px; }
+.caja-item.es-tildado .caja-item-texto { color: var(--color-neutral-700); text-decoration: line-through; }
+.caja-item-quitar {
+    flex: none;
+    width: 24px;
+    height: var(--renglon);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-neutral-700);
+    font-size: 11px;
+    opacity: 0;
+    cursor: pointer;
+}
+.caja-item:hover .caja-item-quitar, .caja-item:focus-within .caja-item-quitar { opacity: 1; }
+@media (hover: none) { .caja-item-quitar { opacity: 1; } }
+.caja-agregar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: var(--renglon);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-accent-700);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.caja-agregar:hover { color: var(--color-accent-800); }
+
+/* ---------- Pantallas angostas: una sola columna en orden de lectura ---------- */
+.lienzo.es-movil { min-height: 0; padding: 0; background: none; }
+.lienzo.es-movil .lienzo-cajas { display: flex; flex-direction: column; gap: 12px; }
+.lienzo.es-movil .grid-stack-item { position: static; width: auto; height: auto; }
+.lienzo.es-movil .grid-stack-item-content { position: static; inset: auto; overflow: visible; }
+.lienzo.es-movil .caja { height: auto; min-height: 200px; }
+.lienzo.es-movil .caja-hoja { flex: none; overflow: visible; }
+.lienzo.es-movil .caja-texto { height: auto; field-sizing: content; min-height: calc(var(--renglon) * 6); overflow: visible; }
+.lienzo.es-movil .caja-hoja[data-tipo="lista"] { min-height: calc(var(--renglon) * 6); }
+.lienzo.es-movil .caja-cab { cursor: default; touch-action: auto; }
+.lienzo.es-movil .caja-agarre { cursor: pointer; }
+.lienzo.es-movil .lienzo-vacio { position: static; padding: 24px 0; }
+
+/* ---------- Ventanas (dialog): estilos base en app.css; aquí solo lo propio de la Agenda ---------- */
+.dialogo.es-movil [data-modo="grilla"], .dialogo:not(.es-movil) [data-modo="movil"] { display: none; }
+
+.actividades-lista { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.actividad-item { border-radius: 14px; overflow: hidden; background: var(--color-neutral-200); }
+.actividad-resumen {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--caja-fondo);
+    color: var(--caja-texto);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+.actividad-resumen::-webkit-details-marker { display: none; }
+.actividad-editar { margin-left: auto; font-size: 12px; font-weight: 400; text-decoration: underline; }
+.actividad-form, .actividad-borrar { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+.actividad-borrar { padding-top: 0; align-items: flex-start; }
+.actividad-nueva { padding: 0; }
+
+@media (max-width: 991.98px) {
+    .plan-titulo { font-size: 30px; }
+}
+
+/* En pantallas angostas cada día es una caja apilada. */
+@media (max-width: 767.98px) {
+    .plan-cab { grid-template-columns: 1fr; }
+    .plan-info-caja { grid-column: auto; }
+    .plan-dias { display: flex; flex-direction: column; }
+    .plan-dia-lunes, .plan-dia-martes, .plan-dia-miercoles { min-height: 0; }
+    .plan-notas-columnas { grid-template-columns: 1fr; gap: 20px; }
+    .plan-notas-columnas > .plan-nota, .plan-notas-columnas > .plan-nota + .plan-nota { padding: 0; border-left: 0; }
+    .plan-titulo, .hoja-titulo { font-size: 28px; }
+    .hoja-barra .guardado { margin-left: 0; }
+    .dialogo-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .agenda *, .agenda *::before, .agenda *::after { animation: none !important; transition: none !important; }
+}

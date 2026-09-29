@@ -1,7 +1,6 @@
 {{-- Formulario compartido de crear y editar contexto. Requiere: $contexto, $tipos, $padres, $accion, $metodo --}}
 @php
-    $colorActual = old('color', $contexto->color);
-    $sinColor = $errors->any() ? old('sin_color') : ! $colorActual;
+    $colorActual = strtolower((string) old('color', $contexto->color));
 @endphp
 <form method="POST" action="{{ $accion }}" novalidate>
     @csrf
@@ -38,19 +37,23 @@
         </div>
     </div>
 
-    <div class="mb-4">
-        <label for="color" class="form-label">Color <span class="text-secondary fw-normal">(opcional)</span></label>
-        <div class="d-flex align-items-center gap-3">
-            <input type="color" id="color" name="color" value="{{ $colorActual ?: '#c67139' }}" @disabled($sinColor)
-                   class="form-control form-control-color @error('color') is-invalid @enderror">
-            <div class="form-check mb-0">
-                <input type="checkbox" class="form-check-input" id="sin_color" name="sin_color" value="1" @checked($sinColor)
-                       onchange="document.getElementById('color').disabled = this.checked">
-                <label class="form-check-label" for="sin_color">Sin color</label>
-            </div>
+    <fieldset class="mb-4">
+        <legend class="form-label">Color <span class="text-secondary fw-normal">(opcional)</span></legend>
+        <div class="paleta-actividades">
+            <label class="paleta-opcion paleta-sin-color">
+                <input type="radio" name="color" value="" @checked($colorActual === '')>
+                <span class="paleta-nombre">Sin color</span>
+            </label>
+            @foreach (\App\Enums\ColorActividad::cases() as $color)
+                <label class="paleta-opcion {{ $color->clase() }}">
+                    <input type="radio" name="color" value="{{ $color->value }}" @checked($colorActual === $color->value)>
+                    <span class="paleta-punto" aria-hidden="true"></span>
+                    <span class="paleta-nombre">{{ $color->etiqueta() }}</span>
+                </label>
+            @endforeach
         </div>
         @error('color') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-    </div>
+    </fieldset>
 
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-foco">Guardar</button>

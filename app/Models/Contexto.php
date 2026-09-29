@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ColorActividad;
 use App\Enums\TipoContexto;
 use Database\Factories\ContextoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -43,6 +44,24 @@ class Contexto extends Model
     public function notas(): HasMany
     {
         return $this->hasMany(Nota::class);
+    }
+
+    public function cajas(): HasMany
+    {
+        return $this->hasMany(Caja::class);
+    }
+
+    /** Actividades de la agenda: los contextos que tienen un color de la paleta. */
+    #[Scope]
+    protected function actividades(Builder $query): Builder
+    {
+        return $query->whereNotNull('color')->orderBy('nombre');
+    }
+
+    /** Color de la paleta de actividades, o null si no tiene color o el hex no es de la paleta. */
+    public function colorActividad(): ?ColorActividad
+    {
+        return $this->color === null ? null : ColorActividad::tryFrom(strtolower($this->color));
     }
 
     #[Scope]

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ColorActividad;
 use App\Enums\TipoContexto;
 use App\Models\Contexto;
 use Closure;
@@ -45,7 +46,7 @@ class ContextoRequest extends FormRequest
                     }
                 },
             ],
-            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'color' => ['nullable', Rule::in(ColorActividad::valores())],
         ];
     }
 
@@ -59,7 +60,7 @@ class ContextoRequest extends FormRequest
             'tipo.enum' => 'El tipo elegido no es válido.',
             'contexto_padre_id.exists' => 'El padre elegido no existe.',
             'contexto_padre_id.integer' => 'El padre elegido no es válido.',
-            'color.regex' => 'El color debe tener el formato #rrggbb.',
+            'color.in' => 'Elegí un color de la paleta.',
         ];
     }
 
