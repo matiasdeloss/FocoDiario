@@ -78,7 +78,7 @@
     text-transform: uppercase;
     color: var(--foco-texto-meta);
 }
-.fc .fc-daygrid-day-number { padding: var(--foco-espacio-2); font-variant-numeric: tabular-nums; color: var(--foco-texto); }
+.fc .fc-daygrid-day-number { padding: 10px 12px 6px; font-variant-numeric: tabular-nums; color: var(--foco-texto); }
 .fc .fc-day-other .fc-daygrid-day-number { color: var(--foco-texto-suave); opacity: 0.7; }
 .fc .fc-day-today { background: color-mix(in srgb, var(--color-accent-100) 55%, transparent); }
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -94,7 +94,7 @@
     color: var(--color-on-accent);
     font-weight: 600;
 }
-.fc .fc-daygrid-day-frame { position: relative; min-height: 7.75rem; }
+.fc .fc-daygrid-day-frame { position: relative; min-height: 8.5rem; padding: 2px 2px 8px; }
 .fc .fc-daygrid-day-frame:not(:has(.fc-daygrid-event-harness)) { cursor: pointer; }
 .fc .fc-daygrid-day-frame:not(:has(.fc-daygrid-event-harness))::after {
     content: "+";
@@ -135,7 +135,7 @@
     border-radius: 8px;
     background: color-mix(in srgb, var(--ev-fondo, var(--foco-acento-suave)) 70%, transparent);
     color: var(--ev-texto, var(--foco-texto));
-    margin: 1px 2px;
+    margin: 2px 4px;
     cursor: pointer;
     transition: opacity 150ms cubic-bezier(0.2, 0, 0, 1);
 }
