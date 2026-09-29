@@ -4,7 +4,7 @@
          data-url-sesiones="{{ route('estudio.sesiones.store') }}"
          data-sesion-activa="{{ $sesionActivaId }}" data-completados-hoy="{{ $pomodorosHoy }}">
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-pomodoro-titulo">Pomodoro</h2>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-pomodoro-titulo"><i class="bi bi-stopwatch hoy-titulo-icono" aria-hidden="true"></i>Pomodoro</h2>
         <span class="hoy-puntos" data-puntos role="img"
               aria-label="{{ $pomodorosHoy }} {{ $pomodorosHoy === 1 ? 'pomodoro completado' : 'pomodoros completados' }} hoy"
               title="{{ $pomodorosHoy }} hoy">

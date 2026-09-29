@@ -60,8 +60,10 @@
 
     /* Tokens añadidos por la app (no existen en el sistema original) */
     --color-on-accent: #fff;
-    --radius-card: 22px;
+    --radius-card: 12px;
     --radius-pill: 999px;
+    --radius-control: 8px;
+    --color-card-border: var(--color-neutral-300);
     --color-danger-bg: #f8dcd5;
     --color-danger-text: #8a2a1f;
     --color-danger-border: #b3402f;

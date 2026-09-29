@@ -1,7 +1,7 @@
 {{-- Recordatorios pendientes con fecha. Requiere: $recordatorios, $recordatoriosSinFecha --}}
 <section id="hoy-recordatorios" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-recordatorios-titulo" data-recordatorios>
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-recordatorios-titulo">Recordatorios</h2>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-recordatorios-titulo"><i class="bi bi-bell hoy-titulo-icono" aria-hidden="true"></i>Recordatorios</h2>
         <a href="{{ route('recordatorios.index') }}" class="hoy-enlace">ver todos</a>
     </div>
 

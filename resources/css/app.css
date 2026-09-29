@@ -6,7 +6,7 @@
  * Tema Organic aplicado a toda la app, con la estética del diseño "Hoy v2" (tokens en organic.css;
  * fuentes cargadas en layouts/app.blade.php):
  * - Newsreader (400) para los títulos y Figtree para todo lo demás.
- * - Superficies planas: tarjetas neutral-100 sobre el fondo crema, radio 22px, sin borde ni sombra.
+ * - Superficies: tarjetas neutral-100 sobre el fondo crema, radio 12px, borde de 1px neutral-300, sin sombra; controles de 8px.
  * - Botones y campos en pastilla, sin borde. Botón primario: acento con texto blanco (hover acento 600).
  * - Tamaños del diseño: cuerpo 15px, texto secundario 13px, metadatos 11-12px, etiquetas 10px en mayúsculas.
  * Los valores de contraste están en tests/js/contraste-organic.mjs (algunos del diseño no llegan a 4,5:1).
@@ -74,10 +74,10 @@
     --foco-espacio-6: 2rem;
 
     /* Forma y movimiento */
-    --foco-radio: var(--radius-card);                  /* tarjetas: 22px */
-    --foco-radio-sm: var(--radius-md);                 /* 16px: elementos internos */
-    --foco-radio-lg: var(--radius-card);                  /* 22px */
-    --foco-radio-pastilla: var(--radius-pill);                      /* botones, campos, etiquetas */
+    --foco-radio: var(--radius-card);                  /* tarjetas: 12px */
+    --foco-radio-sm: var(--radius-control);            /* 8px: elementos internos */
+    --foco-radio-lg: var(--radius-card);                  /* 12px */
+    --foco-radio-pastilla: var(--radius-control);                      /* botones, campos, etiquetas */
     --foco-transicion: 150ms cubic-bezier(0.2, 0, 0, 1);
     --foco-transicion-entrada: 200ms cubic-bezier(0.23, 1, 0.32, 1);
     --foco-desplaza: 4px;               /* movimiento de entradas; se anula con prefers-reduced-motion */
@@ -149,8 +149,12 @@ a { text-underline-offset: 0.2em; }
 
 .border-bottom { border-color: var(--foco-borde) !important; }
 
-/* ---------- Barra superior: del color de la página, sin borde ni sombra ---------- */
-.navbar-foco { background: transparent; padding-block: 16px; }
+/* ---------- Barra superior: papel neutral-100 con línea inferior, para que se distinga de la página ---------- */
+.navbar-foco {
+    background: var(--foco-papel);
+    border-bottom: 1px solid var(--color-card-border);
+    padding-block: 10px;
+}
 
 .navbar-foco .navbar-brand {
     font-family: var(--foco-fuente-titulo);
@@ -164,7 +168,7 @@ a { text-underline-offset: 0.2em; }
 .navbar-foco .navbar-brand .bi { color: var(--foco-acento); }
 
 .navbar-foco .nav-link {
-    color: var(--foco-texto-suave);
+    color: var(--foco-texto);
     font-size: 14px;
     border-radius: var(--foco-radio-pastilla);
     padding: 6px 14px;
@@ -175,13 +179,14 @@ a { text-underline-offset: 0.2em; }
 
 .navbar-foco .nav-link.active,
 .navbar-foco .nav-link[aria-current="page"] {
-    color: var(--foco-acento-texto);
-    background: var(--foco-papel);
+    color: var(--color-accent-800);
+    background: var(--color-accent-200);
+    font-weight: 600;
 }
 
 .navbar-foco .nav-link.disabled { color: var(--foco-texto-meta); }
 
-.navbar-foco .navbar-toggler { border: 0; border-radius: var(--foco-radio-pastilla); }
+.navbar-foco .navbar-toggler { border: 1px solid var(--color-card-border); border-radius: var(--foco-radio-pastilla); }
 .navbar-foco .navbar-toggler:focus { box-shadow: none; }
 
 @media (max-width: 767.98px) {
@@ -196,9 +201,10 @@ a { text-underline-offset: 0.2em; }
 }
 
 /* ---------- Tarjetas y métricas ---------- */
-/* Planas: neutral-100 sobre el fondo, radio 22px, sin borde ni sombra */
+/* neutral-100 sobre el fondo, radio 12px, borde de 1px, sin sombra */
 .tarjeta {
     background: var(--foco-papel);
+    border: 1px solid var(--color-card-border);
     border-radius: var(--foco-radio);
 }
 .tarjeta-relleno { padding: 28px; }
@@ -361,7 +367,7 @@ a { text-underline-offset: 0.2em; }
     align-items: center;
     gap: 0.3em;
     padding: 2px 8px;
-    border-radius: var(--foco-radio-pastilla);
+    border-radius: var(--radius-pill);
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -398,7 +404,7 @@ a { text-underline-offset: 0.2em; }
 .form-control-sm, .form-select-sm { padding: 6px 12px; font-size: var(--foco-texto-xs); }
 .form-select-sm { padding-right: 2rem; }
 /* Varias líneas: una pastilla no cabe, se usa el radio de 16px */
-textarea.form-control { border-radius: var(--radius-md); padding: 12px 14px; }
+textarea.form-control { border-radius: var(--radius-control); padding: 12px 14px; }
 .form-control::placeholder { color: var(--foco-texto-meta); opacity: 1; }
 .form-control:focus, .form-select:focus {
     background-color: var(--color-bg);
@@ -702,7 +708,7 @@ tr.htmx-request { opacity: 0.6; }
 
 /* ---------- Mini-temporizador de la barra superior ---------- */
 :root {
-    --foco-mini-radio: var(--foco-radio-pastilla);                          /* contenedor: pastilla */
+    --foco-mini-radio: var(--radius-control);                          /* contenedor: pastilla */
     --foco-mini-relleno: var(--foco-espacio-1);
     --foco-mini-radio-boton: 50%;                                           /* botones circulares dentro de la pastilla */
     --foco-mini-boton: 2rem;                                                /* botones de 32 px */
@@ -827,6 +833,7 @@ tr.htmx-request { opacity: 0.6; }
 }
 .tablero-columna {
     background: var(--foco-papel);
+    border: 1px solid var(--color-card-border);
     border-radius: var(--foco-radio);
     padding: var(--foco-espacio-3);
     min-height: 8rem;
@@ -978,7 +985,7 @@ body > main { flex: 1 0 auto; }
     margin-top: var(--foco-espacio-6);
     padding-block: var(--foco-espacio-5);
     background-color: var(--foco-papel);
-    border-radius: var(--foco-radio-lg) var(--foco-radio-lg) 0 0;
+    border-top: 1px solid var(--color-card-border);
 }
 
 .footer-foco-contenido {

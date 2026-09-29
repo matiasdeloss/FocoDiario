@@ -6,7 +6,7 @@
 <section id="hoy-semana" class="hoy-tarjeta hoy-semana" aria-labelledby="hoy-semana-titulo"
          data-semana="{{ json_encode($semana, JSON_UNESCAPED_UNICODE) }}" data-url-calendario="{{ route('calendario.index') }}">
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-semana-titulo">Esta semana</h2>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-semana-titulo"><i class="bi bi-calendar-week hoy-titulo-icono" aria-hidden="true"></i>Esta semana</h2>
         <span class="hoy-meta-grupo">
             <span class="hoy-meta">{{ ucfirst(\Illuminate\Support\Carbon::parse($hoy['fecha'])->translatedFormat('F Y')) }}</span>
             <a href="{{ route('calendario.index') }}" class="hoy-enlace">ver calendario</a>

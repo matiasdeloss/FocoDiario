@@ -1,7 +1,7 @@
 /*
  * Pantalla Hoy: réplica valor por valor del diseño "Hoy v2" (docs/diseno/hoy-v2/Hoy v2.dc.html).
  * Solo usa los tokens de organic.css (--color-*, --font-*, --radius-*): sin hex sueltos.
- * Títulos en Newsreader y el resto en Figtree. Tarjetas planas: neutral-100, radio 22px, sin borde ni sombra.
+ * Títulos en Newsreader y el resto en Figtree. Tarjetas neutral-100 con borde de 1px, radio 12px y controles de 8px, sin sombra.
  * Los tamaños, espaciados y colores son los del diseño (incluidos los que quedan por debajo de 4,5:1
  * o con áreas de clic chicas: ver el informe de desvíos de accesibilidad).
  */
@@ -93,6 +93,7 @@
     gap: 24px;
     padding: 28px;
     background: var(--color-neutral-100);
+    border: 1px solid var(--color-card-border);
     border-radius: var(--radius-card);
 }
 
@@ -104,6 +105,9 @@
 }
 
 .hoy-tarjeta-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin: 0;
     font-family: var(--font-heading);
     font-weight: 400;
@@ -111,6 +115,8 @@
     line-height: 1.2;
     letter-spacing: 0;
 }
+
+.hoy-titulo-icono { color: var(--color-accent-700); font-size: 0.85em; line-height: 1; }
 
 .hoy-meta { font-size: 12px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
 .hoy-meta-grupo { display: flex; align-items: center; gap: 12px; }
@@ -136,7 +142,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-control);
     background: var(--color-accent-2-200);
     color: var(--color-accent-2-800);
     font-size: 13px;
@@ -155,7 +161,7 @@
     height: 35px;
     padding: 0 20px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-control);
     background: var(--color-accent);
     color: var(--color-on-accent);
     font-family: var(--font-body);
@@ -209,7 +215,7 @@
     min-width: 0;
     padding: 9px 14px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-control);
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-body);
@@ -230,7 +236,7 @@
     min-height: 150px;
     padding: 0;
     border: 0;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-control);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-body);
@@ -308,7 +314,7 @@
     width: 100%;
     max-height: 110px;
     aspect-ratio: 1;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-control);
     font-size: 20px;
     font-weight: 400;
     line-height: 1.2;
@@ -366,10 +372,10 @@
 .hoy-tono-alerta { --tono-fondo: var(--color-accent-700); --tono-texto: var(--color-accent-100); }
 .hoy-tono-logro { --tono-fondo: var(--color-accent-2-700); --tono-texto: var(--color-accent-2-100); }
 
-.hoy-rec { display: flex; flex-direction: column; border-radius: 16px; }
+.hoy-rec { display: flex; flex-direction: column; border-radius: var(--radius-control); }
 .hoy-rec.es-abierta { background: var(--color-bg); }
 
-.hoy-rec-cabecera { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 12px; border-radius: 16px; }
+.hoy-rec-cabecera { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 12px; border-radius: var(--radius-control); }
 .hoy-rec:not(.es-abierta) .hoy-rec-cabecera:hover { background: var(--color-neutral-200); }
 
 .hoy-rec-icono {
@@ -412,7 +418,7 @@
 }
 
 /* El botón cubre toda la cabecera: el área de clic es la fila entera, como en el diseño. */
-.hoy-rec-boton::after { content: ""; position: absolute; inset: 0; border-radius: 16px; }
+.hoy-rec-boton::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-control); }
 .hoy-rec-boton:focus-visible { outline: none; }
 .hoy-rec-boton:focus-visible::after { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 
@@ -456,6 +462,16 @@
 .hoy-lateral { gap: 16px; padding: 24px; }
 .hoy-lateral .hoy-tarjeta-titulo { font-size: 17px; }
 .hoy-lateral .hoy-meta { font-size: 11px; }
+
+.hoy-insignia {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--color-accent-200);
+    color: var(--color-accent-800);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
 
 .hoy-lista { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 /* Recordatorios: filas separadas 16px; tareas: 6px (como en el diseño). */
@@ -511,11 +527,11 @@
 
 .hoy-fila[aria-checked="true"] .hoy-fila-titulo { text-decoration: line-through; color: var(--color-neutral-700); }
 
-.hoy-prio { flex: none; width: 5px; height: 5px; border-radius: 999px; }
+.hoy-prio { flex: none; width: 10px; height: 10px; border-radius: 999px; }
 .hoy-prio-alta { background: var(--color-accent); }
 .hoy-prio-media { background: var(--color-accent-400); }
 .hoy-prio-baja { background: var(--color-accent-2); }
-.hoy-item.es-hecha .hoy-prio { background: transparent; }
+.hoy-item.es-hecha .hoy-prio { opacity: 0.35; }
 
 .hoy-nueva { display: flex; gap: 8px; }
 
@@ -530,14 +546,14 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 3px;
     padding: 3px;
-    border-radius: 999px;
+    border-radius: var(--radius-control);
     background: var(--color-bg);
 }
 
 .hoy-modo {
     padding: 6px 0;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-control);
     background: transparent;
     color: var(--color-neutral-700);
     font-family: var(--font-body);

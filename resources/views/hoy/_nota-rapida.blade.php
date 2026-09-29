@@ -8,7 +8,7 @@
 @endphp
 <section id="nota-rapida" class="hoy-tarjeta hoy-nota" aria-labelledby="nota-rapida-titulo" data-nota-rapida>
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="nota-rapida-titulo">Nota rápida</h2>
+        <h2 class="hoy-tarjeta-titulo" id="nota-rapida-titulo"><i class="bi bi-journal-text hoy-titulo-icono" aria-hidden="true"></i>Nota rápida</h2>
         <span class="hoy-meta" data-nota-contador>{{ mb_strlen($contenido) }} {{ mb_strlen($contenido) === 1 ? 'carácter' : 'caracteres' }}</span>
     </div>
 

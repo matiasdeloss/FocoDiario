@@ -1,7 +1,7 @@
 {{-- Recomendaciones para ahora, en acordeón. Requiere: $recomendaciones (colección de App\Services\Recomendaciones\Recomendacion). --}}
 <section class="hoy-tarjeta hoy-recs" aria-labelledby="recomendaciones-titulo">
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="recomendaciones-titulo">Recomendaciones para ahora</h2>
+        <h2 class="hoy-tarjeta-titulo" id="recomendaciones-titulo"><i class="bi bi-lightbulb hoy-titulo-icono" aria-hidden="true"></i>Recomendaciones para ahora</h2>
         <a href="{{ route('recomendaciones.index') }}" class="hoy-enlace">ver todas</a>
     </div>
 

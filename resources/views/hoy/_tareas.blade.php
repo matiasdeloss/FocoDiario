@@ -2,8 +2,8 @@
 <section id="hoy-tareas" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-tareas-titulo"
          data-tareas data-url-crear="{{ route('tareas.store') }}" data-total-pendientes="{{ $totalPendientes }}">
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-tareas-titulo">Tareas abiertas</h2>
-        <span class="hoy-meta" data-pendientes>{{ $totalPendientes }} {{ $totalPendientes === 1 ? 'pendiente' : 'pendientes' }}</span>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-tareas-titulo"><i class="bi bi-check2-square hoy-titulo-icono" aria-hidden="true"></i>Tareas abiertas</h2>
+        <span class="hoy-insignia" data-pendientes>{{ $totalPendientes }} {{ $totalPendientes === 1 ? 'pendiente' : 'pendientes' }}</span>
     </div>
 
     <ul class="hoy-lista" role="list" data-lista>
