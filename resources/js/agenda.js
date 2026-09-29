@@ -4,6 +4,7 @@
  */
 import { editor, guardador } from './agenda-contexto.js';
 import { lunesDe } from './agenda-logica.js';
+import './agenda-planner.js';
 
 editor.iniciarTodas();
 

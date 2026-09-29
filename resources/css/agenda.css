@@ -11,15 +11,12 @@
     --agenda-renglon: color-mix(in srgb, var(--color-neutral-300) 70%, transparent);
 
     --agenda-borde: color-mix(in srgb, var(--color-accent) 55%, transparent);
-    --agenda-ramita: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='170' viewBox='0 0 120 170' fill='none' stroke='%23b5622b' stroke-opacity='.22' stroke-width='1.3' stroke-linecap='round'%3E%3Cpath d='M60 168V22'/%3E%3Cpath d='M60 40c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 66c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 92c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 118c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20zM60 144c-14-2-20-10-22-20 14 2 21 9 22 20zm0 0c14-2 20-10 22-20-14 2-21 9-22 20z'/%3E%3C/svg%3E");
 
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 20px;
     border-radius: 28px;
-    background-image: var(--agenda-ramita);
-    background-size: 120px 170px;
     font-family: var(--font-body);
     color: var(--color-text);
 }
@@ -47,20 +44,34 @@
 
 /* ---------- Encabezado del planner ---------- */
 .plan-cab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.plan-titulo-caja { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+.plan-titulo-caja { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
 .plan-info-caja { grid-column: span 2; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
 
-.plan-titulo {
-    margin: 0;
+/* Título editable: se ve como texto y solo muestra aspecto de campo al pasar el mouse o enfocar. */
+.plan-titulo { margin: 0; width: 100%; }
+.plan-titulo-campo {
+    display: block;
+    width: 100%;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: transparent;
+    color: inherit;
     font-family: var(--font-heading);
     font-weight: 400;
-    font-size: 32px;
-    line-height: 1.1;
+    font-size: 26px;
+    line-height: 1.15;
     letter-spacing: 0.04em;
+    text-align: center;
     text-transform: uppercase;
+    text-overflow: ellipsis;
+    transition: background-color 150ms var(--agenda-suave), border-color 150ms var(--agenda-suave);
 }
+.plan-titulo-campo:hover { background: color-mix(in srgb, var(--color-accent-200) 35%, transparent); }
+.plan-titulo-campo:focus { outline: 0; background: var(--color-bg); border-color: var(--agenda-borde); text-overflow: clip; }
+.plan-titulo-caja .guardado { position: absolute; top: 8px; right: 14px; }
 
-.plan-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.plan-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
 .plan-ir { margin: 0; }
 .plan-ir-campo {
     height: 30px;
@@ -101,27 +112,31 @@
     font-weight: 600;
 }
 
-/* ---------- Los siete días: grilla bento con alturas distintas ---------- */
+/* ---------- Los siete días ----------
+ * Cuatro filas de media altura: Lunes a Viernes ocupan dos (misma altura y ancho); Sábado y Domingo, una cada uno.
+ * Las cajas no crecen con el contenido: lo que no entra se corta y se ofrece "+N más" (agenda-planner.js). */
 .plan-dias {
+    --plan-mitad: 150px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: auto minmax(150px, 1fr) minmax(150px, 1fr);
+    grid-template-rows: repeat(4, var(--plan-mitad));
     grid-template-areas:
+        "lunes martes miercoles"
         "lunes martes miercoles"
         "jueves viernes sabado"
         "jueves viernes domingo";
     gap: 16px;
 }
 
-.plan-dia-lunes { grid-area: lunes; align-self: start; min-height: 196px; }
-.plan-dia-martes { grid-area: martes; align-self: start; min-height: 244px; }
-.plan-dia-miercoles { grid-area: miercoles; align-self: start; min-height: 216px; }
+.plan-dia-lunes { grid-area: lunes; }
+.plan-dia-martes { grid-area: martes; }
+.plan-dia-miercoles { grid-area: miercoles; }
 .plan-dia-jueves { grid-area: jueves; }
 .plan-dia-viernes { grid-area: viernes; }
 .plan-dia-sabado { grid-area: sabado; }
 .plan-dia-domingo { grid-area: domingo; }
 
-.plan-dia { display: flex; flex-direction: column; gap: 12px; transition: background-color 150ms var(--agenda-suave); }
+.plan-dia { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; transition: background-color 150ms var(--agenda-suave); }
 .plan-dia:has(.plan-dia-enlace:hover) { background-color: color-mix(in srgb, var(--color-accent-200) 45%, var(--color-neutral-100)); }
 .plan-dia:has(.plan-dia-enlace:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .plan-dia.es-hoy { border-color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); }
@@ -141,7 +156,23 @@
     font-weight: 600;
 }
 
-.plan-lineas { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-dia-cab { flex: none; }
+.plan-lineas { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-lineas > li { flex: none; }
+.plan-mas {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    align-self: flex-start;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg);
+    color: var(--color-info-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.plan-mas:hover { background: var(--color-neutral-200); text-decoration: underline; }
 .plan-linea {
     display: flex;
     align-items: baseline;
@@ -496,27 +527,57 @@
 /* ---------- Ventanas (dialog): estilos base en app.css; aquí solo lo propio de la Agenda ---------- */
 .dialogo.es-movil [data-modo="grilla"], .dialogo:not(.es-movil) [data-modo="movil"] { display: none; }
 
-.actividades-lista { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.actividad-item { border-radius: 14px; overflow: hidden; background: var(--color-neutral-200); }
+.actividades-lista { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
+.actividad-item { border-radius: 12px; }
+.actividad-item[open] { background: var(--color-neutral-100); box-shadow: inset 0 0 0 1px var(--color-neutral-300); }
 .actividad-resumen {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    background: var(--caja-fondo);
-    color: var(--caja-texto);
+    padding: 3px 8px 3px 10px;
+    border-radius: 12px;
+    color: var(--color-neutral-900);
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     list-style: none;
 }
 .actividad-resumen::-webkit-details-marker { display: none; }
-.actividad-editar { margin-left: auto; font-size: 12px; font-weight: 400; text-decoration: underline; }
-.actividad-form, .actividad-borrar { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
-.actividad-borrar { padding-top: 0; align-items: flex-start; }
-.actividad-nueva { padding: 0; }
+.actividad-resumen:hover { background: var(--color-neutral-100); }
+.actividad-resumen .paleta-punto { width: 10px; height: 10px; }
+.actividad-nombre { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.actividad-editar {
+    display: inline-flex; align-items: center; gap: 4px; margin-left: auto; padding: 3px 9px;
+    border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--color-neutral-700);
+}
+.actividad-resumen:hover .actividad-editar, .actividad-item[open] .actividad-editar { background: var(--color-neutral-200); color: var(--color-neutral-900); }
+.actividad-form { display: flex; flex-direction: column; gap: 8px; padding: 4px 10px 10px; }
+.actividad-form .form-control { height: 36px; min-height: 0; padding: 4px 10px; font-size: 14px; border-radius: 10px; border-color: var(--color-neutral-300); }
+.actividad-etiqueta { display: block; float: none; width: auto; margin: 0 0 3px; padding: 0; font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--color-neutral-700); }
+.actividad-form .dialogo-grupo { margin: 0; }
+.actividad-colores { display: flex; flex-wrap: wrap; gap: 6px; }
+.actividad-color { position: relative; display: inline-flex; margin: 0; cursor: pointer; }
+.actividad-color input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.actividad-color-punto {
+    display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--caja-acento); color: #fff; font-size: 14px; transition: box-shadow 120ms ease;
+}
+.actividad-color-punto .bi { opacity: 0; }
+.actividad-color:hover .actividad-color-punto { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 3px var(--caja-acento); }
+.actividad-color:has(input:checked) .actividad-color-punto { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 4px var(--caja-texto); }
+.actividad-color:has(input:checked) .bi { opacity: 1; }
+.actividad-color:has(input:focus-visible) .actividad-color-punto { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+.actividad-acciones { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.actividad-eliminar {
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border: 0; border-radius: 8px; background: none;
+    color: var(--color-danger-text); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.actividad-eliminar:hover { background: var(--color-danger-bg); }
+.actividad-nueva { margin-top: -4px; padding: 10px 0 0; border-top: 1px solid var(--color-neutral-300); }
+@media (prefers-reduced-motion: reduce) { .actividad-color-punto { transition: none; } }
 
 @media (max-width: 991.98px) {
-    .plan-titulo { font-size: 30px; }
+    .plan-titulo-campo { font-size: 26px; }
 }
 
 /* En pantallas angostas cada día es una caja apilada. */
@@ -524,10 +585,12 @@
     .plan-cab { grid-template-columns: 1fr; }
     .plan-info-caja { grid-column: auto; }
     .plan-dias { display: flex; flex-direction: column; }
-    .plan-dia-lunes, .plan-dia-martes, .plan-dia-miercoles { min-height: 0; }
+    .plan-dia { overflow: visible; }
+    .plan-lineas { flex: none; max-height: 232px; }
     .plan-notas-columnas { grid-template-columns: 1fr; gap: 20px; }
     .plan-notas-columnas > .plan-nota, .plan-notas-columnas > .plan-nota + .plan-nota { padding: 0; border-left: 0; }
-    .plan-titulo, .hoja-titulo { font-size: 28px; }
+    .plan-titulo-campo { font-size: 24px; }
+    .hoja-titulo { font-size: 28px; }
     .hoja-barra .guardado { margin-left: 0; }
     .dialogo-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

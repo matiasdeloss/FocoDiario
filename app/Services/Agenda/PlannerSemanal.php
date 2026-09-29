@@ -3,6 +3,7 @@
 namespace App\Services\Agenda;
 
 use App\Enums\ZonaSemana;
+use App\Models\Ajuste;
 use App\Models\Caja;
 use App\Models\Contexto;
 use Carbon\CarbonImmutable;
@@ -15,7 +16,7 @@ class PlannerSemanal
 
     /**
      * @return array{
-     *     lunes: CarbonImmutable, domingo: CarbonImmutable, dias: list<array<string, mixed>>,
+     *     tituloPlanner: string, lunes: CarbonImmutable, domingo: CarbonImmutable, dias: list<array<string, mixed>>,
      *     semanales: array<string, Caja|null>, actividades: Collection<int, Contexto>,
      *     etiquetaSemana: string, etiquetaMes: string, esEstaSemana: bool,
      *     urlAnterior: string, urlSiguiente: string
@@ -49,6 +50,7 @@ class PlannerSemanal
         }
 
         return [
+            'tituloPlanner' => Ajuste::tituloPlanner(),
             'lunes' => $lunes,
             'domingo' => $domingo,
             'dias' => $dias,

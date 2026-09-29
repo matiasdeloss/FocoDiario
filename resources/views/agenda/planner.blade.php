@@ -10,7 +10,12 @@
     <div class="agenda plan" data-actividades="{{ json_encode($actividades->mapWithKeys(fn ($a) => [$a->id => $a->colorActividad()?->clase()])->filter(), JSON_UNESCAPED_UNICODE) }}">
         <header class="plan-cab">
             <div class="plan-tarjeta plan-titulo-caja">
-                <h1 class="plan-titulo">Planner semanal</h1>
+                <h1 class="plan-titulo">
+                    <label class="visually-hidden" for="plan-titulo-campo">Título del planner (se guarda al salir del campo)</label>
+                    <input type="text" id="plan-titulo-campo" class="plan-titulo-campo" maxlength="60" value="{{ $tituloPlanner }}"
+                           placeholder="Planner semanal" autocomplete="off" spellcheck="false"
+                           data-titulo-planner data-url="{{ route('agenda.titulo') }}" data-original="{{ $tituloPlanner }}">
+                </h1>
                 <nav class="plan-nav" aria-label="Cambiar de semana">
                     <a href="{{ $urlAnterior }}" class="btn btn-foco-suave btn-sm" aria-label="Semana anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
                     <a href="{{ route('agenda.index') }}" class="btn btn-foco-suave btn-sm" @if ($esEstaSemana) aria-current="date" @endif>Esta semana</a>
@@ -20,6 +25,7 @@
                         <input type="date" class="plan-ir-campo" data-ir-fecha data-url="{{ route('agenda.index') }}" value="{{ $lunes->toDateString() }}" title="Ir a la semana de una fecha">
                     </label>
                 </nav>
+                @include('agenda._estado-guardado')
             </div>
 
             <div class="plan-tarjeta plan-info-caja">
@@ -55,7 +61,7 @@
                     </header>
 
                     @if ($dia['cajas']->isNotEmpty())
-                        <ul class="plan-lineas">
+                        <ul class="plan-lineas" data-plan-lineas>
                             @foreach ($dia['cajas'] as $caja)
                                 @php $items = $caja->tipo === \App\Enums\TipoCaja::Lista ? collect($caja->itemsLista())->filter(fn ($i) => trim($i['texto']) !== '') : collect(); @endphp
                                 <li class="plan-linea {{ $caja->actividad?->colorActividad()?->clase() }} {{ $caja->hecha ? 'es-hecha' : '' }}">
@@ -72,6 +78,8 @@
                                 </li>
                             @endforeach
                         </ul>
+                        <a href="{{ route('agenda.dia', ['fecha' => $dia['fecha']->toDateString()]) }}" class="plan-mas" data-plan-mas hidden
+                           data-dia="{{ $dia['nombre'] }} {{ $dia['numero'] }}"></a>
                     @else
                         <p class="visually-hidden">Sin cajas este día.</p>
                     @endif

@@ -64,6 +64,7 @@ Route::post('hoy/captura', \App\Http\Controllers\CapturaRapidaController::class)
 
 // ---- Agenda ----
 Route::get('agenda', [\App\Http\Controllers\AgendaController::class, 'index'])->name('agenda.index');
+Route::put('agenda/titulo', [\App\Http\Controllers\AgendaController::class, 'titulo'])->name('agenda.titulo');
 Route::get('agenda/dia/{fecha}', [\App\Http\Controllers\AgendaController::class, 'dia'])
     ->where('fecha', '\d{4}-\d{2}-\d{2}')->name('agenda.dia');
 Route::patch('agenda/dia/{fecha}/layout', [\App\Http\Controllers\CajaController::class, 'layout'])

@@ -148,4 +148,48 @@ class AgendaPlannerTest extends TestCase
             ->assertSee('nav-link active', false);
         $this->get(route('hoy'))->assertSee('ver agenda');
     }
+
+    public function test_el_titulo_del_planner_por_defecto_es_planner_semanal(): void
+    {
+        $this->get(route('agenda.index'))
+            ->assertOk()
+            ->assertViewHas('tituloPlanner', 'Planner semanal')
+            ->assertSee('value="Planner semanal"', false);
+    }
+
+    public function test_el_titulo_del_planner_se_guarda_y_se_muestra(): void
+    {
+        $this->putJson(route('agenda.titulo'), ['titulo' => '  Mi semana de estudio '])
+            ->assertOk()
+            ->assertJson(['titulo' => 'Mi semana de estudio']);
+
+        $this->assertDatabaseHas('ajustes', ['clave' => 'planner.titulo', 'valor' => 'Mi semana de estudio']);
+        $this->get(route('agenda.index'))->assertSee('value="Mi semana de estudio"', false);
+    }
+
+    public function test_un_titulo_vacio_vuelve_al_valor_por_defecto(): void
+    {
+        $this->putJson(route('agenda.titulo'), ['titulo' => 'Otro'])->assertOk();
+
+        $this->putJson(route('agenda.titulo'), ['titulo' => '   '])
+            ->assertOk()
+            ->assertJson(['titulo' => 'Planner semanal']);
+    }
+
+    public function test_el_titulo_del_planner_tiene_un_maximo_de_60_caracteres(): void
+    {
+        $this->putJson(route('agenda.titulo'), ['titulo' => str_repeat('a', 61)])->assertJsonValidationErrors('titulo');
+        $this->putJson(route('agenda.titulo'), ['titulo' => str_repeat('a', 60)])->assertOk();
+        $this->putJson(route('agenda.titulo'), [])->assertJsonValidationErrors('titulo');
+    }
+
+    public function test_cada_dia_con_cajas_tiene_su_enlace_ver_mas_a_la_hoja_del_dia(): void
+    {
+        Caja::factory()->create(['fecha' => '2026-09-29']);
+
+        $this->get(route('agenda.index', ['semana' => '2026-09-28']))
+            ->assertOk()
+            ->assertSee('data-plan-mas', false)
+            ->assertSee(route('agenda.dia', ['fecha' => '2026-09-29']), false);
+    }
 }
