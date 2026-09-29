@@ -909,7 +909,6 @@ button.pomodoro-tiempo:focus-visible, .pomodoro-tiempo.reloj-input:focus-visible
     overflow-x: auto;
     overscroll-behavior-x: contain;
     padding-bottom: var(--foco-espacio-3);
-    scrollbar-width: thin;
 }
 .tablero-columna {
     flex: 0 0 var(--ancho-columna);
@@ -1299,4 +1298,26 @@ body > main { flex: 1 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
     .dialogo, .dialogo * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Scrolls: una sola barra para toda la app ---------- */
+/* Fina, redondeada y del tono del papel; solo se marca al pasar el mouse. */
+:root {
+    --scroll-hilo: color-mix(in srgb, var(--color-neutral-600) 38%, transparent);
+    --scroll-hilo-hover: color-mix(in srgb, var(--color-neutral-700) 65%, transparent);
+}
+@supports selector(::-webkit-scrollbar) {
+    *::-webkit-scrollbar { width: 12px; height: 12px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb {
+        background: var(--scroll-hilo);
+        background-clip: content-box;
+        border: 3px solid transparent;
+        border-radius: 999px;
+    }
+    *::-webkit-scrollbar-thumb:hover { background: var(--scroll-hilo-hover); background-clip: content-box; }
+    *::-webkit-scrollbar-corner { background: transparent; }
+}
+@supports not selector(::-webkit-scrollbar) {
+    * { scrollbar-width: thin; scrollbar-color: var(--scroll-hilo) transparent; }
 }
