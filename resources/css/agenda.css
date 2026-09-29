@@ -347,8 +347,11 @@
     overflow: hidden;
     color: var(--color-text);
 }
-/* Mismo borde que las tarjetas de los días del planner; la actividad se lee en un tinte suave del fondo. */
-.caja[class*="actividad-"] { background: color-mix(in srgb, var(--caja-fondo) 38%, var(--color-neutral-100)); }
+/* Mismo borde fino que las tarjetas de los días del planner, con el color de la actividad y un tinte suave de fondo. */
+.caja[class*="actividad-"] {
+    --caja-borde: var(--caja-acento);
+    background: color-mix(in srgb, var(--caja-fondo) 38%, var(--color-neutral-100));
+}
 .caja.plan-nota { height: auto; overflow: visible; background: transparent; border: 0; border-radius: 0; }
 
 /* Cabecera en tres zonas: el agarre a la izquierda, el título centrado de verdad y las acciones a la derecha. */
@@ -415,7 +418,7 @@
     .caja-cab:has(.caja-hora:not([hidden])) { display: flex; }
     .caja-cab:has(.caja-hora:not([hidden])) .caja-titulo { text-align: left; }
 }
-@container (max-width: 260px) {
+@container (max-width: 340px) {
     .caja-cab { display: flex; }
     .caja-cab .caja-titulo { text-align: left; }
 }
