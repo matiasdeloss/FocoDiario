@@ -18,7 +18,7 @@
 
     @include('estudio._pestanas')
 
-    <div class="tarjeta p-4 mb-3 nota-metodos" role="note">
+    <div class="tarjeta tarjeta-relleno mb-3 nota-metodos" role="note">
         <h2 class="tarjeta-titulo">Sobre los "estilos de aprendizaje"</h2>
         <p class="mb-2">{{ $notaEstilos }}</p>
         <p class="small mb-0"><a href="{{ $notaEstilosFuente[1] }}" target="_blank" rel="noopener noreferrer">{{ $notaEstilosFuente[0] }}</a></p>
@@ -36,7 +36,7 @@
         @foreach ($metodos as $metodo)
             @php [$etiquetaNivel, $claseNivel] = $nivelesEvidencia[$metodo['evidencia']['nivel']]; @endphp
             <div class="col-lg-6">
-                <article id="{{ $metodo['clave'] }}" class="tarjeta p-4 h-100 ficha-metodo">
+                <article id="{{ $metodo['clave'] }}" class="tarjeta tarjeta-relleno h-100 ficha-metodo">
                     <header class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                         <h2 class="h4 mb-0">{{ $metodo['nombre'] }}</h2>
                         <span class="badge-foco {{ $claseNivel }}">{{ $etiquetaNivel }}</span>

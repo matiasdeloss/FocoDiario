@@ -7,7 +7,7 @@
         <h1 class="pagina-titulo">Nueva nota</h1>
     </div>
 
-    <div class="tarjeta p-4 formulario-angosto">
+    <div class="tarjeta tarjeta-relleno formulario-angosto">
         @include('notas._formulario', ['accion' => route('notas.store'), 'metodo' => 'POST'])
     </div>
 @endsection

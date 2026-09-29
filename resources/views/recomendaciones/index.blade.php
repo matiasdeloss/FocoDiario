@@ -9,7 +9,7 @@
     </div>
 
     @forelse ($grupos as $grupo)
-        <section class="tarjeta p-4 mb-3" aria-labelledby="grupo-{{ $grupo['tipo']->value }}">
+        <section class="tarjeta tarjeta-relleno mb-3" aria-labelledby="grupo-{{ $grupo['tipo']->value }}">
             <h2 class="tarjeta-titulo" id="grupo-{{ $grupo['tipo']->value }}">{{ $grupo['tipo']->etiquetaPlural() }}</h2>
             @foreach ($grupo['items'] as $recomendacion)
                 @include('recomendaciones._item', ['recomendacion' => $recomendacion, 'mostrarFuente' => true])

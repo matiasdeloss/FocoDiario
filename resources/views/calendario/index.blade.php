@@ -36,13 +36,13 @@
          data-url-tarjeta="{{ route('calendario.tarjetas.update', ['tipo' => '__TIPO__', 'id' => '__ID__']) }}"
          data-url-pagina="{{ route('calendario.tarjetas.index', ['tipo' => '__TIPO__']) }}">
         <div class="col-lg-9">
-            <div class="tarjeta p-2 p-md-3">
+            <div class="tarjeta tarjeta-relleno">
                 <div id="calendario" aria-label="Calendario"></div>
             </div>
         </div>
 
         <div class="col-lg-3">
-            <aside class="tarjeta p-3 panel-sin-fecha" id="panel-sin-fecha" aria-labelledby="panel-sin-fecha-titulo">
+            <aside class="tarjeta tarjeta-relleno panel-sin-fecha" id="panel-sin-fecha" aria-labelledby="panel-sin-fecha-titulo">
                 <h2 class="tarjeta-titulo" id="panel-sin-fecha-titulo">Por ubicar</h2>
 
                 <div class="panel-crear" role="group" aria-label="Crear una tarjeta nueva">

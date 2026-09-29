@@ -7,7 +7,7 @@
         <h1 class="pagina-titulo">Editar nota</h1>
     </div>
 
-    <div class="tarjeta p-4 formulario-angosto">
+    <div class="tarjeta tarjeta-relleno formulario-angosto">
         @include('notas._formulario', ['accion' => route('notas.update', $nota), 'metodo' => 'PUT'])
     </div>
 @endsection

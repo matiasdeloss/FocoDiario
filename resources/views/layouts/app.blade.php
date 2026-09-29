@@ -7,7 +7,7 @@
     <title>@yield('titulo', 'FocoDiario')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caprasimo:wght@400&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
@@ -56,7 +56,7 @@
         </div>
     </nav>
 
-    <main class="container-fluid px-3 px-lg-5 py-4">
+    <main class="container-fluid px-3 px-lg-5 principal-foco">
         @if (session('estado'))
             <div class="aviso-foco" role="status">{{ session('estado') }}</div>
         @endif

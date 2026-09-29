@@ -1,5 +1,6 @@
 /*
  * Sistema de diseño "Organic": tokens de color, tipografía, espaciado, radios y sombras.
+ * Titulos en Newsreader (serif) y cuerpo en Figtree, como en el diseño Hoy v2.
  * Origen: docs/diseno/hoy-v2/_ds (carpeta organic, archivo styles.css) (exportado de Claude Design).
  * Los nombres de estas variables se conservan tal cual para que el diseño de referencia
  * y el código usen el mismo vocabulario. Las variables --foco-* de app.css se apoyan en ellas.
@@ -42,7 +43,7 @@
     --color-accent-2-800: #3d472b;
     --color-accent-2-900: #272e1b;
 
-    --font-heading: "Caprasimo", system-ui, sans-serif;
+    --font-heading: "Newsreader", Georgia, serif;
     --font-heading-weight: 400;
     --font-body: "Figtree", system-ui, sans-serif;
 
@@ -56,6 +57,18 @@
     --radius-sm: 8px;
     --radius-md: 16px;
     --radius-lg: 28px;
+
+    /* Tokens añadidos por la app (no existen en el sistema original) */
+    --color-on-accent: #fff;
+    --radius-card: 22px;
+    --radius-pill: 999px;
+    --color-danger-bg: #f8dcd5;
+    --color-danger-text: #8a2a1f;
+    --color-danger-border: #b3402f;
+    --color-warning-bg: #f6e4b3;
+    --color-warning-text: #6b4700;
+    --color-info-bg: #dbe8e9;
+    --color-info-text: #27525f;
 
     --shadow-sm: 0 1px 2px color-mix(in srgb, #2e2b25 14%, transparent);
     --shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);

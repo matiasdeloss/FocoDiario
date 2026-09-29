@@ -17,7 +17,7 @@
 
     @include('estudio._pestanas')
 
-    <form method="GET" action="{{ route('estudio.historial') }}" class="tarjeta p-3 mb-3">
+    <form method="GET" action="{{ route('estudio.historial') }}" class="tarjeta tarjeta-relleno mb-3">
         <div class="row g-3 align-items-end">
             <div class="col-6 col-lg-3">
                 <label for="filtro-desde" class="form-label">Desde</label>
@@ -49,16 +49,16 @@
 
     <div class="row g-3 mb-3">
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor">{{ $totales['pomodoros'] }}</div></div>
+            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor">{{ $totales['pomodoros'] }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100"><div class="metrica-etiqueta">Minutos de foco</div><div class="metrica-valor">{{ round($totales['foco_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Minutos de foco</div><div class="metrica-valor">{{ round($totales['foco_seg'] / 60) }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100"><div class="metrica-etiqueta">Minutos de descanso</div><div class="metrica-valor">{{ round($totales['descanso_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Minutos de descanso</div><div class="metrica-valor">{{ round($totales['descanso_seg'] / 60) }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 h-100"><div class="metrica-etiqueta">Minutos de tiempo libre</div><div class="metrica-valor">{{ round($totales['libre_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Minutos de tiempo libre</div><div class="metrica-valor">{{ round($totales['libre_seg'] / 60) }}</div></div>
         </div>
     </div>
     <p class="small text-secondary">Totales {{ $hayFiltros ? 'de los filtros aplicados' : 'de todo el historial' }}, {{ $totales['interrumpidos'] }} {{ $totales['interrumpidos'] === 1 ? 'foco interrumpido' : 'focos interrumpidos' }}.</p>
@@ -69,7 +69,7 @@
             $t = $totalesPorDia[$dia];
         @endphp
         <section class="tarjeta mb-3" aria-labelledby="dia-{{ $dia }}">
-            <div class="p-3 px-md-4 d-flex flex-wrap justify-content-between align-items-baseline gap-2 border-bottom">
+            <div class="px-4 pt-4 pb-2 d-flex flex-wrap justify-content-between align-items-baseline gap-2">
                 <h2 id="dia-{{ $dia }}" class="h5 mb-0">{{ $fecha->translatedFormat('l j \d\e F') }}</h2>
                 <span class="small text-secondary">
                     {{ $t['pomodoros'] }} {{ $t['pomodoros'] === 1 ? 'pomodoro' : 'pomodoros' }} ·

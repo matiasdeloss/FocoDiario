@@ -8,7 +8,7 @@
         <p class="text-secondary mb-0">{{ $bloque->inicio->translatedFormat('l j \d\e F \d\e Y') }}</p>
     </div>
 
-    <div class="tarjeta p-4">
+    <div class="tarjeta tarjeta-relleno">
         @include('registro._formulario', [
             'accion' => route('registro.update', $bloque),
             'metodo' => 'PUT',

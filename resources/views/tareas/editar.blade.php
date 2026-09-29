@@ -7,7 +7,7 @@
         <h1 class="pagina-titulo">Editar tarea</h1>
     </div>
 
-    <div class="tarjeta p-4 formulario-angosto">
+    <div class="tarjeta tarjeta-relleno formulario-angosto">
         @include('tareas._formulario', ['accion' => route('tareas.update', $tarea), 'metodo' => 'PUT'])
     </div>
 @endsection

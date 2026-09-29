@@ -34,7 +34,7 @@
         </form>
     </div>
 
-    <div class="tarjeta p-4 mb-3">
+    <div class="tarjeta tarjeta-relleno mb-3">
         <h2 class="tarjeta-titulo">Nuevo bloque de tiempo</h2>
         @include('registro._formulario', [
             'accion' => route('registro.store'),
@@ -47,25 +47,25 @@
 
     <div class="row g-3 mb-3">
         <div class="col-6 col-lg-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
+            <div class="tarjeta tarjeta-relleno h-100">
                 <div class="metrica-etiqueta">Total registrado</div>
                 <div class="metrica-valor">{{ Duracion::formatear($resumen['total']) }}</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
+            <div class="tarjeta tarjeta-relleno h-100">
                 <div class="metrica-etiqueta">Productivas</div>
                 <div class="metrica-valor">{{ Duracion::formatear($resumen['productiva']) }}</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
+            <div class="tarjeta tarjeta-relleno h-100">
                 <div class="metrica-etiqueta">Ocio</div>
                 <div class="metrica-valor">{{ Duracion::formatear($resumen['ocio']) }}</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
+            <div class="tarjeta tarjeta-relleno h-100">
                 <div class="metrica-etiqueta">Descanso</div>
                 <div class="metrica-valor">{{ Duracion::formatear($resumen['descanso']) }}</div>
             </div>

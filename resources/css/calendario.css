@@ -1,25 +1,25 @@
 /*
  * Calendario (FullCalendar): se carga solo en /calendario.
- * Usa las variables --foco-* de app.css. Sin gradientes; bordes en vez de sombras.
+ * Usa las variables --foco-* de app.css. Superficies planas: sin gradientes, bordes ni sombras (salvo el popover flotante).
  * Colores por tipo: tarea = terracota, recordatorio = salvia, nota = neutro cálido, estudio = ocre (ver app.css).
  */
 
 .fc {
     --fc-border-color: var(--foco-borde);
     --fc-page-bg-color: var(--foco-papel);
-    --fc-neutral-bg-color: var(--foco-papel-hundido);
+    --fc-neutral-bg-color: var(--color-neutral-200);
     --fc-neutral-text-color: var(--foco-texto-suave);
     --fc-today-bg-color: var(--color-accent-100);
-    --fc-button-text-color: var(--foco-texto);
-    --fc-button-bg-color: transparent;
-    --fc-button-border-color: var(--foco-borde-fuerte);
-    --fc-button-hover-bg-color: var(--foco-papel-hundido);
-    --fc-button-hover-border-color: var(--foco-borde-fuerte);
+    --fc-button-text-color: var(--color-neutral-700);
+    --fc-button-bg-color: var(--color-bg);
+    --fc-button-border-color: transparent;
+    --fc-button-hover-bg-color: var(--color-neutral-200);
+    --fc-button-hover-border-color: transparent;
     --fc-button-active-bg-color: var(--foco-boton);
     --fc-button-active-border-color: var(--foco-boton);
     --fc-now-indicator-color: var(--foco-rojo-texto);
     --fc-event-border-color: transparent;
-    --fc-list-event-hover-bg-color: var(--foco-papel-hundido);
+    --fc-list-event-hover-bg-color: var(--color-neutral-200);
     --fc-more-link-bg-color: transparent;
     --fc-highlight-color: var(--color-accent-200);
     font-family: var(--foco-fuente);
@@ -32,51 +32,51 @@
 .fc .fc-toolbar { gap: var(--foco-espacio-2); margin-bottom: var(--foco-espacio-3) !important; }
 .fc .fc-toolbar-title {
     font-family: var(--foco-fuente-titulo);
-    font-size: var(--foco-texto-lg);
+    font-size: 19px;
     font-weight: var(--font-heading-weight);
     font-synthesis: none;
     text-transform: capitalize;
 }
+/* Botones en pastilla: fondo de la página, texto neutral-700, sin borde (como el reinicio del diseño) */
 .fc .fc-button {
-    min-height: 2.5rem;
-    min-width: 2.5rem;
-    padding: 0 var(--foco-espacio-3);
-    background: transparent;
-    border: 1px solid var(--foco-borde-fuerte);
+    min-height: 0;
+    min-width: 0;
+    padding: 6px 14px;
+    background: var(--color-bg);
+    border: 0;
     border-radius: var(--foco-radio-pastilla);
-    color: var(--foco-texto);
-    font-family: var(--foco-fuente-titulo);
-    font-weight: var(--font-heading-weight);
-    font-synthesis: none;
+    color: var(--color-neutral-700);
+    font-family: var(--foco-fuente);
+    font-size: var(--foco-texto-sm);
+    font-weight: 600;
     text-transform: none;
-    transition-property: background-color, border-color, color, transform;
-    transition-duration: 150ms, 150ms, 150ms, 100ms;
+    transition-property: background-color, color;
+    transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
-.fc .fc-button:hover { background: var(--foco-papel-hundido); color: var(--foco-texto); border-color: var(--foco-borde-fuerte); }
-.fc .fc-button:active:not(:disabled) { transform: scale(0.96); }
+.fc .fc-button:hover { background: var(--color-neutral-200); color: var(--color-neutral-700); }
 .fc .fc-button:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; box-shadow: none; }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
     background: var(--foco-boton);
-    border-color: var(--foco-boton);
-    color: #fff;
+    border-color: transparent;
+    color: var(--color-on-accent);
 }
-.fc .fc-button-primary:disabled { background: transparent; color: var(--foco-texto-suave); opacity: 0.5; }
+.fc .fc-button-primary:disabled { background: var(--color-bg); color: var(--foco-texto-suave); opacity: 0.5; }
 .fc .fc-button-group > .fc-button { border-radius: 0; }
 .fc .fc-button-group > .fc-button:first-child { border-radius: var(--foco-radio-pastilla) 0 0 var(--foco-radio-pastilla); }
 .fc .fc-button-group > .fc-button:last-child { border-radius: 0 var(--foco-radio-pastilla) var(--foco-radio-pastilla) 0; }
 .fc .fc-button .fc-icon { font-size: 1.25em; }
 
 /* Encabezados de columna y celdas */
-.fc .fc-col-header-cell { background: var(--foco-papel-hundido); }
+.fc .fc-col-header-cell { background: transparent; }
 .fc .fc-col-header-cell-cushion {
     padding: var(--foco-espacio-2);
-    font-size: var(--foco-texto-xs);
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--foco-texto-suave);
+    color: var(--foco-texto-meta);
 }
 .fc .fc-daygrid-day-number { padding: var(--foco-espacio-2); font-variant-numeric: tabular-nums; color: var(--foco-texto); }
 .fc .fc-day-other .fc-daygrid-day-number { color: var(--foco-texto-suave); opacity: 0.7; }
@@ -91,8 +91,8 @@
     justify-content: center;
     border-radius: 50%;
     background: var(--foco-boton);
-    color: #fff;
-    font-weight: 700;
+    color: var(--color-on-accent);
+    font-weight: 600;
 }
 .fc .fc-daygrid-day-frame { min-height: 6rem; }
 .fc .fc-daygrid-more-link {
@@ -101,7 +101,7 @@
     color: var(--foco-acento-texto);
 }
 .fc .fc-timegrid-slot-label-cushion { font-variant-numeric: tabular-nums; }
-.fc .fc-scrollgrid { border-radius: var(--foco-radio-sm); overflow: hidden; border-color: var(--foco-borde); }
+.fc .fc-scrollgrid { border-radius: var(--foco-radio-sm); overflow: hidden; border-color: var(--color-neutral-200); }
 
 /* Eventos */
 .fc .fc-event {
@@ -116,7 +116,7 @@
 }
 .fc .fc-event:hover { filter: brightness(0.97); }
 .fc .fc-event:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 1px; }
-.fc .fc-event-main, .fc .fc-event-title { padding: 1px 4px; font-weight: 500; }
+.fc .fc-event-main, .fc .fc-event-title { padding: 1px 4px; font-weight: 500; color: inherit; }
 .fc .fc-daygrid-event { padding: 1px 2px; white-space: nowrap; overflow: hidden; }
 .fc .fc-daygrid-dot-event .fc-event-title { font-weight: 500; }
 .fc .fc-daygrid-block-event .fc-event-time, .fc .fc-daygrid-dot-event .fc-event-time { font-variant-numeric: tabular-nums; }
@@ -143,7 +143,7 @@
 
 /* Vista de lista */
 .fc .fc-list { border-color: var(--foco-borde); border-radius: var(--foco-radio-sm); overflow: hidden; }
-.fc .fc-list-day-cushion { background: var(--foco-papel-hundido); font-weight: 700; }
+.fc .fc-list-day-cushion { background: var(--color-neutral-200); font-weight: 600; }
 .fc .fc-list-event td { padding: var(--foco-espacio-3); }
 .fc .fc-list-event-title a { color: var(--foco-texto); font-weight: 500; }
 .fc .fc-list-event-dot { border-color: var(--ev-borde, var(--color-accent-600)); }
@@ -156,8 +156,7 @@
 /* Celular: barra de herramientas en dos filas y controles cómodos al tacto */
 @media (max-width: 767.98px) {
     .fc .fc-toolbar { flex-wrap: wrap; justify-content: center; }
-    .fc .fc-toolbar-title { flex-basis: 100%; order: -1; text-align: center; font-size: var(--foco-texto-base); }
-    .fc .fc-button { min-height: 2.75rem; }
+    .fc .fc-toolbar-title { flex-basis: 100%; order: -1; text-align: center; font-size: 17px; }
 }
 
 /* Filtros por tipo */
@@ -167,53 +166,49 @@
     display: inline-flex;
     align-items: center;
     gap: var(--foco-espacio-2);
-    min-height: 2.5rem;
-    padding: 0 var(--foco-espacio-3);
+    padding: 6px 14px;
     background: var(--foco-papel);
-    border: 1px solid var(--foco-borde-fuerte);
     border-radius: var(--foco-radio-pastilla);
     font-size: var(--foco-texto-sm);
-    font-weight: 600;
+    font-weight: 400;
     cursor: pointer;
     user-select: none;
-    transition-property: background-color, border-color, color, opacity;
+    transition-property: background-color, color, opacity;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 .filtro-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.filtro-chip:hover { background: var(--foco-papel-hundido); }
-.filtro-chip:has(input:checked) { background: var(--foco-acento-suave); border-color: var(--foco-acento); color: var(--foco-acento-texto-hover); }
+.filtro-chip:hover { background: var(--color-neutral-200); }
+.filtro-chip:has(input:checked) { background: var(--foco-acento-suave); color: var(--foco-acento-texto-hover); }
 .filtro-chip:has(input:not(:checked)) { color: var(--foco-texto-suave); }
 .filtro-chip:has(input:not(:checked)) .filtro-punto { background: transparent; }
 .filtro-chip:has(input:focus-visible) { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
-.filtro-punto { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--punto); border: 1.5px solid var(--punto); }
+.filtro-punto { width: 6px; height: 6px; border-radius: 50%; background: var(--punto); }
 
 /* Panel "Por ubicar": botones de creación, filtros y tarjetas simples.
    Cada tipo define --tipo-fondo / --tipo-texto / --tipo-borde (ver app.css): los usan
    los eventos, los chips, los botones y las tarjetas, así que los tres se leen igual en todos lados. */
-.panel-sin-fecha { position: sticky; top: 1rem; transition: border-color 150ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms cubic-bezier(0.2, 0, 0, 1); }
-.panel-sin-fecha.panel-destino { border-color: var(--foco-acento); background: var(--color-accent-100); border-style: dashed; }
+.panel-sin-fecha { position: sticky; top: 1rem; transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1); }
+.panel-sin-fecha.panel-destino { background: var(--color-accent-100); outline: 2px dashed var(--foco-acento); outline-offset: -2px; }
 
 .panel-crear { display: grid; gap: var(--foco-espacio-2); }
 .crear-boton {
     display: inline-flex;
     align-items: center;
     gap: var(--foco-espacio-2);
-    min-height: 2.5rem;
-    padding: 0 var(--foco-espacio-3);
+    padding: 6px 14px;
     background: var(--tipo-fondo);
     color: var(--tipo-texto);
-    border: 1px solid var(--tipo-borde);
+    border: 0;
     border-radius: var(--foco-radio-pastilla);
     font-size: var(--foco-texto-sm);
-    font-weight: 700;
+    font-weight: 600;
     text-align: left;
-    transition-property: filter, transform;
-    transition-duration: 150ms, 100ms;
+    transition-property: filter;
+    transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 .crear-boton:hover { filter: brightness(0.96); }
-.crear-boton:active:not(:disabled) { transform: scale(0.96); }
 .crear-boton:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
 .crear-boton:disabled { opacity: 0.55; cursor: progress; }
 
@@ -222,42 +217,37 @@
     display: inline-flex;
     align-items: center;
     gap: var(--foco-espacio-1);
-    min-height: 2.5rem;
-    padding: 0 var(--foco-espacio-3);
-    background: transparent;
-    border: 1px solid var(--foco-borde-fuerte);
+    padding: 6px 14px;
+    background: var(--color-bg);
+    border: 0;
     border-radius: var(--foco-radio-pastilla);
-    color: var(--foco-texto-suave);
+    color: var(--color-neutral-700);
     font-size: var(--foco-texto-sm);
-    font-weight: 600;
-    transition-property: background-color, border-color, color;
+    transition-property: background-color, color;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
-.panel-filtro:hover { background: var(--foco-papel-hundido); }
-.panel-filtro[aria-pressed="true"] { background: var(--foco-acento-suave); border-color: var(--foco-acento); color: var(--foco-acento-texto-hover); }
+.panel-filtro:hover { background: var(--color-neutral-200); }
+.panel-filtro[aria-pressed="true"] { background: var(--foco-acento-suave); color: var(--foco-acento-texto-hover); }
 .panel-filtro:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
 
 .panel-sin-fecha-lista { display: grid; gap: var(--foco-espacio-2); max-height: 60vh; overflow-y: auto; padding: 2px; }
 .panel-mas { display: flex; flex-wrap: wrap; gap: var(--foco-espacio-2); margin-top: var(--foco-espacio-2); }
-.panel-mas .btn { min-height: 2.5rem; }
 
 .tarj {
     display: grid;
     gap: var(--foco-espacio-1);
     padding: var(--foco-espacio-2);
     background: var(--tipo-fondo);
-    border: 1px solid var(--foco-borde);
     border-left: 4px solid var(--tipo-borde);
     border-radius: var(--foco-radio-sm);
-    box-shadow: var(--foco-sombra);
 }
 .tarj[hidden] { display: none; }
 .tarj-cabeza {
     display: flex;
     align-items: center;
     gap: var(--foco-espacio-2);
-    min-height: 2.5rem;
+    min-height: 2rem;
     cursor: grab;
     touch-action: none;
     user-select: none;
@@ -272,7 +262,6 @@
 .tarj-campo {
     display: block;
     width: 100%;
-    min-height: 2.5rem;
     padding: 6px var(--foco-espacio-2);
     background: transparent;
     border: 1px solid transparent;
@@ -287,19 +276,18 @@
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 .tarj-campo::placeholder { color: var(--foco-texto-suave); opacity: 1; }
-.tarj-campo:hover { border-color: var(--foco-borde-control); }
-.tarj-campo:focus { outline: 2px solid var(--foco-acento); outline-offset: 1px; background: var(--foco-papel); border-color: var(--color-accent-600); }
+.tarj-campo:hover { background: var(--color-bg); }
+.tarj-campo:focus { outline: 2px solid var(--foco-acento); outline-offset: 1px; background: var(--color-bg); }
 .tarj-titulo { font-weight: 700; }
 .tarj-comentario { font-size: var(--foco-texto-sm); }
 
-.tarj-fecha .form-control { min-height: 2.5rem; background-color: var(--foco-papel); }
+.tarj-fecha .form-control { background-color: var(--color-bg); }
 .tarj-pie, .editor-pie { display: flex; align-items: center; gap: var(--foco-espacio-2); }
 .tarj-accion {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    min-height: 2.5rem;
-    padding: 0 var(--foco-espacio-1);
+    padding: 4px var(--foco-espacio-1);
     color: var(--tipo-texto, var(--foco-texto-suave));
     font-size: var(--foco-texto-sm);
     font-weight: 500;
@@ -307,7 +295,7 @@
     text-underline-offset: 0.2em;
 }
 .tarj-accion:hover { color: var(--foco-texto); }
-.tarj-guardado { flex: 1; min-width: 0; text-align: right; font-size: var(--foco-texto-xs); color: var(--foco-texto-suave); }
+.tarj-guardado { flex: 1; min-width: 0; text-align: right; font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); }
 .tarj-guardado-error { color: var(--foco-rojo-texto); font-weight: 600; }
 .tarj-borrar { color: var(--foco-rojo-texto); }
 
@@ -319,7 +307,6 @@
     max-width: calc(100vw - 16px);
     padding: var(--foco-espacio-3);
     background: var(--foco-papel);
-    border: 1px solid var(--foco-borde-fuerte);
     border-radius: var(--foco-radio);
     box-shadow: var(--shadow-lg);
     animation: popover-entra 150ms cubic-bezier(0.2, 0, 0, 1);
@@ -327,10 +314,9 @@
 .popover-foco[hidden] { display: none; }
 .popover-editor { display: grid; gap: var(--foco-espacio-1); border-left: 4px solid var(--tipo-borde); background: var(--foco-papel); }
 .popover-editor .editor-cabeza { display: flex; align-items: center; justify-content: space-between; }
-.editor-etiqueta { font-size: var(--foco-texto-xs); font-weight: 600; color: var(--foco-texto-suave); margin-top: var(--foco-espacio-1); }
-.popover-editor .form-control { min-height: 2.5rem; }
+.editor-etiqueta { font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); margin-top: var(--foco-espacio-1); }
 .popover-tipos { width: 15rem; }
-.popover-foco-titulo { margin: 0 0 var(--foco-espacio-2); font-size: var(--foco-texto-sm); font-weight: 700; }
+.popover-foco-titulo { margin: 0 0 var(--foco-espacio-2); font-family: var(--foco-fuente-titulo); font-size: 17px; font-weight: var(--font-heading-weight); }
 .popover-tipos-botones { display: grid; gap: var(--foco-espacio-2); }
 
 @keyframes popover-entra {
@@ -357,9 +343,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .fc .fc-button:active:not(:disabled), .crear-boton:active:not(:disabled) { transform: none; }
     .popover-foco { animation: none; }
 }
 
 /* Los chips de filtro toman el color de su tipo (igual que eventos y tarjetas) */
-.filtro-chip[class*="tipo-"]:has(input:checked) { background: var(--tipo-fondo); border-color: var(--tipo-borde); color: var(--tipo-texto); }
+.filtro-chip[class*="tipo-"]:has(input:checked) { background: var(--tipo-fondo); color: var(--tipo-texto); }

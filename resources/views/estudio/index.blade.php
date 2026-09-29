@@ -17,7 +17,7 @@
          data-presets='@json($presets)'>
 
         <div class="col-lg-7">
-            <div class="tarjeta p-4 p-md-5 h-100 pomodoro-principal">
+            <div class="tarjeta tarjeta-relleno h-100 pomodoro-principal">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="badge-foco pomodoro-fase" data-p="fase">Listo para empezar</span>
                     <span class="lista-fila-meta" data-p="ciclo"></span>
@@ -127,7 +127,7 @@
 
         <div class="col-lg-5">
             <div class="d-flex flex-column gap-3 h-100">
-                <div class="tarjeta p-4" data-p="resumen-sesion" hidden>
+                <div class="tarjeta tarjeta-relleno" data-p="resumen-sesion" hidden>
                     <h2 class="tarjeta-titulo">Esta sesión</h2>
                     <p class="fw-medium mb-3" data-p="detalle"></p>
                     <div class="row g-3">
@@ -138,7 +138,7 @@
                     </div>
                 </div>
 
-                <div class="tarjeta p-4">
+                <div class="tarjeta tarjeta-relleno">
                     <h2 class="tarjeta-titulo d-flex justify-content-between">Hoy <a href="{{ route('estudio.historial') }}" class="text-decoration-none text-lowercase fw-normal">historial</a></h2>
                     <div class="lista-fila"><span>Pomodoros completos</span><span class="lista-fila-meta">{{ $resumenHoy['pomodoros'] }}</span></div>
                     <div class="lista-fila"><span>Interrumpidos</span><span class="lista-fila-meta">{{ $resumenHoy['interrumpidos'] }}</span></div>
@@ -147,7 +147,7 @@
                     <div class="lista-fila"><span>Tiempo libre entre pomodoros</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatear($resumenHoy['libre_seg'] / 60) }}</span></div>
                 </div>
 
-                <div class="tarjeta p-4">
+                <div class="tarjeta tarjeta-relleno">
                     <h2 class="tarjeta-titulo">Avisos</h2>
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="p-sonido" checked>

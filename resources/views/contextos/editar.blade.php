@@ -7,7 +7,7 @@
         <h1 class="pagina-titulo">Editar contexto</h1>
     </div>
 
-    <div class="tarjeta p-4 formulario-angosto">
+    <div class="tarjeta tarjeta-relleno formulario-angosto">
         @include('contextos._formulario', ['accion' => route('contextos.update', $contexto), 'metodo' => 'PUT'])
     </div>
 @endsection

@@ -7,7 +7,7 @@
         <h1 class="pagina-titulo">Nuevo contexto</h1>
     </div>
 
-    <div class="tarjeta p-4 formulario-angosto">
+    <div class="tarjeta tarjeta-relleno formulario-angosto">
         @include('contextos._formulario', ['accion' => route('contextos.store'), 'metodo' => 'POST'])
     </div>
 @endsection

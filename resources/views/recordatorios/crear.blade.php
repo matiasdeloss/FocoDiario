@@ -7,7 +7,7 @@
         <h1 class="pagina-titulo">Nuevo recordatorio</h1>
     </div>
 
-    <div class="tarjeta p-4 formulario-angosto">
+    <div class="tarjeta tarjeta-relleno formulario-angosto">
         @include('recordatorios._formulario', ['accion' => route('recordatorios.store'), 'metodo' => 'POST'])
     </div>
 @endsection

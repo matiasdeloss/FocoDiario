@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <form method="GET" action="{{ route('tareas.index') }}" class="tarjeta p-3 mb-3">
+    <form method="GET" action="{{ route('tareas.index') }}" class="tarjeta tarjeta-relleno mb-3">
         @if ($vista === 'tablero')
             <input type="hidden" name="vista" value="tablero">
         @endif

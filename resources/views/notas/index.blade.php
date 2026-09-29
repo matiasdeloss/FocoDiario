@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <form method="GET" action="{{ route('notas.index') }}" class="tarjeta p-3 mb-3">
+    <form method="GET" action="{{ route('notas.index') }}" class="tarjeta tarjeta-relleno mb-3">
         <div class="row g-3 align-items-end">
             <div class="col-sm-8 col-lg-5">
                 <label for="filtro-contexto" class="form-label">Contexto</label>
