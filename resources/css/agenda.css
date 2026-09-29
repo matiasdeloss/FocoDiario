@@ -223,14 +223,16 @@
 .plan-tipo button[aria-pressed="true"] { background: var(--color-accent-200); color: var(--color-accent-800); }
 
 /* ---------- Hoja del día: encabezado y barra ---------- */
-.hoja-cab { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
+/* Encabezado de la hoja: una tarjeta como las del planner, con el título al centro y las herramientas debajo. */
+.hoja-cab { display: flex; flex-direction: column; gap: 16px; padding: 18px 22px 16px; }
+.hoja-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px 20px; }
 .hoja-volver {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    align-self: center;
+    justify-self: start;
     padding: 6px 12px 6px 10px;
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-pill);
     background: var(--color-bg);
     color: var(--color-accent-700);
     font-size: 13px;
@@ -238,17 +240,34 @@
     text-decoration: none;
 }
 .hoja-volver:hover { background: var(--color-neutral-200); color: var(--color-accent-800); }
-.hoja-titulos { display: flex; flex-direction: column; gap: 4px; margin-right: auto; }
-.hoja-kicker { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-neutral-700); }
-.hoja-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; }
-.hoja-dias { display: flex; gap: 8px; align-items: center; }
+.hoja-titulos { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.hoja-kicker { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-neutral-700); }
+.hoja-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 30px; line-height: 1.15; letter-spacing: 0.04em; text-transform: uppercase; }
+.hoja-dias { display: flex; gap: 6px; align-items: center; justify-self: end; }
 
-.hoja-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
-.hoja-opciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
-.hoja-opciones .form-check { display: flex; align-items: center; gap: 8px; margin: 0; padding-left: 0; min-height: 32px; }
+.hoja-barra {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px 20px;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in srgb, var(--agenda-borde) 45%, transparent);
+}
+.hoja-barra > .btn-foco { justify-self: start; }
+.hoja-opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 18px;
+    padding: 3px 6px 3px 16px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-neutral-200) 65%, transparent);
+}
+.hoja-opciones .form-check { display: flex; align-items: center; gap: 8px; margin: 0; padding-left: 0; min-height: 30px; }
 .hoja-opciones .form-check-input { float: none; margin: 0; }
 .hoja-opciones .form-check-label { font-size: 13px; }
-.hoja-barra .guardado { margin-left: auto; }
+.hoja-barra .guardado { justify-self: end; }
 
 /* ---------- Indicador de guardado ---------- */
 .guardado { display: inline-flex; align-items: center; gap: 8px; min-height: 24px; font-size: 12px; color: var(--color-neutral-700); transition: opacity 200ms var(--agenda-suave); }
@@ -633,6 +652,13 @@
 
 /* En pantallas angostas cada día es una caja apilada. */
 @media (max-width: 767.98px) {
+    .hoja-fila { grid-template-columns: 1fr 1fr; grid-template-areas: "volver dias" "titulo titulo"; }
+    .hoja-volver { grid-area: volver; }
+    .hoja-dias { grid-area: dias; }
+    .hoja-titulos { grid-area: titulo; }
+    .hoja-barra { grid-template-columns: 1fr; justify-items: center; }
+    .hoja-barra > .btn-foco, .hoja-barra .guardado { justify-self: center; }
+    .hoja-opciones { padding: 6px 12px; }
     .plan-cab { grid-template-columns: 1fr; }
     .plan-info-caja { grid-column: auto; }
     .plan-dias { display: flex; flex-direction: column; }
@@ -642,7 +668,7 @@
     .plan-notas-columnas > .plan-nota, .plan-notas-columnas > .plan-nota + .plan-nota { padding: 0; border-left: 0; }
     .plan-titulo-campo { font-size: 24px; }
     .hoja-titulo { font-size: 28px; }
-    .hoja-barra .guardado { margin-left: 0; }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
