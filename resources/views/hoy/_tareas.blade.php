@@ -1,4 +1,4 @@
-{{-- Tareas abiertas y las últimas completadas. Requiere: $tareasAbiertas, $tareasCompletadas, $totalPendientes --}}
+{{-- Tareas abiertas. Requiere: $tareasAbiertas, $totalPendientes --}}
 <section id="hoy-tareas" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-tareas-titulo"
          @if (! empty($oob)) hx-swap-oob="true" @endif
          data-tareas data-url-crear="{{ route('tareas.store') }}" data-total-pendientes="{{ $totalPendientes }}">

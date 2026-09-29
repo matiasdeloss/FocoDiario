@@ -104,16 +104,16 @@ class AlternarHoyTest extends TestCase
         $media = Tarea::factory()->create(['titulo' => 'Tarea media', 'prioridad' => PrioridadTarea::Media, 'fecha_limite' => null]);
         $baja = Tarea::factory()->create(['titulo' => 'Tarea baja', 'prioridad' => PrioridadTarea::Baja, 'fecha_limite' => null]);
 
-        // Completar la de prioridad media: sale de las abiertas y va al final.
+        // Completar la de prioridad media: sale de la lista (las completadas no se listan).
         $respuesta = $this->conJson()->patch(route('tareas.estado', $media), ['estado' => 'completada'])
             ->assertOk()
             ->assertJsonPath('estado', 'completada')
             ->assertJsonPath('id', $media->id)
             ->assertJsonPath('pendientes', 2);
 
-        $this->assertSame(['Tarea alta', 'Tarea baja', 'Tarea media'], $this->titulos($respuesta->json('lista')));
+        $this->assertSame(['Tarea alta', 'Tarea baja'], $this->titulos($respuesta->json('lista')));
 
-        // Desmarcarla: vuelve a las abiertas en su lugar por prioridad (entre la alta y la baja), no al final.
+        // Desmarcarla: vuelve a las abiertas en su lugar por prioridad (entre la alta y la baja).
         $respuesta = $this->conJson()->patch(route('tareas.estado', $media), ['estado' => 'pendiente'])
             ->assertOk()
             ->assertJsonPath('estado', 'pendiente')
@@ -124,7 +124,7 @@ class AlternarHoyTest extends TestCase
         $this->assertNotNull($alta->id.$baja->id);
     }
 
-    public function test_al_completar_la_cuarta_la_lista_conserva_solo_las_tres_ultimas_completadas(): void
+    public function test_al_completar_todas_la_lista_queda_vacia_y_las_tareas_quedan_completadas_en_la_base(): void
     {
         $tareas = Tarea::factory()->count(4)->create(['fecha_limite' => null, 'prioridad' => PrioridadTarea::Media])->values();
 
@@ -135,11 +135,9 @@ class AlternarHoyTest extends TestCase
 
         $lista = $respuesta->json('lista');
 
-        $this->assertSame(3, substr_count($lista, 'es-hecha'));
+        $this->assertSame(0, substr_count($lista, 'es-hecha'));
         $this->assertSame(0, $respuesta->json('pendientes'));
-        // La más reciente primero; la más antigua (la primera que se completó) ya no se muestra.
-        $this->assertSame([$tareas[3]->titulo, $tareas[2]->titulo, $tareas[1]->titulo], $this->titulos($lista));
-        $this->assertStringNotContainsString($tareas[0]->titulo, $lista);
+        $this->assertSame([], $this->titulos($lista));
         $this->assertSame(4, Tarea::where('estado', EstadoTarea::Completada)->count());
     }
 

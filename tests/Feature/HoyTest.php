@@ -159,7 +159,7 @@ class HoyTest extends TestCase
         $this->assertSame(EstadoTarea::Completada, $tarea->fresh()->estado);
     }
 
-    public function test_las_tareas_abiertas_van_por_prioridad_y_las_completadas_al_final_con_tope_de_tres(): void
+    public function test_las_tareas_abiertas_van_por_prioridad_y_las_completadas_no_se_listan(): void
     {
         Tarea::factory()->create(['titulo' => 'Tarea baja', 'prioridad' => PrioridadTarea::Baja, 'fecha_limite' => null]);
         Tarea::factory()->create(['titulo' => 'Tarea alta', 'prioridad' => PrioridadTarea::Alta, 'fecha_limite' => null]);
@@ -171,9 +171,8 @@ class HoyTest extends TestCase
 
         $this->get(route('hoy'))
             ->assertOk()
-            ->assertSeeInOrder(['Tarea alta', 'Tarea media', 'Tarea baja', 'Hecha 5', 'Hecha 4', 'Hecha 3'])
-            ->assertDontSee('Hecha 2')
-            ->assertDontSee('Hecha 1')
+            ->assertSeeInOrder(['Tarea alta', 'Tarea media', 'Tarea baja'])
+            ->assertDontSee('Hecha')
             ->assertSee('3 pendientes')
             ->assertSee('Prioridad alta');
     }

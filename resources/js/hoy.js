@@ -106,9 +106,11 @@ async function pedir(url, metodo, cuerpo) {
 /*
  * Cada clic cambia la fila al instante y pide el cambio al servidor. Las peticiones salen de a una
  * (así las respuestas no se pisan), una fila con petición en curso no se puede volver a tocar, y la
- * respuesta del servidor manda: trae la lista ya ordenada (abiertas por prioridad, últimas 3
- * completadas al final) y el total de pendientes. Si falla, la fila vuelve a su estado anterior.
+ * respuesta del servidor manda: trae la lista de abiertas ya ordenada y el total de pendientes. Al marcar una
+ * tarea como hecha, su fila se quita de la lista 300 ms después del clic (no hay lista de completadas). Si falla, la fila vuelve a su estado anterior.
  */
+const RETARDO_SALIDA = 300;
+
 function iniciarTareas(raiz) {
     const lista = raiz.querySelector('[data-lista]');
     const contador = raiz.querySelector('[data-pendientes]');
@@ -155,6 +157,8 @@ function iniciarTareas(raiz) {
         const previo = estaMarcado(fila.getAttribute('aria-checked'));
         const pedido = !previo;
 
+        const inicio = performance.now();
+
         mensaje.textContent = '';
         fila.setAttribute('aria-busy', 'true');
         pintarFila(fila, pedido);
@@ -165,8 +169,20 @@ function iniciarTareas(raiz) {
 
                 if (!ok) throw new Error('estado');
 
-                pintarFila(fila, estadoFinal({ previo, pedido, ok, servidor: marcadoDeTarea(datos.estado) }));
-                aplicarRespuesta(datos, esUltima());
+                const marcada = estadoFinal({ previo, pedido, ok, servidor: marcadoDeTarea(datos.estado) });
+
+                pintarFila(fila, marcada);
+
+                if (marcada) {
+                    // La fila hecha se va sola; la lista del servidor no se vuelca para no mover el resto.
+                    pendientes = pendientesFinales(datos.pendientes, pendientes);
+                    setTimeout(() => {
+                        fila.closest('.hoy-item')?.remove();
+                        actualizarResumen();
+                    }, Math.max(0, RETARDO_SALIDA - (performance.now() - inicio)));
+                } else {
+                    aplicarRespuesta(datos, esUltima());
+                }
             } catch {
                 pintarFila(fila, previo);
                 mensaje.textContent = 'No se pudo actualizar la tarea. Probá de nuevo.';
