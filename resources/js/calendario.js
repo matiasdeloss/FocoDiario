@@ -9,12 +9,7 @@ import '../css/calendario.css';
 const CLAVE_FILTROS = 'focodiario.calendario.tipos';
 const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
 const TIPOS_TARJETA = ['tarea', 'recordatorio', 'nota'];
-const ICONOS = {
-    tarea: 'bi-check2-square',
-    recordatorio: 'bi-bell',
-    nota: 'bi-journal-text',
-    sesion: 'bi-mortarboard',
-};
+const ICONOS = { tarea: 'bi-check2-square', recordatorio: 'bi-bell', nota: 'bi-journal-text' };
 const ETIQUETAS = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota' };
 const ARTICULOS = { tarea: 'la tarea', recordatorio: 'el recordatorio', nota: 'la nota' };
 const ETIQUETAS_FECHA = { tarea: 'Fecha límite', recordatorio: 'Fecha y hora del aviso', nota: 'Fecha' };
@@ -676,14 +671,6 @@ function iniciar(raiz) {
                 partes.push(`sesión de estudio, ${props.estado?.toLowerCase()}`);
             }
             info.el.title = partes.join(' · ');
-
-            const titulo = info.el.querySelector('.fc-event-title, .fc-list-event-title a, .fc-list-event-title');
-            if (titulo && ICONOS[props.tipo]) {
-                const icono = document.createElement('i');
-                icono.className = `bi ${ICONOS[props.tipo]} ev-icono`;
-                icono.setAttribute('aria-hidden', 'true');
-                titulo.prepend(icono);
-            }
         },
 
         // Tarjeta soltada desde el panel: se guarda la fecha o se deshace.

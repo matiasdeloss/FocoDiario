@@ -35,23 +35,24 @@
          data-url-tarjetas="{{ route('calendario.tarjetas.store') }}"
          data-url-tarjeta="{{ route('calendario.tarjetas.update', ['tipo' => '__TIPO__', 'id' => '__ID__']) }}"
          data-url-pagina="{{ route('calendario.tarjetas.index', ['tipo' => '__TIPO__']) }}">
-        <div class="col-lg-9">
+        <div class="col-lg-8">
             <div class="tarjeta tarjeta-relleno">
                 <div id="calendario" aria-label="Calendario"></div>
             </div>
         </div>
 
-        <div class="col-lg-3">
+        <div class="col-lg-4">
             <aside class="tarjeta tarjeta-relleno panel-sin-fecha" id="panel-sin-fecha" aria-labelledby="panel-sin-fecha-titulo">
-                <h2 class="tarjeta-titulo" id="panel-sin-fecha-titulo">Por ubicar</h2>
+                <header class="panel-cab">
+                    <h2 class="tarjeta-titulo" id="panel-sin-fecha-titulo">Por ubicar</h2>
+                    <p class="panel-ayuda">Arrastrá una tarjeta a un día del calendario o elegí su fecha. Para quitársela, arrastrá el evento de vuelta acá.</p>
+                </header>
 
                 <div class="panel-crear" role="group" aria-label="Crear una tarjeta nueva">
-                    <button type="button" class="crear-boton tipo-tarea" data-crear="tarea"><i class="bi bi-check2-square" aria-hidden="true"></i> Nueva tarea</button>
-                    <button type="button" class="crear-boton tipo-recordatorio" data-crear="recordatorio"><i class="bi bi-bell" aria-hidden="true"></i> Nuevo recordatorio</button>
-                    <button type="button" class="crear-boton tipo-nota" data-crear="nota"><i class="bi bi-journal-text" aria-hidden="true"></i> Nueva nota</button>
+                    <button type="button" class="crear-boton tipo-tarea" data-crear="tarea" aria-label="Nueva tarea"><i class="bi bi-plus-lg" aria-hidden="true"></i> Tarea</button>
+                    <button type="button" class="crear-boton tipo-recordatorio" data-crear="recordatorio" aria-label="Nuevo recordatorio"><i class="bi bi-plus-lg" aria-hidden="true"></i> Recordatorio</button>
+                    <button type="button" class="crear-boton tipo-nota" data-crear="nota" aria-label="Nueva nota"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nota</button>
                 </div>
-
-                <p class="small text-secondary mt-3 mb-2">Arrastrá una tarjeta a un día para ubicarla, o elegí su fecha en el campo. Para quitarle la fecha, arrastrá el evento de vuelta acá.</p>
 
                 <div class="panel-filtros" role="group" aria-label="Filtrar el panel por tipo">
                     <button type="button" class="panel-filtro" data-panel-filtro="" aria-pressed="true">Todo</button>
