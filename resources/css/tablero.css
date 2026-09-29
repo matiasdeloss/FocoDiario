@@ -1,0 +1,285 @@
+/*
+ * Tablero Kanban: columnas personalizables de ~288px con scroll horizontal, tarjetas compactas y arrastrar y soltar.
+ * Se carga solo en esta pantalla (ver tablero/index.blade.php). Usa los tokens de app.css / organic.css.
+ * El único scroll es el horizontal del tablero (una sola vez); las columnas crecen y la página scrollea en vertical.
+ */
+
+/* ---------- Encabezado: título a la izquierda, acciones a la derecha ---------- */
+.k-cab {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 20px;
+}
+.k-cab-titulo { min-width: 0; }
+.k-resumen { margin: 0; font-size: 14px; color: var(--color-neutral-700); }
+.k-cab-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.k-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.k-filtros[hidden] { display: none; }
+
+.k-buscar { position: relative; display: flex; align-items: center; width: 180px; max-width: 100%; }
+.k-buscar .bi { position: absolute; left: 14px; color: var(--color-neutral-600); pointer-events: none; }
+.k-buscar input {
+    width: 100%;
+    height: 35px;
+    padding: 0 14px 0 36px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-neutral-100);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 13px;
+}
+.k-buscar input::placeholder { color: var(--color-neutral-600); }
+.k-buscar input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.k-select.form-select {
+    width: auto;
+    max-width: 190px;
+    height: 35px;
+    padding-block: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+    font-size: 13px;
+    font-weight: 600;
+}
+.k-select.form-select:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; box-shadow: none; }
+.k-limpiar {
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--color-info-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.k-limpiar:hover { text-decoration: underline; }
+.k-limpiar:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 4px; }
+.k-limpiar[hidden] { display: none; }
+
+/* ---------- Tablero ---------- */
+.tablero {
+    --ancho-columna: 288px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    padding-bottom: 16px;
+    min-width: 0;
+}
+.tablero-columna {
+    flex: 0 0 var(--ancho-columna);
+    width: var(--ancho-columna);
+    min-width: 0;
+    padding: 8px;
+    background: var(--color-neutral-200);
+    border-radius: var(--radius-card);
+    min-height: 6rem;
+    transition: background-color 150ms, outline-color 150ms;
+}
+.tablero-columna.sobre { background: var(--color-accent-200); outline: 2px dashed var(--color-accent); outline-offset: -2px; }
+.tablero-columna-cabecera {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 4px 8px 8px;
+}
+.tablero-columna-cabecera .tablero-menu { margin-left: auto; }
+.tablero-columna-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    min-width: 0;
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: var(--font-heading-weight);
+    font-synthesis: none;
+}
+.tablero-columna-titulo > .bi { flex: none; font-size: 14px; color: var(--color-neutral-700); }
+.tablero-columna-titulo > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-cuenta {
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-800);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.tablero-lista { display: flex; flex-direction: column; gap: 8px; min-height: 8px; }
+.tablero-vacio { padding: 12px 4px; font-size: 13px; }
+.tablero-vacio[hidden] { display: none; }
+.tablero-ver-todas { display: block; padding: 12px 4px 4px; font-size: 13px; }
+
+/* ---------- Tarjeta ---------- */
+.tarea-tarjeta {
+    position: relative;
+    padding: 10px 12px;
+    background: var(--color-neutral-100);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: grab;
+    transition: opacity 150ms, box-shadow 200ms;
+}
+.tarea-tarjeta[hidden] { display: none; }
+.tarea-tarjeta:hover { box-shadow: var(--shadow-sm); }
+.tarea-tarjeta.arrastrando { opacity: 0.4; cursor: grabbing; }
+.tarea-tarjeta.guardando { opacity: 0.6; }
+.tarea-titulo { font-size: 14px; overflow-wrap: anywhere; }
+.tarea-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 8px; }
+
+.k-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-800);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+.k-chip .bi { font-size: 11px; }
+.k-chip-punto { flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.k-chip-texto { overflow: hidden; text-overflow: ellipsis; }
+.k-chip-proyecto { max-width: 140px; }
+.k-chip-fecha { background: transparent; padding-inline: 4px; color: var(--color-neutral-700); font-variant-numeric: tabular-nums; }
+.k-chip-fecha.k-fecha-vencida { background: var(--color-danger-bg); color: var(--color-danger-text); padding-inline: 8px; }
+.k-chip-fecha.k-fecha-hoy { background: var(--color-accent-200); color: var(--color-accent-800); padding-inline: 8px; }
+/* Etiquetas de prioridad: tonos suaves de los tokens de estado (alta = rojo, media = ámbar, baja = azul) */
+.k-chip.badge-prioridad-alta { background: var(--color-danger-bg); color: var(--color-danger-text); }
+.k-chip.badge-prioridad-media { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.k-chip.badge-prioridad-baja { background: var(--color-info-bg); color: var(--color-info-text); }
+.tarea-tarjeta[data-estado="completada"] .k-chip-fecha { background: transparent; color: var(--color-neutral-700); padding-inline: 4px; }
+.tarea-tarjeta[data-estado="completada"] .marca-vencida { display: none; }
+.tarea-tarjeta[data-estado="completada"] .k-chip { opacity: 0.7; }
+
+/* Acciones sobre la esquina superior derecha: solo al pasar el cursor o al enfocar con teclado */
+.tarea-acciones {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    padding: 1px;
+    background: var(--color-neutral-100);
+    border-radius: var(--radius-control);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 10%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms;
+}
+.tarea-tarjeta:hover .tarea-acciones,
+.tarea-tarjeta:focus-within .tarea-acciones { opacity: 1; pointer-events: auto; }
+.tarea-acciones .btn-icono { width: 26px; height: 26px; }
+.tarea-acciones form { margin: 0; }
+@media (hover: none) {
+    .tarea-acciones { position: static; opacity: 1; pointer-events: auto; box-shadow: none; padding: 0; margin-top: 4px; background: none; }
+}
+
+/* ---------- Menú de la columna ---------- */
+.tablero-menu { position: static; }
+.tablero-menu > summary { list-style: none; cursor: pointer; }
+.tablero-menu > summary::-webkit-details-marker { display: none; }
+.tablero-menu-cuerpo {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: var(--color-bg);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-md);
+}
+.tablero-menu-fila { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; }
+.tablero-menu-fila span { margin-right: auto; }
+.tablero-menu-nota { margin: 0; font-size: 12px; color: var(--color-neutral-700); }
+.tablero-form { display: flex; flex-direction: column; gap: 8px; }
+.tablero-form .form-label { margin: 0; font-size: 12px; color: var(--color-neutral-700); }
+
+/* ---------- Añadir tarjeta / columna ---------- */
+.tablero-anadir { margin-top: 8px; }
+.tablero-anadir > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-control);
+    color: var(--color-neutral-700);
+    font-size: 13px;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color 150ms, color 150ms;
+}
+.tablero-anadir > summary::-webkit-details-marker { display: none; }
+.tablero-anadir > summary:hover { background: var(--color-neutral-300); color: var(--color-accent-800); }
+.tablero-anadir > summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.tablero-anadir[open] > summary { display: none; }
+.tablero-anadir[open] .tablero-form { padding: 4px; }
+.tablero-columna-nueva { background: transparent; outline: 2px dashed var(--color-neutral-400); outline-offset: -2px; min-height: 0; }
+.tablero-columna-nueva .tablero-anadir { margin-top: 0; }
+.tablero-anadir-boton, .tablero-menu-accion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-neutral-700);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+}
+.tablero-anadir-boton { margin-top: 8px; }
+.tablero-columna-nueva .tablero-anadir-boton { margin-top: 0; }
+.tablero-anadir-boton:hover, .tablero-menu-accion:hover { background: var(--color-neutral-300); color: var(--color-accent-800); }
+.tablero-menu-accion:hover { background: var(--color-neutral-200); }
+.tablero-anadir-boton:focus-visible, .tablero-menu-accion:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.tablero-menu-accion.peligro:hover { color: var(--color-danger-text); }
+.tablero-anadir-boton[hidden], .tablero-menu-accion[hidden] { display: none; }
+
+/* Alta rápida al pie de la columna */
+.k-anadir[hidden], .k-anadir-form[hidden] { display: none; }
+.k-anadir-form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.k-anadir-form textarea {
+    resize: none;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--color-neutral-100);
+    font-size: 14px;
+}
+.k-anadir-form textarea:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 0; box-shadow: none; }
+.k-anadir-error { margin: 0; font-size: 12px; font-weight: 600; color: var(--color-danger-text); }
+.k-anadir-error:empty { display: none; }
+.k-anadir-acciones { display: flex; align-items: center; gap: 4px; }
+
+@media (max-width: 575.98px) {
+    .k-buscar { flex: 1 1 100%; width: auto; }
+    .k-cab-acciones { width: 100%; }
+    .k-cab-acciones > .btn { flex: 1 1 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tablero { scroll-behavior: auto; }
+    .tablero-columna, .tarea-tarjeta, .tarea-acciones { transition: none; }
+}

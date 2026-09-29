@@ -71,7 +71,7 @@ class ColumnasTableroTest extends TestCase
         $revision = ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]);
         Tarea::factory()->create(['titulo' => 'Para revisar', 'columna_id' => $revision->id]);
 
-        $respuesta = $this->get(route('tareas.index', ['vista' => 'tablero']))->assertOk();
+        $respuesta = $this->get(route('tablero.index'))->assertOk();
 
         $columnas = $respuesta->viewData('columnas');
         $this->assertCount(4, $columnas);
@@ -148,7 +148,7 @@ class ColumnasTableroTest extends TestCase
         $revision = ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]);
 
         $this->post(route('tablero.columnas.tarjetas.store', $revision), ['titulo' => 'Tarjeta rápida'])
-            ->assertRedirect(route('tareas.index', ['vista' => 'tablero']));
+            ->assertRedirect(route('tablero.index'));
 
         $tarea = Tarea::where('titulo', 'Tarjeta rápida')->firstOrFail();
         $this->assertSame($revision->id, $tarea->columna_id);

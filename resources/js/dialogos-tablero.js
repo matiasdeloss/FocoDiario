@@ -249,6 +249,49 @@ if (dialogos.length > 0) {
         });
     }
 
+    // ---------- Recordatorio ----------
+
+    const dialogoRecordatorio = document.getElementById('dialogo-recordatorio');
+
+    if (dialogoRecordatorio) {
+        const formulario = dialogoRecordatorio.querySelector('form');
+        const titulo = dialogoRecordatorio.querySelector('[data-titulo-dialogo]');
+        const enviarBtn = dialogoRecordatorio.querySelector('[data-enviar]');
+        const campos = ['mensaje', 'descripcion', 'recordar_en', 'tarea_id'];
+
+        const abrirRecordatorio = (opener) => {
+            const editar = opener.dataset.abrirRecordatorio === 'editar';
+            const datos = editar ? JSON.parse(opener.dataset.recordatorio) : {};
+
+            formulario.reset();
+            limpiarErrores(dialogoRecordatorio);
+
+            campos.forEach((nombre) => {
+                if (datos[nombre] !== undefined && datos[nombre] !== null) {
+                    formulario.elements[nombre].value = datos[nombre];
+                }
+            });
+
+            titulo.textContent = editar ? 'Editar recordatorio' : 'Nuevo recordatorio';
+            enviarBtn.textContent = editar ? enviarBtn.dataset.textoEditar : enviarBtn.dataset.textoCrear;
+            abrirDialogo(dialogoRecordatorio, opener, editar
+                ? { url: datos.url, metodo: 'PATCH' }
+                : { url: dialogoRecordatorio.dataset.urlCrear, metodo: 'POST' });
+            enfocarInicial(dialogoRecordatorio, formulario.elements.mensaje);
+        };
+
+        document.addEventListener('click', (evento) => {
+            const opener = evento.target.closest('[data-abrir-recordatorio]');
+
+            if (!opener || evento.button !== 0 || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) {
+                return;
+            }
+
+            evento.preventDefault();
+            abrirRecordatorio(opener);
+        });
+    }
+
     // ---------- Columna ----------
 
     const dialogoColumna = document.getElementById('dialogo-columna');

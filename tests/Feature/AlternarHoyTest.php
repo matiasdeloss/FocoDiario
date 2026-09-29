@@ -60,16 +60,15 @@ class AlternarHoyTest extends TestCase
             ->patch(route('recordatorios.reactivar', $recordatorio))
             ->assertOk()
             ->assertSee('Pagar luz')
-            ->assertSee('Pendiente')
-            ->assertSee('Marcar como avisado')
-            ->assertDontSee('Volver a pendiente')
+            ->assertSee('aria-checked="false"', false)
+            ->assertSee('action="'.route('recordatorios.avisar', $recordatorio).'"', false)
             ->assertDontSee('<html', false);
 
         $recordatorio->update(['avisado_en' => now()]);
 
-        $this->withoutHeader('HX-Request')->from(route('recordatorios.index'))
+        $this->withoutHeader('HX-Request')->from(route('tareas.index'))
             ->patch(route('recordatorios.reactivar', $recordatorio))
-            ->assertRedirect(route('recordatorios.index'))
+            ->assertRedirect(route('tareas.index'))
             ->assertSessionHas('estado', 'Recordatorio vuelto a pendiente.');
         $this->assertNull($recordatorio->fresh()->avisado_en);
     }
@@ -79,12 +78,13 @@ class AlternarHoyTest extends TestCase
         $avisado = Recordatorio::factory()->create(['tarea_id' => null, 'mensaje' => 'Ya avisado', 'recordar_en' => now()->addDay(), 'avisado_en' => now()]);
         $pendiente = Recordatorio::factory()->create(['tarea_id' => null, 'mensaje' => 'Todavía no', 'recordar_en' => now()->addDays(2)]);
 
-        $html = $this->get(route('recordatorios.index'))->assertOk()->getContent();
+        $html = $this->get(route('tareas.index', ['tipo' => 'recordatorio']))->assertOk()->getContent();
 
-        $this->assertStringContainsString(route('recordatorios.reactivar', $avisado), $html);
-        $this->assertStringNotContainsString(route('recordatorios.reactivar', $pendiente), $html);
-        $this->assertStringContainsString(route('recordatorios.avisar', $pendiente), $html);
-        $this->assertStringNotContainsString(route('recordatorios.avisar', $avisado), $html);
+        // El check de cada fila apunta (sin JS) a la acción contraria a su estado actual.
+        $this->assertStringContainsString('action="'.route('recordatorios.reactivar', $avisado).'"', $html);
+        $this->assertStringNotContainsString('action="'.route('recordatorios.reactivar', $pendiente).'"', $html);
+        $this->assertStringContainsString('action="'.route('recordatorios.avisar', $pendiente).'"', $html);
+        $this->assertStringNotContainsString('action="'.route('recordatorios.avisar', $avisado).'"', $html);
     }
 
     public function test_hoy_da_a_cada_recordatorio_las_dos_rutas_para_alternar(): void

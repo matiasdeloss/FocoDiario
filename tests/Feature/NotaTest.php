@@ -118,4 +118,31 @@ class NotaTest extends TestCase
         $this->withHeaders(['HX-Request' => 'true'])->delete(route('notas.destroy', $nota))->assertOk();
         $this->assertDatabaseMissing('notas', ['id' => $nota->id]);
     }
+
+    public function test_se_filtran_las_notas_por_busqueda_color_y_fijadas(): void
+    {
+        Nota::factory()->create(['titulo' => 'Vectores', 'contenido' => 'Producto escalar', 'color' => 'salvia', 'fijada' => true]);
+        Nota::factory()->create(['titulo' => 'Compras', 'contenido' => 'Leche', 'color' => 'durazno', 'fijada' => false]);
+
+        $this->get(route('notas.index', ['q' => 'escalar']))->assertOk()->assertSee('Vectores')->assertDontSee('Compras');
+        $this->get(route('notas.index', ['color' => 'durazno']))->assertOk()->assertSee('Compras')->assertDontSee('Vectores');
+        $this->get(route('notas.index', ['fijadas' => 1]))->assertOk()->assertSee('Vectores')->assertDontSee('Compras');
+        $this->get(route('notas.index', ['q' => 'nada']))->assertOk()->assertSee('Ninguna nota coincide');
+        $this->get(route('notas.index', ['color' => 'violeta']))->assertSessionHasErrors('color');
+    }
+
+    public function test_el_modal_guarda_y_edita_notas_con_json_y_devuelve_errores_422(): void
+    {
+        $this->postJson(route('notas.store'), ['titulo' => '', 'contenido' => ''])
+            ->assertStatus(422)->assertJsonValidationErrors('contenido');
+
+        $this->postJson(route('notas.store'), ['titulo' => 'Idea', 'contenido' => 'Texto', 'color' => 'oliva', 'fijada' => '1'])
+            ->assertOk()->assertJson(['ok' => true]);
+        $nota = Nota::firstOrFail();
+        $this->assertTrue($nota->fijada);
+
+        $this->putJson(route('notas.update', $nota), ['titulo' => 'Idea 2', 'contenido' => 'Texto', 'fijada' => '0'])
+            ->assertOk();
+        $this->assertSame('Idea 2', $nota->fresh()->titulo);
+    }
 }

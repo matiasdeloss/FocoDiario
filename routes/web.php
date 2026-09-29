@@ -51,7 +51,8 @@ Route::patch('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaCa
 Route::delete('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaCalendarioController::class, 'destroy'])
     ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.destroy');
 
-// ---- Tablero de tareas: columnas personalizables ----
+// ---- Tablero Kanban (vista aparte de Tareas): columnas personalizables ----
+Route::get('tablero', [\App\Http\Controllers\TableroController::class, 'index'])->name('tablero.index');
 Route::post('tablero/columnas', [\App\Http\Controllers\ColumnaTableroController::class, 'store'])->name('tablero.columnas.store');
 Route::patch('tablero/columnas/{columna}', [\App\Http\Controllers\ColumnaTableroController::class, 'update'])->name('tablero.columnas.update');
 Route::delete('tablero/columnas/{columna}', [\App\Http\Controllers\ColumnaTableroController::class, 'destroy'])->name('tablero.columnas.destroy');

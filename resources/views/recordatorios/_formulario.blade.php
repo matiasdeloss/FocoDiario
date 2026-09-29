@@ -41,6 +41,6 @@
 
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-foco">Guardar</button>
-        <a href="{{ route('recordatorios.index') }}" class="btn btn-foco-suave">Cancelar</a>
+        <a href="{{ route('tareas.index') }}" class="btn btn-foco-suave">Cancelar</a>
     </div>
 </form>

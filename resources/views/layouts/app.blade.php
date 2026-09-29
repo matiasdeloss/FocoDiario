@@ -12,7 +12,7 @@
     @stack('head')
 </head>
 <body>
-    <nav class="navbar navbar-expand-md navbar-foco">
+    <nav class="navbar navbar-expand-lg navbar-foco">
         <div class="container-fluid px-3 px-lg-5">
             <a class="navbar-brand" href="{{ route('hoy') }}">
                 <i class="bi bi-bullseye"></i> FocoDiario
@@ -34,10 +34,10 @@
                         <a class="nav-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}" href="{{ route('agenda.index') }}" @if (request()->routeIs('agenda.*')) aria-current="page" @endif>Agenda</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('tareas.*') ? 'active' : '' }}" href="{{ route('tareas.index') }}" @if (request()->routeIs('tareas.*')) aria-current="page" @endif>Tareas</a>
+                        <a class="nav-link {{ request()->routeIs('tareas.*', 'recordatorios.*') ? 'active' : '' }}" href="{{ route('tareas.index') }}" @if (request()->routeIs('tareas.*', 'recordatorios.*')) aria-current="page" @endif>Tareas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('recordatorios.*') ? 'active' : '' }}" href="{{ route('recordatorios.index') }}" @if (request()->routeIs('recordatorios.*')) aria-current="page" @endif>Recordatorios</a>
+                        <a class="nav-link {{ request()->routeIs('tablero.*') ? 'active' : '' }}" href="{{ route('tablero.index') }}" @if (request()->routeIs('tablero.*')) aria-current="page" @endif>Tablero</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('registro.*') ? 'active' : '' }}" href="{{ route('registro.index') }}" @if (request()->routeIs('registro.*')) aria-current="page" @endif>Registro</a>

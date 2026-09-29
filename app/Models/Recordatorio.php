@@ -44,6 +44,19 @@ class Recordatorio extends Model
         return $query->whereNull('recordar_en');
     }
 
+    /** Datos que el modal "Editar recordatorio" carga en sus campos (viajan en data-recordatorio). */
+    public function datosModal(): array
+    {
+        return [
+            'id' => $this->id,
+            'url' => route('recordatorios.update', $this),
+            'mensaje' => $this->mensaje,
+            'descripcion' => $this->descripcion,
+            'recordar_en' => $this->recordar_en?->format('Y-m-d\TH:i'),
+            'tarea_id' => $this->tarea_id,
+        ];
+    }
+
     public function tarea(): BelongsTo
     {
         return $this->belongsTo(Tarea::class);

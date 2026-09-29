@@ -16,13 +16,17 @@ class TareaTest extends TestCase
         Tarea::factory()->create(['titulo' => 'Tarea A', 'proyecto' => 'Tesis', 'estado' => EstadoTarea::Pendiente]);
         Tarea::factory()->create(['titulo' => 'Tarea B', 'proyecto' => 'Casa', 'estado' => EstadoTarea::Completada]);
 
-        $this->get(route('tareas.index'))->assertOk()->assertSee('Tarea A')->assertSee('Tarea B');
+        $this->get(route('tareas.index'))->assertOk()->assertSee('aria-label="Tarea A"', false)->assertSee('aria-label="Tarea B"', false);
 
+        $this->get(route('tareas.index', ['estado' => 'hechas']))
+            ->assertOk()->assertSee('aria-label="Tarea B"', false)->assertDontSee('aria-label="Tarea A"', false);
+
+        // Los enlaces de antes (?estado=completada) siguen llevando a las hechas.
         $this->get(route('tareas.index', ['estado' => 'completada']))
-            ->assertOk()->assertSee('Tarea B')->assertDontSee('Tarea A');
+            ->assertOk()->assertSee('aria-label="Tarea B"', false)->assertDontSee('aria-label="Tarea A"', false);
 
         $this->get(route('tareas.index', ['proyecto' => 'Tesis']))
-            ->assertOk()->assertSee('Tarea A')->assertDontSee('Tarea B');
+            ->assertOk()->assertSee('aria-label="Tarea A"', false)->assertDontSee('aria-label="Tarea B"', false);
     }
 
     public function test_se_puede_crear_una_tarea(): void
@@ -92,10 +96,12 @@ class TareaTest extends TestCase
                 ->assertOk()->getContent();
 
             $this->assertSame($estado, $tarea->fresh()->estado->value);
-            $this->assertStringContainsString('hx-sync="this:queue last"', $html);
-            $this->assertStringContainsString('id="tarea-'.$id.'-'.$estado.'"', $html);
-            $this->assertMatchesRegularExpression('/id="tarea-'.$id.'-'.$estado.'"[^>]*aria-pressed="true"/s', $html);
-            $this->assertSame(1, substr_count($html, 'aria-pressed="true"'));
+            $hecha = $estado === 'completada';
+            $this->assertStringContainsString('id="tarea-'.$id.'"', $html);
+            $this->assertStringContainsString('aria-checked="'.($hecha ? 'true' : 'false').'"', $html);
+            $this->assertSame($hecha, str_contains($html, 'es-hecha'));
+            // Sin JS, el check envía el estado contrario al actual.
+            $this->assertStringContainsString('name="estado" value="'.($hecha ? 'pendiente' : 'completada').'"', $html);
         }
     }
 

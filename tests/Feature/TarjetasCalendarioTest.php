@@ -227,9 +227,8 @@ class TarjetasCalendarioTest extends TestCase
         Recordatorio::factory()->create(['tarea_id' => null, 'mensaje' => 'Con fecha', 'recordar_en' => now()->addDay()]);
         $suelto = Recordatorio::factory()->sinFecha()->create(['tarea_id' => null, 'mensaje' => 'Recordatorio suelto']);
 
-        $this->get(route('recordatorios.index'))->assertOk()
-            ->assertSeeInOrder(['Con fecha', 'Sin fecha', 'Recordatorio suelto'])
-            ->assertSee('Por ubicar');
+        $this->get(route('tareas.index', ['tipo' => 'recordatorio']))->assertOk()
+            ->assertSeeInOrder(['Con fecha', 'Sin fecha', 'Recordatorio suelto']);
 
         // Hoy: solo lista los que tienen fecha, y avisa de los otros
         $this->get(route('hoy'))->assertOk()
@@ -237,14 +236,14 @@ class TarjetasCalendarioTest extends TestCase
             ->assertSee('1 sin fecha:')->assertSee('ubicarlos en el calendario');
 
         // Marcar como avisado no falla sin fecha
-        $this->patch(route('recordatorios.avisar', $suelto), [], ['HX-Request' => 'true'])->assertOk()->assertSee('Avisado');
+        $this->patch(route('recordatorios.avisar', $suelto), [], ['HX-Request' => 'true'])->assertOk()->assertSee('aria-checked="true"', false);
         $this->assertNotNull($suelto->fresh()->avisado_en);
     }
 
     public function test_el_formulario_completo_acepta_recordatorio_sin_fecha_y_comentarios(): void
     {
         $this->post(route('recordatorios.store'), ['mensaje' => 'Sin fecha aun', 'recordar_en' => '', 'descripcion' => 'Detalle'])
-            ->assertRedirect(route('recordatorios.index'));
+            ->assertRedirect(route('tareas.index'));
         $this->assertNull(Recordatorio::first()->recordar_en);
         $this->assertSame('Detalle', Recordatorio::first()->descripcion);
 

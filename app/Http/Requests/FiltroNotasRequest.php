@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ColorNota;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FiltroNotasRequest extends FormRequest
 {
@@ -16,6 +18,9 @@ class FiltroNotasRequest extends FormRequest
         return [
             // "bandeja" = notas sin destino; un número = id de contexto
             'contexto' => ['nullable', 'string', 'regex:/^(bandeja|\d+)$/'],
+            'q' => ['nullable', 'string', 'max:100'],
+            'color' => ['nullable', Rule::enum(ColorNota::class)],
+            'fijadas' => ['nullable', 'boolean'],
         ];
     }
 

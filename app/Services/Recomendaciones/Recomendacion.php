@@ -2,6 +2,7 @@
 
 namespace App\Services\Recomendaciones;
 
+use App\Enums\CategoriaRecomendacion;
 use App\Enums\TipoRecomendacion;
 
 /** Una recomendación lista para mostrar. Prioridad de 0 a 100: mayor número, más importante. */
@@ -18,5 +19,6 @@ final readonly class Recomendacion
         public int $prioridad,
         public ?Fuente $fuente = null,
         public array $datos = [],
+        public ?CategoriaRecomendacion $categoria = null,
     ) {}
 }

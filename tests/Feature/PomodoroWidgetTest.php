@@ -11,7 +11,7 @@ class PomodoroWidgetTest extends TestCase
 
     public function test_el_layout_incluye_el_widget_con_marcado_accesible_en_todas_las_secciones(): void
     {
-        foreach (['tareas.index', 'recordatorios.index', 'registro.index', 'notas.index', 'recomendaciones.index', 'estudio.historial', 'estudio.metodos'] as $ruta) {
+        foreach (['tareas.index', 'tablero.index', 'registro.index', 'notas.index', 'recomendaciones.index', 'estudio.historial', 'estudio.metodos'] as $ruta) {
             $this->get(route($ruta))
                 ->assertOk()
                 ->assertSee('id="pomodoro-widget"', false)

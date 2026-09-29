@@ -39,7 +39,7 @@
             <section class="tablero-columna" aria-labelledby="col-{{ $columna->id }}" data-columna="{{ $columna->id }}" data-categoria="{{ $categoria->value }}">
                 <header class="tablero-columna-cabecera">
                     <h2 id="col-{{ $columna->id }}" class="tablero-columna-titulo"><i class="bi {{ $categoria->icono() }}"></i> <span>{{ $columna->nombre }}</span></h2>
-                    <span class="badge-foco {{ $categoria->claseBadge() }}" data-contador data-ocultas="{{ $datos['ocultas'] }}">{{ $datos['tareas']->count() + $datos['ocultas'] }}</span>
+                    <span class="k-cuenta" data-contador data-ocultas="{{ $datos['ocultas'] }}">{{ $datos['tareas']->count() + $datos['ocultas'] }}</span>
                     <details class="tablero-menu">
                         <summary class="btn-icono" aria-label="Opciones de la columna {{ $columna->nombre }}" title="Opciones"><i class="bi bi-three-dots"></i></summary>
                         <div class="tablero-menu-cuerpo">
@@ -92,7 +92,7 @@
                 </header>
                 <div class="tablero-lista" data-lista>
                     @foreach ($datos['tareas'] as $tarea)
-                        @include('tareas._tarjeta')
+                        @include('tablero._tarjeta')
                     @endforeach
                 </div>
                 <p class="estado-vacio tablero-vacio" data-vacio @if ($datos['tareas']->isNotEmpty()) hidden @endif>
@@ -103,12 +103,22 @@
                     @endif
                 </p>
                 @if ($datos['ocultas'] > 0)
-                    <a class="tablero-ver-todas" href="{{ route('tareas.index', array_filter(['estado' => 'completada', 'proyecto' => $proyectoFiltro])) }}">
+                    <a class="tablero-ver-todas" href="{{ route('tareas.index', ['estado' => 'hechas']) }}">
                         Ver todas las completadas ({{ $datos['tareas']->count() + $datos['ocultas'] }})
                     </a>
                 @endif
-                <button type="button" class="tablero-anadir-boton" hidden data-requiere-js data-abrir-tarea="nueva" data-columna="{{ $columna->id }}"
-                        aria-label="Añadir tarjeta a {{ $columna->nombre }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Añadir tarjeta</button>
+                <div class="k-anadir" hidden data-requiere-js data-anadir data-url="{{ route('tablero.columnas.tarjetas.store', $columna) }}">
+                    <button type="button" class="tablero-anadir-boton" data-anadir-abrir aria-label="Añadir tarjeta a {{ $columna->nombre }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Añadir tarjeta</button>
+                    <form class="k-anadir-form" hidden data-anadir-form novalidate>
+                        <label class="visually-hidden" for="k-nueva-{{ $columna->id }}">Título de la nueva tarjeta en {{ $columna->nombre }}</label>
+                        <textarea id="k-nueva-{{ $columna->id }}" name="titulo" rows="2" maxlength="255" class="form-control" placeholder="Título de la tarjeta…" autocomplete="off" enterkeyhint="done"></textarea>
+                        <p class="k-anadir-error" role="alert" data-anadir-error></p>
+                        <div class="k-anadir-acciones">
+                            <button type="submit" class="btn btn-foco btn-sm" data-anadir-enviar>Añadir</button>
+                            <button type="button" class="btn-icono" data-anadir-cerrar aria-label="Cancelar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+                        </div>
+                    </form>
+                </div>
                 <noscript>
                 <details class="tablero-anadir">
                     <summary><i class="bi bi-plus-lg"></i> Añadir tarjeta</summary>

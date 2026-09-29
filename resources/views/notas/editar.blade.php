@@ -2,12 +2,18 @@
 
 @section('titulo', 'Editar nota · FocoDiario')
 
-@section('contenido')
-    <div class="mb-4">
-        <h1 class="pagina-titulo">Editar nota</h1>
-    </div>
+@push('head')
+    @vite(['resources/css/notas.css'])
+@endpush
 
-    <div class="tarjeta tarjeta-relleno formulario-angosto">
+@section('contenido')
+    <header class="notas-cab">
+        <div class="notas-titulos">
+            <h1 class="notas-titulo">Editar nota</h1>
+        </div>
+    </header>
+
+    <div class="notas-pagina-form">
         @include('notas._formulario', ['accion' => route('notas.update', $nota), 'metodo' => 'PUT'])
     </div>
 @endsection

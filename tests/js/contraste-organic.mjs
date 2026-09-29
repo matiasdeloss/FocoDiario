@@ -24,10 +24,10 @@ const N = {
     ambarFondo: '#f6e4b3', ambarTexto: '#6b4700',
     azulFondo: '#dbe8e9', azulTexto: '#27525f',
 };
-// Cuarto tono del calendario (sesión de estudio): ocre, mezcla de las rampas terracota y salvia
-N.sesionFondo = mezcla(T.a300, T.s300, 0.4);
-N.sesionTexto = mezcla(T.a900, T.s900, 0.5);
-N.sesionBorde = mezcla(T.a700, T.s700, 0.5);
+// Sesión de estudio: ciruela (paleta de tipos completa en tests/js/contraste-tipos.mjs)
+N.sesionFondo = '#f0d3e9';
+N.sesionTexto = '#591f4c';
+N.sesionBorde = '#98479a';
 
 // Los pares "del diseño" son los valores exactos del diseño Hoy v2 (pueden quedar bajo el mínimo WCAG:
 // se informan para que el usuario decida). Los demás son pares que la app usa por su cuenta.
@@ -73,7 +73,7 @@ const pares = [
     ['Calendario tarea: a800 sobre a200', T.a800, T.a200, 4.5],
     ['Calendario recordatorio: s800 sobre s200', T.s800, T.s200, 4.5],
     ['Calendario nota: n800 sobre n200', T.n800, T.n200, 4.5],
-    ['Calendario sesión (ocre)', N.sesionTexto, N.sesionFondo, 4.5],
+    ['Calendario sesión (ciruela)', N.sesionTexto, N.sesionFondo, 4.5],
     ['Borde tarea (a600) sobre a200', T.a600, T.a200, 3],
     ['Borde recordatorio (s600) sobre s200', T.s600, T.s200, 3],
     ['Borde nota (n600) sobre n200', T.n600, T.n200, 3],
@@ -96,5 +96,5 @@ for (const [nombre, fg, bg, min] of pares) {
     console.log(nombre.padEnd(66) + r.toFixed(2).padEnd(10) + String(min).padEnd(8) + (ok ? 'OK' : 'no llega'));
 }
 console.log('\n' + bajos + ' par(es) no llegan al mínimo WCAG (informativo: los valores [diseño] son los del diseño Hoy v2).');
-console.log('Ocre de sesión: fondo ' + N.sesionFondo + ' texto ' + N.sesionTexto + ' borde ' + N.sesionBorde);
+console.log('Ciruela de sesión: fondo ' + N.sesionFondo + ' texto ' + N.sesionTexto + ' borde ' + N.sesionBorde);
 process.exit(0);

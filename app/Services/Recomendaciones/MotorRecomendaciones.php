@@ -2,12 +2,27 @@
 
 namespace App\Services\Recomendaciones;
 
+use App\Enums\CategoriaRecomendacion;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 class MotorRecomendaciones
 {
+    /** Categoría de cada regla, para poder filtrar las recomendaciones en pantalla. */
+    private const CATEGORIAS = [
+        Reglas\SuenoRecomendado::class => CategoriaRecomendacion::Salud,
+        Reglas\Descansos::class => CategoriaRecomendacion::Salud,
+        Reglas\Ejercicio::class => CategoriaRecomendacion::Salud,
+        Reglas\Siesta::class => CategoriaRecomendacion::Salud,
+        Reglas\Balance::class => CategoriaRecomendacion::Bienestar,
+        Reglas\Logros::class => CategoriaRecomendacion::Bienestar,
+        Reglas\OcioComoRecompensa::class => CategoriaRecomendacion::Bienestar,
+        Reglas\RepasoEspaciado::class => CategoriaRecomendacion::Estudio,
+        Reglas\ParcialCercano::class => CategoriaRecomendacion::Estudio,
+        Reglas\PomodorosSemana::class => CategoriaRecomendacion::Estudio,
+    ];
+
     /** @var list<Regla> */
     private array $reglas;
 
@@ -30,7 +45,10 @@ class MotorRecomendaciones
         );
 
         return collect($this->reglas)
-            ->flatMap(fn (Regla $regla) => $regla->evaluar($contexto))
+            ->flatMap(fn (Regla $regla) => collect($regla->evaluar($contexto))->map(fn (Recomendacion $r) => $r->categoria ? $r : new Recomendacion(
+                $r->titulo, $r->mensaje, $r->tipo, $r->icono, $r->prioridad, $r->fuente, $r->datos,
+                self::CATEGORIAS[$regla::class] ?? CategoriaRecomendacion::Productividad,
+            )))
             ->sortByDesc(fn (Recomendacion $recomendacion) => $recomendacion->prioridad)
             ->values();
     }
@@ -55,6 +73,8 @@ class MotorRecomendaciones
             new Reglas\RepasoEspaciado,
             new Reglas\IntencionDeImplementacion,
             new Reglas\Siesta,
+            new Reglas\ParcialCercano,
+            new Reglas\PomodorosSemana,
         ];
     }
 }

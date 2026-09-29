@@ -59,6 +59,14 @@ Guía de estilo que sale de las decisiones tomadas en el proyecto. Aplica a toda
 - Enlaces "ver todos", "ver agenda" y "ver calendario": arriba a la derecha de la cabecera de cada card, en `--color-info-text`, con foco visible.
 - Cuidar el contraste AA. Los colores de actividad se validan con `node tests/js/contraste-agenda.mjs`.
 
+## Colores por tipo (Tarea, Recordatorio, Nota, Estudio)
+Única fuente de verdad: tokens `--tipo-{tarea|recordatorio|nota|sesion}-{fondo|texto|borde}` en `app.css`; se consumen con `.tipo-*` (`--punto`, `--tipo-fondo/texto/borde`) y `.ev-tipo-*` del calendario. Nunca usar colores sueltos para un tipo. Hues separados ~90° entre sí y de prioridad/estado (rojo 8°, ámbar 45°, azul 190°). Se validan con `node tests/js/contraste-tipos.mjs` (texto/fondo >= 4.5:1, borde/punto >= 3:1). No hay modo oscuro.
+- Tarea (terracota, 24°): fondo `--color-accent-200` #ffe1d0, texto #643312 (8.4:1), borde/punto #b2622d (3.6:1).
+- Recordatorio (verde vivo, 131°): fondo #cdebc5, texto #1c4a29 (7.9:1), borde/punto #3a8748 (3.4:1).
+- Nota (azul polvo, 218°): fondo #d9e4f7, texto #20407a (7.9:1), borde/punto #4a72b8 (3.7:1).
+- Estudio (ciruela, 299°): fondo #f0d3e9, texto #591f4c (8.8:1), borde/punto #98479a (4.1:1).
+- Las paletas de actividades de la Agenda (`ColorActividad`) y de notas coloreadas (`ColorNota`) son independientes de estos tokens.
+
 ## Minimalismo
 - No usar bordes de color a la izquierda en tarjetas ni eventos. El color se expresa con fondo suave y un punto de 6px (en tareas, el punto marca la prioridad).
 - Rejillas y divisores muy tenues (`color-mix` con transparencia). Sin iconos decorativos donde el color ya comunica el tipo.

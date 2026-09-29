@@ -83,18 +83,37 @@ class ColumnaTableroController extends Controller
             'titulo' => $request->validated('titulo'),
             'prioridad' => PrioridadTarea::Media,
             'columna_id' => $columna->id,
+            'orden' => (int) Tarea::where('columna_id', $columna->id)->max('orden') + 1,
         ]);
 
         return $this->respuesta($request, 'Tarjeta añadida.', [
             'id' => $tarea->id,
-            'html' => view('tareas._tarjeta', ['tarea' => $tarea->load('columna'), 'columnasOrden' => ColumnaTablero::ordenadas()->get()])->render(),
+            'html' => view('tablero._tarjeta', ['tarea' => $tarea->load('columna'), 'columnasOrden' => ColumnaTablero::ordenadas()->get()])->render(),
         ], 201);
     }
 
-    /** Mueve una tarea a otra columna; su estado pasa a ser el tipo de esa columna. */
+    /**
+     * Mueve una tarea a otra columna (su estado pasa a ser el tipo de esa columna) y, si llega el orden,
+     * deja las tarjetas de la columna en ese orden. Sin orden, la tarjeta queda arriba de la columna de destino.
+     */
     public function moverTarea(MoverTareaColumnaRequest $request, Tarea $tarea): RedirectResponse|JsonResponse
     {
-        $tarea->update($request->validated());
+        $destino = (int) $request->validated('columna_id');
+        $orden = $request->validated('orden');
+        $cambia = $tarea->columna_id !== $destino;
+
+        DB::transaction(function () use ($tarea, $destino, $orden, $cambia) {
+            if ($cambia) {
+                $tarea->update([
+                    'columna_id' => $destino,
+                    'orden' => $orden === null ? (int) Tarea::where('columna_id', $destino)->min('orden') - 1 : $tarea->orden,
+                ]);
+            }
+
+            foreach (array_values($orden ?? []) as $posicion => $id) {
+                Tarea::whereKey($id)->where('columna_id', $destino)->update(['orden' => $posicion + 1]);
+            }
+        });
 
         return $this->respuesta($request, 'Tarea movida.', [
             'id' => $tarea->id,
@@ -114,6 +133,6 @@ class ColumnaTableroController extends Controller
             return response()->json($datos + ['mensaje' => $mensaje], $codigo);
         }
 
-        return redirect()->route('tareas.index', ['vista' => 'tablero'])->with('estado', $mensaje);
+        return redirect()->route('tablero.index')->with('estado', $mensaje);
     }
 }

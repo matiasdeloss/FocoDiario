@@ -6,6 +6,8 @@ use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
 use App\Enums\TipoCategoria;
 use App\Models\BloqueTiempo;
+use App\Enums\TipoIntervalo;
+use App\Models\IntervaloEstudio;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
 use Carbon\CarbonImmutable;
@@ -35,6 +37,8 @@ final readonly class ContextoRecomendacion
         public Collection $recordatoriosAtrasados,
         public Collection $recordatoriosProximos,
         public bool $hizoEjercicioHoy,
+        public ?Tarea $parcialProximo = null,
+        public int $pomodorosSemana = 0,
     ) {}
 
     public static function desdeBaseDeDatos(CarbonImmutable $ahora): self
@@ -71,6 +75,13 @@ final readonly class ContextoRecomendacion
             tareasCompletadasHoy: Tarea::where('estado', EstadoTarea::Completada)->whereDate('updated_at', $hoy)->count(),
             recordatoriosAtrasados: Recordatorio::pendientes()->conFecha()->where('recordar_en', '<', $ahora)->orderBy('recordar_en')->limit(5)->get(),
             recordatoriosProximos: Recordatorio::pendientes()->conFecha()->whereBetween('recordar_en', [$ahora, $ahora->addHour()])->orderBy('recordar_en')->limit(5)->get(),
+            parcialProximo: Tarea::abiertas()
+                ->whereBetween('fecha_limite', [$hoy, $ahora->addDays(7)->toDateString()])
+                ->where(fn ($consulta) => $consulta->where('titulo', 'like', '%parcial%')->orWhere('titulo', 'like', '%examen%')->orWhere('titulo', 'like', '%prueba%'))
+                ->orderBy('fecha_limite')
+                ->first(),
+            pomodorosSemana: IntervaloEstudio::where('tipo', TipoIntervalo::Foco)->where('completado', true)
+                ->whereBetween('inicio', [$ahora->startOfWeek(), $ahora->endOfWeek()])->count(),
             hizoEjercicioHoy: $bloquesHoy->contains(
                 fn (BloqueTiempo $bloque) => str_contains(mb_strtolower($bloque->categoria->nombre), 'ejercicio'),
             ),

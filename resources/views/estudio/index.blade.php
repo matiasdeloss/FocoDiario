@@ -2,6 +2,10 @@
 
 @section('titulo', 'Estudio · FocoDiario')
 
+@push('head')
+    @vite('resources/css/estudio.css')
+@endpush
+
 @section('contenido')
     <div class="mb-3">
         <h1 class="pagina-titulo">Estudio</h1>
@@ -10,14 +14,13 @@
 
     @include('estudio._pestanas')
 
-    <div id="pomodoro" class="row g-3"
+    <div id="pomodoro" class="estudio-fila"
          data-fase="inactivo"
          data-url-sesiones="{{ route('estudio.sesiones.store') }}"
          data-sesion-activa="{{ $sesionActivaId }}"
          data-presets='@json($presets)'>
 
-        <div class="col-lg-7">
-            <div class="tarjeta tarjeta-relleno h-100 pomodoro-principal">
+        <section class="tarjeta estudio-timer pomodoro-principal" aria-label="Temporizador">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="badge-foco pomodoro-fase" data-p="fase">Listo para empezar</span>
                     <span class="lista-fila-meta" data-p="ciclo"></span>
@@ -58,11 +61,11 @@
                     Sesión terminada. Podés verla en el <a href="{{ route('estudio.historial') }}">historial</a>.
                 </div>
                 <div class="pomodoro-errores mt-3" data-p="errores" role="alert" hidden></div>
+        </section>
 
-                <hr class="my-4">
-
+        <section class="tarjeta estudio-config" aria-labelledby="estudio-config-titulo">
                 <fieldset id="p-formulario" class="pomodoro-formulario">
-                    <legend class="tarjeta-titulo">Configuración</legend>
+                    <legend id="estudio-config-titulo" class="tarjeta-titulo">Configuración</legend>
 
                     <div class="row g-3">
                         <div class="col-12">
@@ -80,7 +83,7 @@
                             ['clave' => 'descanso', 'titulo' => 'Descanso corto', 'nombre' => 'Descanso corto', 'defecto' => 300],
                             ['clave' => 'largo', 'titulo' => 'Descanso largo', 'nombre' => 'Descanso largo', 'defecto' => 900],
                         ] as $campo)
-                            <div class="col-12 col-md-4">
+                            <div class="col-12">
                                 <fieldset class="pomodoro-duracion" data-duracion="{{ $campo['clave'] }}" data-nombre="{{ $campo['nombre'] }}">
                                     <legend class="form-label">{{ $campo['titulo'] }}</legend>
                                     <div class="pomodoro-duracion-campos">
@@ -98,16 +101,16 @@
                                 </fieldset>
                             </div>
                         @endforeach
-                        <div class="col-12 col-md-4">
+                        <div class="col-12">
                             <label for="p-ciclos" class="form-label">Pomodoros por ciclo</label>
                             <input id="p-ciclos" type="number" class="form-control" value="4" data-nombre="Pomodoros por ciclo"
                                    min="{{ $limites['ciclos'][0] }}" max="{{ $limites['ciclos'][1] }}" step="1" inputmode="numeric" required>
                         </div>
-                        <div class="col-12 col-md-8">
+                        <div class="col-12">
                             <div class="form-text mt-0 pomodoro-ayuda-tiempos">Cada tiempo va de 00:05 a 180:00 (minutos y segundos), por ejemplo 0 min y 5 seg para probar. Los tiempos se guardan en este navegador.</div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label for="p-tarea" class="form-label">Tarea</label>
                             <select id="p-tarea" class="form-select">
                                 <option value="">Sin tarea</option>
@@ -116,7 +119,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label for="p-contexto" class="form-label">Materia o tema</label>
                             <select id="p-contexto" class="form-select">
                                 <option value="">Sin materia</option>
@@ -131,11 +134,9 @@
                         </div>
                     </div>
                 </fieldset>
-            </div>
-        </div>
+        </section>
 
-        <div class="col-lg-5">
-            <div class="d-flex flex-column gap-3 h-100">
+        <div class="estudio-lateral">
                 <div class="tarjeta tarjeta-relleno" data-p="resumen-sesion" hidden>
                     <h2 class="tarjeta-titulo">Esta sesión</h2>
                     <p class="fw-medium mb-3" data-p="detalle"></p>
@@ -145,15 +146,6 @@
                         <div class="col-6"><div class="metrica-etiqueta">Descanso real</div><div class="metrica-valor" data-p="descanso">0 s</div></div>
                         <div class="col-6"><div class="metrica-etiqueta">Tiempo libre</div><div class="metrica-valor" data-p="libre">0 s</div></div>
                     </div>
-                </div>
-
-                <div class="tarjeta tarjeta-relleno">
-                    <h2 class="tarjeta-titulo d-flex justify-content-between">Hoy <a href="{{ route('estudio.historial') }}" class="text-decoration-none text-lowercase fw-normal">historial</a></h2>
-                    <div class="lista-fila"><span>Pomodoros completos</span><span class="lista-fila-meta">{{ $resumenHoy['pomodoros'] }}</span></div>
-                    <div class="lista-fila"><span>Interrumpidos</span><span class="lista-fila-meta">{{ $resumenHoy['interrumpidos'] }}</span></div>
-                    <div class="lista-fila"><span>Foco</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['foco_seg']) }}</span></div>
-                    <div class="lista-fila"><span>Descanso</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['descanso_seg']) }}</span></div>
-                    <div class="lista-fila"><span>Tiempo libre entre pomodoros</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['libre_seg']) }}</span></div>
                 </div>
 
                 <div class="tarjeta tarjeta-relleno">
@@ -167,7 +159,17 @@
                     </button>
                     <p class="small text-secondary mt-3 mb-0">Cuando termina el foco empieza el descanso solo. Cuando termina el descanso, el tiempo libre corre hasta que inicies el siguiente foco. <a href="{{ route('estudio.metodos') }}">Ver formas de estudiar</a>.</p>
                 </div>
-            </div>
+
+                <div class="tarjeta tarjeta-relleno">
+                    <h2 class="tarjeta-titulo d-flex justify-content-between">Hoy <a href="{{ route('estudio.historial') }}" class="text-decoration-none text-lowercase fw-normal">historial</a></h2>
+                    <div class="lista-fila"><span>Pomodoros completos</span><span class="lista-fila-meta">{{ $resumenHoy['pomodoros'] }}</span></div>
+                    <div class="lista-fila"><span>Interrumpidos</span><span class="lista-fila-meta">{{ $resumenHoy['interrumpidos'] }}</span></div>
+                    <div class="lista-fila"><span>Foco</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['foco_seg']) }}</span></div>
+                    <div class="lista-fila"><span>Descanso</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['descanso_seg']) }}</span></div>
+                    <div class="lista-fila"><span>Tiempo libre entre pomodoros</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['libre_seg']) }}</span></div>
+                </div>
         </div>
     </div>
+
+    @include('estudio._historial')
 @endsection

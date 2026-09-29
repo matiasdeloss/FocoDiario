@@ -8,8 +8,11 @@ use App\Http\Requests\CambiarEstadoTareaRequest;
 use App\Http\Requests\FiltroTareasRequest;
 use App\Http\Requests\TareaRequest;
 use App\Models\ColumnaTablero;
+use App\Models\Recordatorio;
 use App\Models\Tarea;
 use App\Services\Hoy\ListasHoy;
+use App\Services\Tareas\ItemLista;
+use App\Services\Tareas\ListaTareas;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,68 +22,30 @@ use Illuminate\Support\Carbon;
 
 class TareaController extends Controller
 {
-    private const COMPLETADAS_EN_TABLERO = 10;
-
-    public function index(FiltroTareasRequest $request): View
+    /** Lista unificada de tareas y recordatorios, agrupada por tiempo (los enlaces viejos ?vista=tablero van al Tablero). */
+    public function index(FiltroTareasRequest $request, ListaTareas $lista): View|RedirectResponse
     {
         $filtros = $request->validated();
 
         if (($filtros['vista'] ?? 'lista') === 'tablero') {
-            return $this->tablero($filtros['proyecto'] ?? null);
+            return redirect()->route('tablero.index', array_filter(['proyecto' => $filtros['proyecto'] ?? null]));
         }
 
-        $tareas = Tarea::query()
-            ->when($filtros['estado'] ?? null, fn ($consulta, $estado) => $consulta->where('estado', $estado))
-            ->when($filtros['proyecto'] ?? null, fn ($consulta, $proyecto) => $consulta->where('proyecto', $proyecto))
-            ->orderByRaw("estado = 'completada'")
-            ->orderByRaw('fecha_limite is null')
-            ->orderBy('fecha_limite')
-            ->orderByDesc('id')
-            ->get();
+        $columnasOrden = ColumnaTablero::ordenadas()->get();
 
-        return view('tareas.index', [
-            'tareas' => $tareas,
-            'proyectos' => $this->proyectos(),
-            'estados' => EstadoTarea::cases(),
-            'columnasOrden' => ColumnaTablero::ordenadas()->get(),
-            'estadoFiltro' => $filtros['estado'] ?? null,
-            'proyectoFiltro' => $filtros['proyecto'] ?? null,
-            'vista' => 'lista',
-        ]);
-    }
-
-    /** Vista de tablero: una columna por cada columna del usuario; las de tipo completada muestran solo las más recientes. */
-    private function tablero(?string $proyecto): View
-    {
-        $filtrarProyecto = fn ($consulta) => $consulta->when($proyecto, fn ($c) => $c->where('proyecto', $proyecto));
-        $columnasTablero = ColumnaTablero::ordenadas()->withCount('tareas')->get();
-
-        $abiertas = $filtrarProyecto(Tarea::query()->abiertas())
-            ->orderByRaw('fecha_limite is null')
-            ->orderBy('fecha_limite')
-            ->orderByDesc('id')
-            ->get()
-            ->groupBy('columna_id');
-
-        $columnas = $columnasTablero->map(function (ColumnaTablero $columna) use ($filtrarProyecto, $abiertas) {
-            if (! $columna->esCompletada()) {
-                return ['columna' => $columna, 'tareas' => $abiertas[$columna->id] ?? collect(), 'ocultas' => 0];
-            }
-
-            $consulta = fn () => $filtrarProyecto(Tarea::query()->where('columna_id', $columna->id)->where('estado', EstadoTarea::Completada));
-            $tareas = $consulta()->orderByDesc('updated_at')->orderByDesc('id')->limit(self::COMPLETADAS_EN_TABLERO)->get();
-
-            return ['columna' => $columna, 'tareas' => $tareas, 'ocultas' => max(0, $consulta()->count() - $tareas->count())];
-        })->values();
-
-        return view('tareas.index', [
-            'columnas' => $columnas,
-            'total' => $columnas->sum(fn ($c) => $c['tareas']->count() + $c['ocultas']),
-            'columnasOrden' => $columnasTablero,
-            'proyectos' => $this->proyectos(),
-            'proyectoFiltro' => $proyecto,
-            'estadoFiltro' => null,
-            'vista' => 'tablero',
+        return view('tareas.index', $lista->armar($filtros) + [
+            'resumen' => $lista->resumen(),
+            'proyectos' => $lista->proyectos(),
+            'columnasOrden' => $columnasOrden,
+            'tareasAbiertas' => Tarea::abiertas()->orWhereIn('id', Recordatorio::whereNotNull('tarea_id')->select('tarea_id'))->orderBy('titulo')->get(['id', 'titulo']),
+            'filtros' => [
+                'tipo' => $filtros['tipo'] ?? 'todo',
+                'estado' => $filtros['estado'] ?? 'abiertas',
+                'prioridad' => $filtros['prioridad'] ?? null,
+                'proyecto' => $filtros['proyecto'] ?? null,
+                'q' => $filtros['q'] ?? null,
+            ],
+            'hoy' => today(),
         ]);
     }
 
@@ -163,7 +128,7 @@ class TareaController extends Controller
         }
 
         if ($request->header('HX-Request')) {
-            return view('tareas._fila', ['tarea' => $tarea]);
+            return view('tareas._item', ['item' => ItemLista::deTarea($tarea), 'hoy' => today()]);
         }
 
         return back()->with('estado', 'Estado actualizado.');

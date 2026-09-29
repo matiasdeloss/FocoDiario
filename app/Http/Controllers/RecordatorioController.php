@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RecordatorioRequest;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
+use App\Services\Tareas\ItemLista;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,23 +15,10 @@ use Illuminate\Support\Carbon;
 
 class RecordatorioController extends Controller
 {
-    public function index(): View
+    /** Recordatorios y Tareas comparten una sola pantalla: esta ruta lleva a la lista unificada, filtrada por recordatorios. */
+    public function index(): RedirectResponse
     {
-        // Con fecha: pendientes primero y por fecha. Sin fecha ("por ubicar"): aparte, los más nuevos primero.
-        $recordatorios = Recordatorio::with('tarea')
-            ->conFecha()
-            ->orderByRaw('avisado_en is not null')
-            ->orderBy('recordar_en')
-            ->get();
-
-        $sinFecha = Recordatorio::with('tarea')
-            ->sinFecha()
-            ->orderByRaw('avisado_en is not null')
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->get();
-
-        return view('recordatorios.index', ['recordatorios' => $recordatorios, 'sinFecha' => $sinFecha]);
+        return redirect()->route('tareas.index', ['tipo' => 'recordatorio']);
     }
 
     public function create(Request $request): View
@@ -43,11 +31,18 @@ class RecordatorioController extends Controller
         ])));
     }
 
-    public function store(RecordatorioRequest $request): RedirectResponse
+    public function store(RecordatorioRequest $request): RedirectResponse|JsonResponse
     {
-        Recordatorio::create($request->validated());
+        $recordatorio = Recordatorio::create($request->validated());
 
-        return redirect()->route('recordatorios.index')->with('estado', 'Recordatorio creado.');
+        // Modal de recordatorios: solo confirma; la página se recarga y muestra el aviso.
+        if ($request->expectsJson()) {
+            $request->session()->flash('estado', 'Recordatorio creado.');
+
+            return response()->json(['id' => $recordatorio->id, 'mensaje' => 'Recordatorio creado.'], 201);
+        }
+
+        return redirect()->route('tareas.index')->with('estado', 'Recordatorio creado.');
     }
 
     public function show(Recordatorio $recordatorio): RedirectResponse
@@ -60,11 +55,17 @@ class RecordatorioController extends Controller
         return view('recordatorios.editar', $this->datosFormulario($recordatorio));
     }
 
-    public function update(RecordatorioRequest $request, Recordatorio $recordatorio): RedirectResponse
+    public function update(RecordatorioRequest $request, Recordatorio $recordatorio): RedirectResponse|JsonResponse
     {
         $recordatorio->update($request->validated());
 
-        return redirect()->route('recordatorios.index')->with('estado', 'Recordatorio actualizado.');
+        if ($request->expectsJson()) {
+            $request->session()->flash('estado', 'Recordatorio actualizado.');
+
+            return response()->json(['id' => $recordatorio->id, 'mensaje' => 'Recordatorio actualizado.']);
+        }
+
+        return redirect()->route('tareas.index')->with('estado', 'Recordatorio actualizado.');
     }
 
     public function destroy(Request $request, Recordatorio $recordatorio): Response|RedirectResponse
@@ -75,7 +76,7 @@ class RecordatorioController extends Controller
             return response('');
         }
 
-        return redirect()->route('recordatorios.index')->with('estado', 'Recordatorio eliminado.');
+        return redirect()->route('tareas.index')->with('estado', 'Recordatorio eliminado.');
     }
 
     /** Marca el recordatorio como avisado. Con HTMX devuelve solo la fila actualizada. */
@@ -88,7 +89,7 @@ class RecordatorioController extends Controller
         }
 
         if ($request->header('HX-Request')) {
-            return view('recordatorios._fila', ['recordatorio' => $recordatorio->load('tarea')]);
+            return view('tareas._item', ['item' => ItemLista::deRecordatorio($recordatorio->load('tarea')), 'hoy' => today()]);
         }
 
         return back()->with('estado', 'Recordatorio marcado como avisado.');
@@ -104,7 +105,7 @@ class RecordatorioController extends Controller
         }
 
         if ($request->header('HX-Request')) {
-            return view('recordatorios._fila', ['recordatorio' => $recordatorio->load('tarea')]);
+            return view('tareas._item', ['item' => ItemLista::deRecordatorio($recordatorio->load('tarea')), 'hoy' => today()]);
         }
 
         return back()->with('estado', 'Recordatorio vuelto a pendiente.');

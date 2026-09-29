@@ -118,7 +118,8 @@
 .hoy-tarjeta-cab > .hoy-tarjeta-titulo { flex: 1 1 auto; min-width: 0; }
 
 .hoy-enlace {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--color-info-text);
     text-decoration: none;
     border-radius: 4px;

@@ -27,7 +27,7 @@ class ModalesTareasTest extends TestCase
     {
         $tarea = Tarea::factory()->create(['titulo' => 'Con modal']);
 
-        $html = $this->get(route('tareas.index', ['vista' => 'tablero']))->assertOk()->getContent();
+        $html = $this->get(route('tablero.index'))->assertOk()->getContent();
 
         $this->assertStringContainsString('id="dialogo-tarea"', $html);
         $this->assertStringContainsString('aria-labelledby="dialogo-tarea-titulo"', $html);
@@ -53,7 +53,10 @@ class ModalesTareasTest extends TestCase
 
         $this->assertStringContainsString('id="dialogo-tarea"', $html);
         $this->assertStringNotContainsString('id="dialogo-columna"', $html);
-        $this->assertStringContainsString('href="'.route('tareas.create').'" class="btn btn-foco" data-abrir-tarea="nueva"', $html);
+        // "Nueva…" ofrece tarea y recordatorio, cada uno con su modal y su página de respaldo sin JS.
+        $this->assertStringContainsString('id="dialogo-recordatorio"', $html);
+        $this->assertStringContainsString('href="'.route('tareas.create').'" class="t-menu-item tipo-tarea" role="menuitem" data-abrir-tarea="nueva"', $html);
+        $this->assertStringContainsString('href="'.route('recordatorios.create').'" class="t-menu-item tipo-recordatorio" role="menuitem" data-abrir-recordatorio="nuevo"', $html);
         $this->assertStringContainsString('href="'.route('tareas.edit', $tarea).'"', $html);
         $this->assertStringContainsString('data-abrir-tarea="editar"', $html);
     }
@@ -149,7 +152,7 @@ class ModalesTareasTest extends TestCase
         $this->assertSame(route('tareas.update', $tarea), $datos['url']);
         $this->assertSame($tarea->columna_id, $datos['columna_id']);
 
-        $this->get(route('tareas.index', ['vista' => 'tablero']))->assertOk()->assertSee('Con &quot;comillas&quot;', false);
+        $this->get(route('tablero.index'))->assertOk()->assertSee('Con &quot;comillas&quot;', false);
         $this->get(route('tareas.index'))->assertOk()->assertSee('Con &quot;comillas&quot;', false);
     }
 
@@ -199,7 +202,7 @@ class ModalesTareasTest extends TestCase
         $extra = ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]);
         Tarea::factory()->count(2)->create(['columna_id' => $extra->id]);
 
-        $html = $this->get(route('tareas.index', ['vista' => 'tablero']))->assertOk()->getContent();
+        $html = $this->get(route('tablero.index'))->assertOk()->getContent();
 
         $this->assertStringContainsString('&quot;tareas&quot;:2', $html);
         $this->assertStringContainsString('&quot;urlEliminar&quot;:&quot;'.str_replace('/', '\\/', route('tablero.columnas.destroy', $extra)), $html);

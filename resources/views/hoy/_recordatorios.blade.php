@@ -2,7 +2,7 @@
 <section id="hoy-recordatorios" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-recordatorios-titulo" @if (! empty($oob)) hx-swap-oob="true" @endif data-recordatorios>
     <div class="hoy-tarjeta-cab">
         <h2 class="hoy-tarjeta-titulo" id="hoy-recordatorios-titulo">Recordatorios</h2>
-        <a href="{{ route('recordatorios.index') }}" class="hoy-enlace">ver todos</a>
+        <a href="{{ route('tareas.index', ['tipo' => 'recordatorio']) }}" class="hoy-enlace">ver todos</a>
     </div>
 
     <ul class="hoy-lista" role="list">

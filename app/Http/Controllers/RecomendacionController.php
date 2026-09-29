@@ -2,22 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TipoRecomendacion;
+use App\Enums\CategoriaRecomendacion;
+use App\Services\Recomendaciones\CatalogoRecomendaciones;
 use App\Services\Recomendaciones\MotorRecomendaciones;
 use App\Services\Recomendaciones\Recomendacion;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class RecomendacionController extends Controller
 {
-    public function index(MotorRecomendaciones $motor): View
+    public function index(Request $request, MotorRecomendaciones $motor): View
     {
-        $porTipo = $motor->generar()->groupBy(fn (Recomendacion $recomendacion) => $recomendacion->tipo->value);
+        $categoria = CategoriaRecomendacion::tryFrom((string) $request->query('categoria'));
 
-        // Se muestran en un orden fijo: primero lo urgente y al final lo informativo.
-        $grupos = collect(TipoRecomendacion::cases())
-            ->filter(fn (TipoRecomendacion $tipo) => $porTipo->has($tipo->value))
-            ->mapWithKeys(fn (TipoRecomendacion $tipo) => [$tipo->value => ['tipo' => $tipo, 'items' => $porTipo[$tipo->value]]]);
+        $paraTi = $motor->generar()
+            ->when($categoria, fn ($c) => $c->filter(fn (Recomendacion $r) => $r->categoria === $categoria))
+            ->values();
 
-        return view('recomendaciones.index', ['grupos' => $grupos]);
+        // Las ideas rotan por día (semilla = fecha): no cambian al recargar. Sin filtro se muestran 8.
+        $ideas = CatalogoRecomendaciones::delDia(now()->toDateString(), $categoria);
+        if (! $categoria) {
+            $ideas = $ideas->take(8)->values();
+        }
+
+        return view('recomendaciones.index', [
+            'paraTi' => $paraTi,
+            'ideas' => $ideas,
+            'categoria' => $categoria,
+            'categorias' => CategoriaRecomendacion::cases(),
+            'alertas' => $paraTi->filter(fn (Recomendacion $r) => $r->tipo->value === 'alerta')->count(),
+        ]);
     }
 }

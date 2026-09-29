@@ -30,12 +30,13 @@
 
 /* Barra de herramientas */
 .fc .fc-toolbar { gap: var(--foco-espacio-2); margin-bottom: var(--foco-espacio-3) !important; }
+.fc .fc-toolbar-title::first-letter { text-transform: uppercase; }
 .fc .fc-toolbar-title {
     font-family: var(--foco-fuente-titulo);
     font-size: 19px;
     font-weight: var(--font-heading-weight);
     font-synthesis: none;
-    text-transform: capitalize;
+    text-transform: none;
 }
 /* Botones en pastilla: fondo de la página, texto neutral-700, sin borde (como el reinicio del diseño) */
 .fc .fc-button {
@@ -145,6 +146,28 @@
 .fc .fc-daygrid-dot-event .fc-event-title { font-weight: 500; }
 .fc .fc-daygrid-block-event .fc-event-time, .fc .fc-daygrid-dot-event .fc-event-time { font-variant-numeric: tabular-nums; }
 .fc .fc-event-time { font-weight: 600; }
+/* Vista Semana/Día: el evento siempre muestra su título legible (hora arriba, título debajo, hasta 2 líneas) */
+.fc .fc-timegrid-event { min-height: 60px; overflow: hidden; font-size: 12px; line-height: 1.35; }
+.fc .fc-timegrid-event .fc-event-main { padding: 3px 6px; overflow: hidden; }
+.fc .fc-timegrid-event .fc-event-main-frame { min-width: 0; }
+.fc .fc-timegrid-event .fc-event-time { display: block; overflow: visible; white-space: nowrap; font-size: 11px; }
+.fc .fc-timegrid-event .fc-event-title-container { min-width: 0; }
+.fc .fc-timegrid-event .fc-event-title {
+    display: block;
+    max-height: 2.75em;
+    overflow: hidden;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    padding: 0 2px;
+}
+.fc .fc-timegrid-slot { height: 2rem; }
+.fc .fc-timegrid-event .fc-event-title::before { display: none; } /* en la grilla horaria el fondo ya indica el tipo y el título gana ancho */
+.fc .fc-timegrid-event-short .fc-event-main-frame { flex-direction: row; align-items: center; gap: 4px; }
+.fc .fc-timegrid-event-short .fc-event-time { display: inline; }
+.fc .fc-timegrid-event-short .fc-event-time::after { content: none; }
+.fc .fc-timegrid-event-short .fc-event-title { max-height: 1.4em; white-space: nowrap; }
+.fc .fc-timegrid-event.fc-event-mirror { min-height: 60px; }
 /* Punto de color al comienzo de cada evento: el tipo se lee por el color y la prioridad de la tarea por el punto */
 .fc .fc-daygrid-block-event .fc-event-title::before,
 .fc .fc-timegrid-event .fc-event-title::before {
@@ -162,9 +185,9 @@
 .fc .fc-daygrid-dot-event .fc-event-time { color: var(--ev-texto); opacity: 0.8; }
 
 /* Colores por tipo (fondo claro + texto oscuro, AA): terracota, salvia, neutro cálido y ocre */
-.ev-tipo-tarea { --ev-fondo: var(--color-accent-200); --ev-texto: var(--color-accent-800); --ev-borde: var(--color-accent-600); }
-.ev-tipo-recordatorio { --ev-fondo: var(--color-accent-2-200); --ev-texto: var(--color-accent-2-800); --ev-borde: var(--color-accent-2-600); }
-.ev-tipo-nota { --ev-fondo: var(--color-neutral-200); --ev-texto: var(--color-neutral-800); --ev-borde: var(--color-neutral-600); }
+.ev-tipo-tarea { --ev-fondo: var(--tipo-tarea-fondo); --ev-texto: var(--tipo-tarea-texto); --ev-borde: var(--tipo-tarea-borde); }
+.ev-tipo-recordatorio { --ev-fondo: var(--tipo-recordatorio-fondo); --ev-texto: var(--tipo-recordatorio-texto); --ev-borde: var(--tipo-recordatorio-borde); }
+.ev-tipo-nota { --ev-fondo: var(--tipo-nota-fondo); --ev-texto: var(--tipo-nota-texto); --ev-borde: var(--tipo-nota-borde); }
 .ev-tipo-sesion { --ev-fondo: var(--tipo-sesion-fondo); --ev-texto: var(--tipo-sesion-texto); --ev-borde: var(--tipo-sesion-borde); }
 
 /* La prioridad de la tarea se lee en el borde izquierdo */

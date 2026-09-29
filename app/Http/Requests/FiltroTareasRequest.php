@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\EstadoTarea;
+use App\Enums\PrioridadTarea;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Filtros de la lista unificada de Tareas y Recordatorios (todos por query string). */
 class FiltroTareasRequest extends FormRequest
 {
     public function authorize(): bool
@@ -13,11 +14,26 @@ class FiltroTareasRequest extends FormRequest
         return true;
     }
 
+    /** Enlaces viejos: los estados de tarea de antes se traducen a los dos de ahora (abiertas / hechas). */
+    protected function prepareForValidation(): void
+    {
+        $estado = $this->query('estado');
+
+        if ($estado === 'completada') {
+            $this->merge(['estado' => 'hechas']);
+        } elseif (in_array($estado, ['pendiente', 'en_progreso'], true)) {
+            $this->merge(['estado' => 'abiertas']);
+        }
+    }
+
     public function rules(): array
     {
         return [
-            'estado' => ['nullable', Rule::enum(EstadoTarea::class)],
+            'tipo' => ['nullable', Rule::in(['todo', 'tarea', 'recordatorio'])],
+            'estado' => ['nullable', Rule::in(['abiertas', 'hechas'])],
+            'prioridad' => ['nullable', Rule::enum(PrioridadTarea::class)],
             'proyecto' => ['nullable', 'string', 'max:255'],
+            'q' => ['nullable', 'string', 'max:100'],
             'vista' => ['nullable', 'in:lista,tablero'],
         ];
     }
@@ -25,9 +41,12 @@ class FiltroTareasRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'estado.enum' => 'El estado del filtro no es válido.',
+            'tipo.in' => 'El tipo del filtro no es válido.',
+            'estado.in' => 'El estado del filtro no es válido.',
+            'prioridad.enum' => 'La prioridad del filtro no es válida.',
             'vista.in' => 'La vista elegida no es válida.',
             'proyecto.max' => 'El proyecto del filtro es demasiado largo.',
+            'q.max' => 'La búsqueda es demasiado larga.',
         ];
     }
 }

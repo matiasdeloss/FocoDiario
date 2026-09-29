@@ -139,18 +139,22 @@
 .plan-dia { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; transition: background-color 150ms var(--agenda-suave); }
 .plan-dia:has(.plan-dia-enlace:hover) { background-color: color-mix(in srgb, var(--color-accent-200) 45%, var(--color-neutral-100)); }
 .plan-dia:has(.plan-dia-enlace:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.plan-dia.es-hoy { border-color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); }
 
 .plan-dia-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .plan-dia-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; }
-.plan-dia-enlace { display: inline-flex; align-items: baseline; gap: 8px; color: inherit; text-decoration: none; }
+.plan-dia-enlace { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; }
 .plan-dia-enlace:focus-visible { outline: 0; }
 /* Toda la tarjeta lleva a la hoja del día. */
 .plan-dia-enlace::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-card); }
 .plan-dia-numero { font-family: var(--font-body); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--color-neutral-700); }
 .plan-dia.es-hoy .plan-dia-numero {
-    padding: 0 8px;
-    border-radius: var(--radius-pill);
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    margin-top: -4px;
+    padding: 0;
+    border-radius: 50%;
     background: var(--color-accent-boton);
     color: var(--color-on-accent);
     font-weight: 600;
@@ -223,51 +227,36 @@
 .plan-tipo button[aria-pressed="true"] { background: var(--color-accent-200); color: var(--color-accent-800); }
 
 /* ---------- Hoja del día: encabezado y barra ---------- */
-/* Encabezado de la hoja: una tarjeta como las del planner, con el título al centro y las herramientas debajo. */
-.hoja-cab { display: flex; flex-direction: column; gap: 16px; padding: 18px 22px 16px; }
-.hoja-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px 20px; }
-.hoja-volver {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    justify-self: start;
-    padding: 6px 12px 6px 10px;
-    border-radius: var(--radius-pill);
-    background: var(--color-bg);
-    color: var(--color-accent-700);
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-}
-.hoja-volver:hover { background: var(--color-neutral-200); color: var(--color-accent-800); }
-.hoja-titulos { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
-.hoja-kicker { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-neutral-700); }
-.hoja-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 30px; line-height: 1.15; letter-spacing: 0.04em; text-transform: uppercase; }
-.hoja-dias { display: flex; gap: 6px; align-items: center; justify-self: end; }
+/* Encabezado de la hoja: volver + título a la izquierda; a la derecha, herramientas y días en la misma línea. */
+.hoja-cab { position: relative; margin-bottom: 14px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.hoja-izquierda { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; min-width: 0; }
+.hoja-titulos { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hoja-kicker { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-neutral-700); }
+.hoja-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; }
+.hoja-derecha { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 22px; margin-left: auto; }
+/* Los tres controles de día forman una sola pastilla: ‹  Hoy  ›. */
+.hoja-dias { display: inline-flex; align-items: center; border-radius: var(--radius-control); background: var(--color-accent-100); overflow: hidden; }
+.hoja-dias .hoja-suave { --bs-btn-bg: transparent; --bs-btn-border-radius: 0; border-radius: 0; }
+.hoja-dias .hoja-suave:hover { background: var(--color-accent-200); }
+.hoja-dias .hoja-suave:focus-visible { outline-offset: -2px; }
+.hoja-dias .hoja-suave:not([aria-label]) { min-width: 64px; }
 
-.hoja-barra {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    gap: 10px 20px;
-    padding-top: 14px;
-    border-top: 1px solid color-mix(in srgb, var(--agenda-borde) 45%, transparent);
+/* Botones secundarios de la hoja: mismo tamaño y forma que "Nueva caja", en un tono suave del acento. */
+.hoja-suave {
+    --bs-btn-bg: var(--color-accent-100);
+    --bs-btn-color: var(--color-accent-800);
+    --bs-btn-hover-bg: var(--color-accent-200);
+    --bs-btn-hover-color: var(--color-accent-800);
+    --bs-btn-active-bg: var(--color-accent-200);
+    --bs-btn-active-color: var(--color-accent-800);
 }
-.hoja-barra > .btn-foco { justify-self: start; }
-.hoja-opciones {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 6px 18px;
-    padding: 3px 6px 3px 16px;
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--color-neutral-200) 65%, transparent);
-}
-.hoja-opciones .form-check { display: flex; align-items: center; gap: 8px; margin: 0; padding-left: 0; min-height: 30px; }
-.hoja-opciones .form-check-input { float: none; margin: 0; }
-.hoja-opciones .form-check-label { font-size: 13px; }
-.hoja-barra .guardado { justify-self: end; }
+
+.hoja-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 16px; }
+.hoja-barra .form-check { display: flex; align-items: center; gap: 8px; margin: 0; padding-left: 0; min-height: 32px; }
+.hoja-barra .form-check-input { float: none; margin: 0; }
+.hoja-barra .form-check-label { font-size: 13px; }
+/* El indicador no ocupa lugar: aparece debajo de la línea de herramientas mientras guarda. */
+.hoja-barra .guardado { position: absolute; right: 0; top: calc(100% + 4px); }
 
 /* ---------- Indicador de guardado ---------- */
 .guardado { display: inline-flex; align-items: center; gap: 8px; min-height: 24px; font-size: 12px; color: var(--color-neutral-700); transition: opacity 200ms var(--agenda-suave); }
@@ -652,13 +641,8 @@
 
 /* En pantallas angostas cada día es una caja apilada. */
 @media (max-width: 767.98px) {
-    .hoja-fila { grid-template-columns: 1fr 1fr; grid-template-areas: "volver dias" "titulo titulo"; }
-    .hoja-volver { grid-area: volver; }
-    .hoja-dias { grid-area: dias; }
-    .hoja-titulos { grid-area: titulo; }
-    .hoja-barra { grid-template-columns: 1fr; justify-items: center; }
-    .hoja-barra > .btn-foco, .hoja-barra .guardado { justify-self: center; }
-    .hoja-opciones { padding: 6px 12px; }
+    .hoja-cab { flex-direction: column; align-items: flex-start; }
+    .hoja-derecha, .hoja-barra { justify-content: flex-start; }
     .plan-cab { grid-template-columns: 1fr; }
     .plan-info-caja { grid-column: auto; }
     .plan-dias { display: flex; flex-direction: column; }

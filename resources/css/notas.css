@@ -1,0 +1,198 @@
+/* Notas: encabezado, filtros, tarjetas tipo post-it (masonry con columnas CSS) y formulario de respaldo. */
+
+/* ---------- Encabezado: título a la izquierda, acciones a la derecha en la misma línea ---------- */
+.notas-cab { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 18px; }
+.notas-titulos { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.notas-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; }
+.notas-subtitulo { margin: 0; font-size: 14px; color: var(--color-neutral-700); }
+.notas-acciones-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 12px; margin-left: auto; }
+
+/* Botón secundario suave: mismo tamaño y forma que el principal (igual que la hoja del día). */
+.notas-suave {
+    --bs-btn-bg: var(--color-accent-100);
+    --bs-btn-color: var(--color-accent-800);
+    --bs-btn-hover-bg: var(--color-accent-200);
+    --bs-btn-hover-color: var(--color-accent-800);
+    --bs-btn-active-bg: var(--color-accent-200);
+    --bs-btn-active-color: var(--color-accent-800);
+}
+
+/* Interruptor cuadrícula / lista: una sola pastilla con dos botones. */
+.notas-vistas { display: inline-flex; align-items: center; padding: 3px; border-radius: var(--radius-pill); background: var(--color-accent-100); }
+.notas-vistas[hidden] { display: none; }
+.notas-vista {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
+    background: transparent; color: var(--color-accent-800); cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+}
+.notas-vista:hover { background: var(--color-accent-200); }
+.notas-vista[aria-pressed="true"] { background: var(--color-surface, var(--color-neutral-100)); color: var(--color-neutral-900); }
+.notas-vista:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ---------- Filtros ---------- */
+.notas-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-bottom: 22px; }
+.notas-buscar, .notas-materia {
+    position: relative; display: flex; align-items: center; margin: 0;
+    height: 40px; border-radius: var(--radius-pill); background: var(--color-neutral-100);
+    color: var(--color-neutral-700);
+    transition: box-shadow 150ms;
+}
+.notas-buscar { flex: 1 1 240px; max-width: 360px; }
+.notas-materia { flex: 0 1 240px; }
+.notas-buscar:focus-within, .notas-materia:focus-within { box-shadow: 0 0 0 2px var(--color-accent); }
+.notas-buscar > .bi, .notas-materia > .bi { position: absolute; left: 14px; pointer-events: none; font-size: 14px; }
+.notas-buscar input, .notas-materia select {
+    width: 100%; min-width: 0; height: 100%; padding: 0 16px 0 38px; border: 0; border-radius: inherit;
+    background: transparent; color: var(--color-text); font: inherit; font-size: 14px; outline: none;
+    text-overflow: ellipsis;
+}
+.notas-materia select { cursor: pointer; padding-right: 12px; }
+.notas-buscar input::placeholder { color: var(--color-neutral-600); }
+
+.notas-pastillas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.notas-pastilla {
+    display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px;
+    border-radius: var(--radius-pill); background: var(--color-neutral-100); color: var(--color-neutral-800);
+    font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+    transition: background-color 150ms, color 150ms;
+}
+.notas-pastilla:hover { background: var(--color-neutral-200); color: var(--color-neutral-900); }
+.notas-pastilla:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.notas-pastilla[aria-current="true"] { background: var(--color-neutral-900); color: var(--color-neutral-100); }
+.notas-pastilla[style]:hover { background: var(--nota-fondo); }
+.notas-pastilla[style][aria-current="true"] { background: var(--nota-fondo); color: var(--color-neutral-900); box-shadow: inset 0 0 0 2px var(--nota-marca); }
+.notas-punto { width: 10px; height: 10px; border-radius: 50%; background: var(--nota-marca); }
+.notas-limpiar { background: transparent; color: var(--color-info-text, var(--color-accent-700)); }
+.notas-limpiar:hover { background: var(--color-neutral-200); }
+
+/* ---------- Tarjetas (masonry con columnas CSS, sin scrolls anidados) ---------- */
+.notas-lista { column-width: 260px; column-gap: 16px; }
+.notas[data-vista="lista"] .notas-lista { column-width: auto; column-count: 1; max-width: 760px; }
+
+.nota-item {
+    --nota-fondo: var(--color-neutral-100);
+    position: relative; display: flex; flex-direction: column; gap: 8px;
+    break-inside: avoid; margin: 0 0 16px; padding: 18px 18px 14px;
+    border-radius: 18px; background: var(--nota-fondo); color: var(--color-neutral-900);
+    /* Sin sombras: la nota fijada se distingue por su chip y por un borde fino. */
+}
+.notas .nota-item, .notas .nota-item:first-child, .notas .nota-item:last-child { border: 0; border-radius: 18px; }
+.notas .nota-mover { flex: 0 1 auto; margin: 0; }
+.nota-fijada { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--nota-marca, var(--color-neutral-500)) 55%, transparent); }
+.nota-titulo { margin: 0; padding-right: 0; font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 1.25; letter-spacing: -0.005em; overflow-wrap: anywhere; }
+.nota-contenido {
+    white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14.5px; line-height: 1.55;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; line-clamp: 7; overflow: hidden;
+}
+.notas[data-vista="lista"] .nota-contenido { -webkit-line-clamp: 4; line-clamp: 4; }
+
+.nota-pie { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 4px; min-width: 0; }
+.nota-fecha { margin-left: auto; font-size: 12px; color: var(--color-neutral-700); white-space: nowrap; }
+
+/* Materia: pastilla que es un selector para mover la nota. */
+.nota-mover {
+    position: relative; display: inline-flex; align-items: center; min-width: 0; max-width: 100%; margin: 0;
+    height: 28px; border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-neutral-100) 65%, transparent); color: var(--color-neutral-800);
+    transition: background-color 150ms;
+}
+.nota-mover:hover { background: color-mix(in srgb, var(--color-neutral-100) 90%, transparent); }
+.nota-mover:focus-within { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.nota-mover > .bi { position: absolute; left: 10px; font-size: 12px; pointer-events: none; }
+.nota-mover select {
+    field-sizing: content; max-width: 100%; min-width: 0; height: 100%; padding: 0 12px 0 28px; border: 0; border-radius: inherit;
+    background: transparent; color: inherit; font: inherit; font-size: 12px; font-weight: 500; outline: none; cursor: pointer;
+    text-overflow: ellipsis; appearance: none; -webkit-appearance: none;
+}
+.nota-mover select option { color: var(--color-text); background: var(--color-neutral-100); }
+
+.nota-chip {
+    display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px;
+    border-radius: var(--radius-pill); background: var(--color-neutral-900); color: var(--color-neutral-100);
+    font-size: 12px; font-weight: 500;
+}
+.nota-chip .bi { font-size: 11px; }
+
+/* Acciones: iconos redondos que aparecen al pasar el mouse o enfocar; siempre visibles en táctil. */
+.nota-acciones {
+    position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; padding: 3px;
+    border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-neutral-100) 85%, transparent);
+    opacity: 0; transform: translateY(-2px); pointer-events: none;
+    transition: opacity 150ms, transform 150ms;
+}
+.nota-acciones form { margin: 0; display: inline-flex; }
+.nota-item:hover .nota-acciones, .nota-item:focus-within .nota-acciones { opacity: 1; transform: none; pointer-events: auto; }
+@media (hover: none) { .nota-acciones { opacity: 1; transform: none; pointer-events: auto; } }
+.nota-boton {
+    display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;
+    border: 0; border-radius: 50%; background: transparent; color: var(--color-neutral-800);
+    font-size: 14px; text-decoration: none; cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+}
+.nota-boton:hover { background: var(--color-neutral-200); color: var(--color-neutral-900); }
+.nota-boton.activo { background: var(--color-neutral-900); color: var(--color-neutral-100); }
+.nota-boton-peligro:hover { background: var(--color-danger-bg, var(--color-neutral-200)); color: var(--color-danger-text, var(--color-neutral-900)); }
+.nota-boton:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.nota-boton:active { transform: scale(0.94); }
+/* Con título largo, las acciones no lo tapan en táctil: se reserva espacio arriba. */
+@media (hover: none) { .nota-item { padding-top: 52px; } }
+
+.nota-item.htmx-swapping { opacity: 0; transition: opacity 120ms cubic-bezier(0.2, 0, 0, 1); }
+.nota-item.htmx-added { animation: nota-entra 180ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes nota-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Estado vacío ---------- */
+.notas-vacio { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 440px; margin: 48px auto; padding: 36px 24px; border-radius: 24px; background: var(--color-neutral-100); text-align: center; }
+.notas-vacio[hidden] { display: none; }
+.notas-vacio > .bi { font-size: 32px; color: var(--color-accent-600); }
+.notas-vacio-titulo { margin: 0; font-family: var(--font-heading); font-size: 22px; }
+.notas-vacio-texto { margin: 0 0 6px; font-size: 14px; color: var(--color-neutral-700); }
+
+/* ---------- Selector de color del formulario ---------- */
+.notas-colores { display: flex; flex-wrap: wrap; gap: 10px; }
+.nota-color { position: relative; display: inline-flex; margin: 0; cursor: pointer; }
+.nota-color input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.nota-color-punto {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--nota-fondo);
+    box-shadow: inset 0 0 0 3px var(--color-neutral-100), inset 0 0 0 6px var(--nota-marca);
+    transition: transform 150ms;
+}
+.nota-color-ninguno { --nota-fondo: var(--color-neutral-100); --nota-marca: var(--color-neutral-400); background: transparent; box-shadow: inset 0 0 0 2px var(--color-neutral-400); }
+.nota-color:hover .nota-color-punto { transform: scale(1.08); }
+.nota-color input:checked + .nota-color-punto { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 4px var(--color-neutral-900), inset 0 0 0 3px var(--color-neutral-100), inset 0 0 0 6px var(--nota-marca); }
+.nota-color input:checked + .nota-color-ninguno { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 4px var(--color-neutral-900), inset 0 0 0 2px var(--color-neutral-400); }
+.nota-color input:focus-visible + .nota-color-punto { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+
+/* ---------- Páginas de crear/editar (respaldo sin JS) ---------- */
+.notas-pagina-form { max-width: 620px; padding: 28px; border-radius: 24px; background: var(--color-neutral-100); }
+.notas-pagina-form .dialogo-etiqueta, .dialogo .dialogo-etiqueta { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600; color: var(--color-neutral-800); }
+.notas-pagina-form .dialogo-form { display: flex; flex-direction: column; gap: 16px; }
+.notas-pagina-form :is(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.notas-pagina-form .form-control, .notas-pagina-form .form-select, .dialogo .form-control, .dialogo .form-select { border-color: var(--color-neutral-300); }
+.notas-pagina-form .form-check { display: flex; align-items: center; gap: 8px; padding-left: 0; margin: 0; }
+.notas-pagina-form .form-check-input { float: none; margin: 0; }
+.notas-pagina-form .dialogo-fila { display: flex; flex-wrap: wrap; gap: 12px; }
+.notas-pagina-form .dialogo-campo { display: flex; flex-direction: column; gap: 4px; flex: 1 1 200px; min-width: 0; }
+.notas-pagina-form .dialogo-grupo legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-size: 13px; font-weight: 600; }
+.notas-pagina-form .dialogo-error:empty, .dialogo .dialogo-error:empty { display: none; }
+.notas-pagina-form .dialogo-error { margin: 4px 0 0; font-size: 13px; font-weight: 600; color: var(--color-danger-text); }
+.notas-pagina-form .dialogo-opcional { font-weight: 400; color: var(--color-neutral-700); }
+.notas-pagina-form .dialogo-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.dialogo #dialogo-nota-titulo { font-family: var(--font-heading); }
+
+@media (max-width: 767.98px) {
+    .notas-titulo { font-size: 28px; }
+    .notas-buscar, .notas-materia { flex: 1 1 100%; max-width: none; }
+    .notas-acciones-cab { width: 100%; justify-content: flex-start; margin-left: 0; }
+    .notas-pagina-form { padding: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nota-acciones, .nota-boton, .notas-pastilla, .nota-color-punto, .nota-item.htmx-added { transition: none; animation: none; }
+}
+
+/* Nota sin color: la pastilla de materia se apoya en un neutro más marcado. */
+.nota-item:not(.nota-con-color) .nota-mover { background: var(--color-neutral-200); }
+.nota-item:not(.nota-con-color) .nota-mover:hover { background: var(--color-neutral-300); }
+.nota-vacia { margin: 0; font-size: 14px; font-style: italic; color: var(--color-neutral-700); }

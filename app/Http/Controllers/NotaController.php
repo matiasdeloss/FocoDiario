@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FiltroNotasRequest;
 use App\Http\Requests\MoverNotaRequest;
 use App\Http\Requests\NotaRequest;
+use App\Enums\ColorNota;
 use App\Models\Contexto;
 use App\Models\Nota;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,10 +19,27 @@ class NotaController extends Controller
 {
     public function index(FiltroNotasRequest $request): View
     {
-        $filtro = $request->validated()['contexto'] ?? null;
+        $datos = $request->validated();
+        $filtro = $datos['contexto'] ?? null;
+        $busqueda = trim((string) ($datos['q'] ?? ''));
+        $color = isset($datos['color']) ? ColorNota::tryFrom($datos['color']) : null;
+        $soloFijadas = (bool) ($datos['fijadas'] ?? false);
         $contextoFiltro = null;
 
         $notas = Nota::query()->with('contexto')->ordenadas();
+
+        if ($busqueda !== '') {
+            $patron = '%'.addcslashes($busqueda, '\\%_').'%';
+            $notas->where(fn ($q) => $q->where('titulo', 'like', $patron)->orWhere('contenido', 'like', $patron));
+        }
+
+        if ($color) {
+            $notas->where('color', $color->value);
+        }
+
+        if ($soloFijadas) {
+            $notas->where('fijada', true);
+        }
 
         if ($filtro === 'bandeja') {
             $notas->sinContexto();
@@ -42,6 +61,11 @@ class NotaController extends Controller
             'filtro' => $filtro,
             'contextoFiltro' => $contextoFiltro,
             'totalBandeja' => Nota::sinContexto()->count(),
+            'totalNotas' => Nota::count(),
+            'totalFijadas' => Nota::where('fijada', true)->count(),
+            'busqueda' => $busqueda,
+            'colorFiltro' => $color,
+            'soloFijadas' => $soloFijadas,
         ]);
     }
 
@@ -56,9 +80,15 @@ class NotaController extends Controller
         ]);
     }
 
-    public function store(NotaRequest $request): View|RedirectResponse
+    public function store(NotaRequest $request): View|RedirectResponse|JsonResponse
     {
         $nota = Nota::create($request->datosNota());
+
+        if ($request->expectsJson()) {
+            session()->flash('estado', 'Nota guardada.');
+
+            return response()->json(['ok' => true]);
+        }
 
         if ($request->header('HX-Request') && $request->input('origen') === 'hoy') {
             return view('hoy._nota-rapida', ['guardada' => $nota->load('contexto')]);
@@ -82,9 +112,15 @@ class NotaController extends Controller
         ]);
     }
 
-    public function update(NotaRequest $request, Nota $nota): RedirectResponse
+    public function update(NotaRequest $request, Nota $nota): RedirectResponse|JsonResponse
     {
         $nota->update($request->datosNota());
+
+        if ($request->expectsJson()) {
+            session()->flash('estado', 'Nota actualizada.');
+
+            return response()->json(['ok' => true]);
+        }
 
         return redirect()->route('notas.index')->with('estado', 'Nota actualizada.');
     }

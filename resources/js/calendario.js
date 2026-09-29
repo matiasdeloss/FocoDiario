@@ -873,6 +873,13 @@ function iniciar(raiz) {
         slotMinTime: '06:00:00',
         slotMaxTime: '24:00:00',
         scrollTime: '08:00:00',
+        // Un evento puntual (recordatorio, sesión sin fin) ocupa una hora y nunca una píldora ilegible.
+        defaultTimedEventDuration: '01:00:00',
+        forceEventDuration: true,
+        slotDuration: '00:30:00',
+        eventMinHeight: 60,
+        eventShortHeight: 40,
+        slotEventOverlap: false,
         allDayText: 'Todo el día',
         noEventsText: 'No hay nada en este período.',
         longPressDelay: 300,
