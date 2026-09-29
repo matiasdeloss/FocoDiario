@@ -327,6 +327,8 @@
     border-radius: var(--radius-sm);
 }
 .tarj-cabeza:active { cursor: grabbing; }
+/* La tarjeta que viaja con el puntero al arrastrarla al calendario */
+.tarj.fc-event-dragging, .tarj.fc-event-mirror { opacity: 0.95; box-shadow: var(--shadow-lg); cursor: grabbing; }
 .tarj-asa { margin-left: -4px; color: var(--tipo-texto); opacity: 0.35; transition: opacity 150ms; }
 .tarj:hover .tarj-asa { opacity: 0.8; }
 .tarj-tipo { display: inline-flex; align-items: center; gap: 6px; color: var(--tipo-texto); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }

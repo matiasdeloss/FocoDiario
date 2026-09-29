@@ -343,9 +343,10 @@ function iniciar(raiz) {
         });
     });
 
-    /* Arrastre desde el panel: solo la cabecera arrastra, los campos quedan libres para escribir. */
-    new Draggable(lista, {
-        itemSelector: '.tarj-cabeza',
+    /* Arrastre desde el panel: se agarra de la cabecera (los campos quedan libres para escribir),
+       pero lo que viaja con el puntero es la tarjeta entera. */
+    const arrastre = new Draggable(lista, {
+        itemSelector: '.tarj',
         longPressDelay: 300,
         eventData: (el) => {
             const li = el.closest('[data-tarjeta]');
@@ -362,6 +363,7 @@ function iniciar(raiz) {
             return evento;
         },
     });
+    arrastre.dragging.pointer.handleSelector = '.tarj-cabeza';
 
     /* ---------- Popovers (menú de tipo y editor simple) ---------- */
     const popTipos = document.getElementById('popover-tipos');
