@@ -314,8 +314,8 @@
     background-image: none;
     transform: none;
     cursor: nwse-resize;
-    opacity: 0.75;
-    color: var(--caja-borde, var(--agenda-borde));
+    opacity: 0.85;
+    color: var(--color-text);
     transition: opacity 150ms var(--agenda-suave);
 }
 .lienzo .grid-stack-item > .ui-resizable-se::before {
@@ -335,6 +335,7 @@
 /* ---------- Caja ---------- */
 .caja {
     --caja-borde: var(--agenda-borde);
+    container-type: inline-size;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -350,8 +351,11 @@
 .caja[class*="actividad-"] { background: color-mix(in srgb, var(--caja-fondo) 38%, var(--color-neutral-100)); }
 .caja.plan-nota { height: auto; overflow: visible; background: transparent; border: 0; border-radius: 0; }
 
+/* Cabecera en tres zonas: el agarre a la izquierda, el título centrado de verdad y las acciones a la derecha. */
 .caja-cab {
-    display: flex;
+    --reserva: 80px;
+    display: grid;
+    grid-template-columns: 1fr minmax(0, calc(100% - 2 * var(--reserva))) 1fr;
     align-items: center;
     gap: 4px;
     min-height: 40px;
@@ -361,7 +365,9 @@
     cursor: grab;
     touch-action: none;
 }
+.caja-acciones { display: flex; align-items: center; justify-content: flex-end; gap: 4px; justify-self: end; }
 .caja-agarre {
+    justify-self: start;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -402,6 +408,16 @@
     font-size: 12px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+}
+/* Con hora, las acciones ocupan más y hay que reservarles lugar a los dos lados. */
+.caja-cab:has(.caja-hora:not([hidden])) { --reserva: 172px; }
+@container (max-width: 430px) {
+    .caja-cab:has(.caja-hora:not([hidden])) { display: flex; }
+    .caja-cab:has(.caja-hora:not([hidden])) .caja-titulo { text-align: left; }
+}
+@container (max-width: 260px) {
+    .caja-cab { display: flex; }
+    .caja-cab .caja-titulo { text-align: left; }
 }
 .caja-boton {
     display: inline-flex;

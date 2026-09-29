@@ -28,11 +28,13 @@
                       aria-label="Mover la caja: con las flechas se mueve y con Mayús más flechas cambia el tamaño"><i class="bi bi-grip-vertical" aria-hidden="true"></i></span>
                 <input type="text" class="caja-titulo" data-campo="titulo" value="{{ $caja->titulo }}" maxlength="255"
                        placeholder="Título" aria-label="Título de la caja" autocomplete="off" enterkeyhint="done">
-                <span class="caja-hora" data-hora @if (! $caja->hora_inicio) hidden @endif>{{ $caja->horaTexto() }}</span>
-                <button type="button" class="caja-boton" data-accion="hecha" aria-pressed="{{ $caja->hecha ? 'true' : 'false' }}"
-                        aria-label="Marcar como hecha" title="Marcar como hecha"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
-                <button type="button" class="caja-boton" data-accion="menu" aria-haspopup="dialog"
-                        aria-label="Opciones de la caja" title="Opciones de la caja"><i class="bi bi-three-dots" aria-hidden="true"></i></button>
+                <div class="caja-acciones">
+                    <span class="caja-hora" data-hora @if (! $caja->hora_inicio) hidden @endif>{{ $caja->horaTexto() }}</span>
+                    <button type="button" class="caja-boton" data-accion="hecha" aria-pressed="{{ $caja->hecha ? 'true' : 'false' }}"
+                            aria-label="Marcar como hecha" title="Marcar como hecha"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+                    <button type="button" class="caja-boton" data-accion="menu" aria-haspopup="dialog"
+                            aria-label="Opciones de la caja" title="Opciones de la caja"><i class="bi bi-three-dots" aria-hidden="true"></i></button>
+                </div>
             </header>
             @include('agenda._hoja', [
                 'tipo' => $caja->tipo->value,
