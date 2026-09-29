@@ -248,4 +248,61 @@ class AgendaCajaTest extends TestCase
             ->assertSee('caja '.ColorActividad::Ciruela->clase(), false)
             ->assertSee('Urología');
     }
+
+    public function test_una_caja_nueva_tiene_borde_fino_y_automatico(): void
+    {
+        $caja = Caja::factory()->delDia(self::FECHA)->create()->fresh();
+
+        $this->assertSame(1, $caja->borde_grosor);
+        $this->assertNull($caja->borde_color);
+    }
+
+    public function test_se_guarda_el_grosor_y_el_color_del_borde(): void
+    {
+        $caja = Caja::factory()->delDia(self::FECHA)->create();
+
+        $this->patchJson(route('agenda.cajas.update', $caja), ['borde_grosor' => 3, 'borde_color' => ColorActividad::Ciruela->value])
+            ->assertOk()
+            ->assertJsonPath('caja.borde_grosor', 3)
+            ->assertJsonPath('caja.borde_color', ColorActividad::Ciruela->value);
+
+        $this->assertSame(3, $caja->fresh()->borde_grosor);
+        $this->assertSame('#8e4f73', $caja->fresh()->borde_color);
+
+        $this->get(route('agenda.dia', ['fecha' => self::FECHA]))
+            ->assertSee('--caja-borde-grosor: 3px;', false)
+            ->assertSee('--caja-borde-color: #8e4f73;', false);
+
+        $this->patchJson(route('agenda.cajas.update', $caja), ['borde_color' => null])->assertOk();
+        $this->assertNull($caja->fresh()->borde_color);
+    }
+
+    public function test_el_grosor_del_borde_debe_estar_entre_1_y_4(): void
+    {
+        $caja = Caja::factory()->delDia(self::FECHA)->create();
+
+        foreach ([0, 5, 'grueso'] as $valor) {
+            $this->patchJson(route('agenda.cajas.update', $caja), ['borde_grosor' => $valor])->assertJsonValidationErrors('borde_grosor');
+        }
+
+        $this->assertSame(1, $caja->fresh()->borde_grosor);
+    }
+
+    public function test_el_color_del_borde_tiene_que_ser_de_la_paleta(): void
+    {
+        $caja = Caja::factory()->delDia(self::FECHA)->create();
+
+        foreach (['#ffffff', 'rojo', '#c0663'] as $valor) {
+            $this->patchJson(route('agenda.cajas.update', $caja), ['borde_color' => $valor])->assertJsonValidationErrors('borde_color');
+        }
+
+        $this->assertNull($caja->fresh()->borde_color);
+    }
+
+    public function test_las_cajas_no_llevan_tinte_de_fondo_por_actividad(): void
+    {
+        $css = file_get_contents(resource_path('css/agenda.css'));
+
+        $this->assertDoesNotMatchRegularExpression('/\.caja\[class\*="actividad-"\]\s*\{[^}]*background/', $css);
+    }
 }

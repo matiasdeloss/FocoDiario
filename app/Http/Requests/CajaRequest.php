@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ColorActividad;
 use App\Http\Requests\Concerns\ReglasDeContenidoDeCaja;
 use App\Models\Caja;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /** Crear (POST) o modificar (PATCH, campos sueltos) una caja de la hoja de un día. */
 class CajaRequest extends FormRequest
@@ -32,6 +34,8 @@ class CajaRequest extends FormRequest
             'ancho' => ['sometimes', 'integer', 'min:1', 'max:'.Caja::COLUMNAS],
             'alto' => ['sometimes', 'integer', 'min:1', 'max:'.Caja::MAX_ALTO],
             'hecha' => ['sometimes', 'boolean'],
+            'borde_grosor' => ['sometimes', 'integer', 'between:1,4'],
+            'borde_color' => ['sometimes', 'nullable', Rule::in(ColorActividad::valores())],
             ...$this->reglasDeContenido($alCrear),
         ];
     }
@@ -106,6 +110,9 @@ class CajaRequest extends FormRequest
             'alto.min' => 'El alto mínimo es de 1 fila.',
             'alto.max' => 'El alto máximo es de '.Caja::MAX_ALTO.' filas.',
             'hecha.boolean' => 'El estado "hecha" no es válido.',
+            'borde_grosor.integer' => 'El grosor del borde no es válido.',
+            'borde_grosor.between' => 'El grosor del borde debe estar entre 1 y 4 px.',
+            'borde_color.in' => 'El color del borde no está en la paleta.',
             ...$this->mensajesDeContenido(),
         ];
     }

@@ -144,7 +144,6 @@ function iniciar(lienzo) {
         }
 
         anunciar(describir(item));
-        refrescarCamposDeLayout();
     }
 
     /** En una columna: sube o baja la caja en el orden de lectura. */
@@ -207,19 +206,6 @@ function iniciar(lienzo) {
 
     const campo = (nombre) => dialogo.querySelector(`[data-dc="${nombre}"]`);
 
-    function refrescarCamposDeLayout() {
-        if (!actual) {
-            return;
-        }
-
-        const { x, y, ancho, alto } = layoutDe(itemDe(actual.articulo));
-
-        campo('x').value = x + 1;
-        campo('y').value = y + 1;
-        campo('ancho').value = ancho;
-        campo('alto').value = alto;
-    }
-
     function abrirMenu(controlador) {
         actual = controlador;
 
@@ -232,11 +218,16 @@ function iniciar(lienzo) {
         dialogo.querySelectorAll('[name="dc-tipo"]').forEach((radio) => {
             radio.checked = radio.value === estado.tipo;
         });
+        dialogo.querySelectorAll('[name="dc-borde-grosor"]').forEach((radio) => {
+            radio.checked = radio.value === String(estado.borde_grosor ?? 1);
+        });
+        dialogo.querySelectorAll('[name="dc-borde-color"]').forEach((radio) => {
+            radio.checked = radio.value === (estado.borde_color ?? '');
+        });
         campo('hora_inicio').value = estado.hora_inicio ?? '';
         campo('hora_fin').value = estado.hora_fin ?? '';
         campo('hecha').checked = Boolean(estado.hecha);
         campo('error-horas').textContent = '';
-        refrescarCamposDeLayout();
 
         dialogo.showModal();
     }
@@ -262,6 +253,10 @@ function iniciar(lienzo) {
 
         if (objetivo.name === 'dc-actividad') {
             actual.aplicar({ contexto_id: objetivo.value === '' ? null : Number(objetivo.value) });
+        } else if (objetivo.name === 'dc-borde-grosor') {
+            actual.aplicar({ borde_grosor: Number(objetivo.value) });
+        } else if (objetivo.name === 'dc-borde-color') {
+            actual.aplicar({ borde_color: objetivo.value === '' ? null : objetivo.value });
         } else if (objetivo.name === 'dc-tipo') {
             actual.cambiarTipo(objetivo.value);
         } else if (objetivo.matches('[data-dc="hecha"]')) {
@@ -276,18 +271,11 @@ function iniciar(lienzo) {
             if (!error) {
                 actual.aplicar({ hora_inicio: inicio, hora_fin: fin });
             }
-        } else if (objetivo.matches('[data-dc="x"], [data-dc="y"], [data-dc="ancho"], [data-dc="alto"]')) {
-            cambiarLayout(itemDe(actual.articulo), {
-                x: Number(campo('x').value) - 1,
-                y: Number(campo('y').value) - 1,
-                ancho: Number(campo('ancho').value),
-                alto: Number(campo('alto').value),
-            });
         }
     });
 
     dialogo.addEventListener('click', async (evento) => {
-        const boton = evento.target.closest('button[data-mover], button[data-tamano], button[data-orden], button[data-eliminar]');
+        const boton = evento.target.closest('button[data-orden], button[data-eliminar]');
 
         if (!boton || !actual) {
             return;
@@ -295,15 +283,7 @@ function iniciar(lienzo) {
 
         const item = itemDe(actual.articulo);
 
-        if (boton.dataset.mover) {
-            const [dx, dy] = boton.dataset.mover.split(',').map(Number);
-
-            cambiarLayout(item, moverLayout(layoutDe(item), dx, dy));
-        } else if (boton.dataset.tamano) {
-            const [dAncho, dAlto] = boton.dataset.tamano.split(',').map(Number);
-
-            cambiarLayout(item, redimensionarLayout(layoutDe(item), dAncho, dAlto));
-        } else if (boton.dataset.orden) {
+        if (boton.dataset.orden) {
             reordenarCaja(item, Number(boton.dataset.orden));
         } else if (boton.dataset.eliminar !== undefined) {
             const titulo = actual.estado.titulo?.trim() || 'sin título';

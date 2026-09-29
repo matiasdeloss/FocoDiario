@@ -59,6 +59,18 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
             }
         }
 
+        function pintarBorde() {
+            const grosor = Number(estado.borde_grosor) || 1;
+
+            articulo.style.setProperty('--caja-borde-grosor', `${grosor}px`);
+
+            if (estado.borde_color) {
+                articulo.style.setProperty('--caja-borde-color', estado.borde_color);
+            } else {
+                articulo.style.removeProperty('--caja-borde-color');
+            }
+        }
+
         function pintarHora() {
             const marca = articulo.querySelector('[data-hora]');
 
@@ -246,6 +258,7 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
                 if ('contexto_id' in parche) pintarActividad();
                 if ('hora_inicio' in parche || 'hora_fin' in parche) pintarHora();
                 if ('hecha' in parche) pintarHecha();
+                if ('borde_grosor' in parche || 'borde_color' in parche) pintarBorde();
             },
 
             cambiarTipo(tipo) {

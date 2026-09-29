@@ -30,6 +30,8 @@ class CajaResource extends JsonResource
             'ancho' => $this->ancho,
             'alto' => $this->alto,
             'hecha' => $this->hecha,
+            'borde_grosor' => $this->borde_grosor ?? 1,
+            'borde_color' => $this->borde_color,
         ];
     }
 }

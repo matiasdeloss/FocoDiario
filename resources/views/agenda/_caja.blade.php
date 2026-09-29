@@ -16,11 +16,14 @@
         'hora_inicio' => $caja->hora_inicio,
         'hora_fin' => $caja->hora_fin,
         'hecha' => $caja->hecha,
+        'borde_grosor' => $caja->borde_grosor ?? 1,
+        'borde_color' => $caja->borde_color,
     ];
 @endphp
 <div class="grid-stack-item" gs-id="{{ $caja->id }}" gs-x="{{ $caja->x }}" gs-y="{{ $caja->y }}" gs-w="{{ $caja->ancho }}" gs-h="{{ $caja->alto }}" gs-min-w="2" gs-min-h="4">
     <div class="grid-stack-item-content">
         <article class="caja {{ $clase }} {{ $caja->hecha ? 'es-hecha' : '' }}" data-caja data-metodo="PATCH"
+                 @if (($caja->borde_grosor ?? 1) > 1 || $caja->borde_color) style="{{ ($caja->borde_grosor ?? 1) > 1 ? '--caja-borde-grosor: '.$caja->borde_grosor.'px;' : '' }}{{ $caja->borde_color ? ' --caja-borde-color: '.$caja->borde_color.';' : '' }}" @endif
                  data-url="{{ route('agenda.cajas.update', $caja) }}" data-estado="{{ json_encode($estado, JSON_UNESCAPED_UNICODE) }}"
                  data-etiqueta-contenido="Contenido de la caja {{ $caja->tituloVisible() }}">
             <header class="caja-cab">

@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'fecha', 'semana', 'zona', 'contexto_id', 'titulo', 'tipo', 'contenido', 'items',
-    'hora_inicio', 'hora_fin', 'x', 'y', 'ancho', 'alto', 'orden', 'hecha',
+    'hora_inicio', 'hora_fin', 'x', 'y', 'ancho', 'alto', 'orden', 'hecha', 'borde_grosor', 'borde_color',
 ])]
 class Caja extends Model
 {
@@ -51,6 +51,7 @@ class Caja extends Model
             'ancho' => 'integer',
             'alto' => 'integer',
             'orden' => 'integer',
+            'borde_grosor' => 'integer',
         ];
     }
 
