@@ -11,7 +11,7 @@
  *  - libre:    cuenta hacia arriba hasta que la persona inicia el siguiente foco.
  *
  * Cada vez que termina una fase se genera un "evento": el intervalo que hay que registrar
- * en el servidor { tipo, clave, inicio, fin, planificado_min, pausado_seg, completado }.
+ * en el servidor { tipo, clave, inicio, fin, planificado_seg, pausado_seg, completado }.
  */
 
 export const FOCO = 'foco';
@@ -19,6 +19,106 @@ export const DESCANSO = 'descanso';
 export const LIBRE = 'libre';
 
 const MS = 1000;
+
+/** Rango válido de cada duración, en segundos: de 5 s a 180 min. */
+export const SEG_MINIMO = 5;
+export const SEG_MAXIMO = 10800;
+export const CICLOS_MINIMO = 2;
+export const CICLOS_MAXIMO = 12;
+
+/** Configuración por defecto (Pomodoro clásico). Los tiempos van en segundos. */
+export const CONFIG_POR_DEFECTO = { foco: 1500, descanso: 300, largo: 900, ciclos: 4, estilo: 'clasico', tarea_id: '', contexto_id: '', tema: '' };
+
+const esDuracionValida = (n) => Number.isInteger(n) && n >= SEG_MINIMO && n <= SEG_MAXIMO;
+
+/**
+ * Configuración guardada por versiones anteriores, que guardaba foco/descanso/largo en minutos
+ * (sin la marca `seg`). Se convierte a segundos; lo que no sea un valor válido vuelve al de por defecto.
+ * Si ya viene en segundos (`seg: true`) solo se sanean los valores.
+ */
+export function migrarConfig(guardada) {
+    const base = { ...CONFIG_POR_DEFECTO };
+
+    if (guardada === null || typeof guardada !== 'object' || Array.isArray(guardada)) return base;
+
+    const factor = guardada.seg === true ? 1 : 60;
+    const config = { ...base };
+
+    for (const clave of ['foco', 'descanso', 'largo']) {
+        const valor = Number(guardada[clave]) * factor;
+
+        if (guardada[clave] !== null && guardada[clave] !== '' && Number.isInteger(Number(guardada[clave])) && esDuracionValida(valor)) config[clave] = valor;
+    }
+
+    const ciclos = Number(guardada.ciclos);
+
+    if (Number.isInteger(ciclos) && ciclos >= CICLOS_MINIMO && ciclos <= CICLOS_MAXIMO) config.ciclos = ciclos;
+
+    for (const clave of ['estilo', 'tarea_id', 'contexto_id', 'tema']) {
+        if (typeof guardada[clave] === 'string' || typeof guardada[clave] === 'number') config[clave] = guardada[clave];
+    }
+
+    return config;
+}
+
+/** Estado de una sesión en curso guardado por versiones anteriores (config en minutos): se pasa a segundos. */
+export function migrarEstado(estado) {
+    if (estado === null || typeof estado !== 'object' || !estado.config || estado.config.seg === true) return estado;
+
+    const { foco, descanso, largo, ciclos } = estado.config;
+
+    return { ...estado, config: { foco: foco * 60, descanso: descanso * 60, largo: largo * 60, ciclos, seg: true } };
+}
+
+/** Intervalo pendiente de envío guardado por versiones anteriores (planificado_min): se pasa a planificado_seg. */
+export function migrarEvento(evento) {
+    if (!evento || !('planificado_min' in evento)) return evento;
+
+    const { planificado_min: minutos, ...resto } = evento;
+
+    return { ...resto, planificado_seg: minutos === null || minutos === undefined ? null : minutos * 60 };
+}
+
+/**
+ * Valida una duración escrita como minutos y segundos. Los campos vacíos cuentan como 0.
+ * Devuelve { ok: true, seg } o { ok: false, error } con un mensaje en español.
+ */
+export function validarDuracion(min, seg, nombre = 'La duración') {
+    const texto = (v) => (v === '' || v === null || v === undefined ? '0' : String(v).trim());
+    const m = Number(texto(min));
+    const s = Number(texto(seg));
+
+    if (!Number.isInteger(m) || !Number.isInteger(s) || m < 0 || s < 0) {
+        return { ok: false, error: `${nombre}: escribí minutos y segundos como números enteros, sin decimales ni negativos.` };
+    }
+
+    if (s > 59) return { ok: false, error: `${nombre}: los segundos van de 0 a 59. Para más de un minuto usá el campo de minutos.` };
+
+    const total = m * 60 + s;
+
+    if (total < SEG_MINIMO || total > SEG_MAXIMO) {
+        return { ok: false, error: `${nombre}: la duración debe estar entre 00:05 y 180:00 (min:seg).` };
+    }
+
+    return { ok: true, seg: total };
+}
+
+/** Parte una cantidad de segundos en { min, seg } para los dos campos del formulario. */
+export const dividirSegundos = (total) => ({ min: Math.floor(total / 60), seg: total % 60 });
+
+/** Texto corto de una duración en segundos: "5 s", "1 min 30 s", "45 min", "2 h 05 min". Mismo criterio que el servidor. */
+export function formatearDuracion(total) {
+    const t = Math.max(0, Math.round(total));
+
+    if (t < 60) return `${t} s`;
+
+    if (t < 3600) return t % 60 === 0 ? `${t / 60} min` : `${Math.floor(t / 60)} min ${t % 60} s`;
+
+    const minutos = Math.round(t / 60);
+    const resto = minutos % 60;
+
+    return resto === 0 ? `${Math.floor(minutos / 60)} h` : `${Math.floor(minutos / 60)} h ${String(resto).padStart(2, '0')} min`;
+}
 
 /**
  * Estado nuevo de una sesión. Por defecto arranca en foco; `desde` permite arrancar directamente
@@ -30,7 +130,7 @@ export function crearEstado(sesionId, config, ahora, desde = 'foco') {
     return iniciarFase(
         {
             sesionId,
-            config: { ...config },
+            config: { ...config, seg: true },
             completados: 0,
             interrumpidos: 0,
             enCiclo: 0, // pomodoros completos desde el último descanso largo
@@ -45,8 +145,8 @@ export function crearEstado(sesionId, config, ahora, desde = 'foco') {
 }
 
 function planificadoSeg(estado, fase) {
-    if (fase === FOCO) return estado.config.foco * 60;
-    if (fase === DESCANSO) return (estado.descansoLargo ? estado.config.largo : estado.config.descanso) * 60;
+    if (fase === FOCO) return estado.config.foco;
+    if (fase === DESCANSO) return estado.descansoLargo ? estado.config.largo : estado.config.descanso;
     return 0;
 }
 
@@ -93,7 +193,7 @@ function crearEvento(estado, fin, completado) {
         clave: `${estado.sesionId}-${seq}`,
         inicio: estado.faseInicio,
         fin,
-        planificado_min: estado.fase === LIBRE ? null : estado.planificadoSeg / 60,
+        planificado_seg: estado.fase === LIBRE ? null : estado.planificadoSeg,
         pausado_seg: pausadoSeg(estado, fin),
         completado,
     };
@@ -260,4 +360,47 @@ export function describir(estado, ahora) {
         progreso,
         texto: formatearTiempo(restanteMs(estado, ahora)),
     };
+}
+
+const FORMATOS_TIEMPO = 'Probá con 25, 25:00, 1:30, 90s o 1:05:00.';
+
+/**
+ * Interpreta lo que se escribe al editar el reloj. Reglas:
+ *  - un número solo son minutos ("25" = 25 min);
+ *  - con "s" son segundos ("90s", "5s") y con "m" minutos ("25m", "1m30s");
+ *  - con dos puntos es mm:ss ("1:30") o h:mm:ss ("1:05:00"); después de los dos puntos van 00 a 59.
+ * Valida el rango de 5 s a 180 min. Devuelve { ok: true, seg } o { ok: false, error } con un mensaje breve.
+ */
+export function interpretarTiempo(texto) {
+    const t = String(texto ?? '').trim().toLowerCase().replace(/\s+/g, '');
+    const noValido = { ok: false, error: `No entiendo ese tiempo. ${FORMATOS_TIEMPO}` };
+    const restoInvalido = { ok: false, error: 'Después de los dos puntos, minutos y segundos van de 00 a 59.' };
+    let m;
+    let total;
+
+    if ((m = /^(\d{1,6})$/.exec(t))) {
+        total = Number(m[1]) * 60;
+    } else if ((m = /^(\d{1,6})(?:s|seg)$/.exec(t))) {
+        total = Number(m[1]);
+    } else if ((m = /^(\d{1,6})(?:m|min)$/.exec(t))) {
+        total = Number(m[1]) * 60;
+    } else if ((m = /^(\d{1,6})(?:m|min)(\d{1,2})(?:s|seg)?$/.exec(t))) {
+        if (Number(m[2]) > 59) return restoInvalido;
+
+        total = Number(m[1]) * 60 + Number(m[2]);
+    } else if ((m = /^(\d{1,4}):(\d{1,2})$/.exec(t))) {
+        if (Number(m[2]) > 59) return restoInvalido;
+
+        total = Number(m[1]) * 60 + Number(m[2]);
+    } else if ((m = /^(\d{1,3}):(\d{1,2}):(\d{1,2})$/.exec(t))) {
+        if (Number(m[2]) > 59 || Number(m[3]) > 59) return restoInvalido;
+
+        total = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+    } else {
+        return noValido;
+    }
+
+    if (total < SEG_MINIMO || total > SEG_MAXIMO) return { ok: false, error: 'El tiempo va de 00:05 a 180:00.' };
+
+    return { ok: true, seg: total };
 }

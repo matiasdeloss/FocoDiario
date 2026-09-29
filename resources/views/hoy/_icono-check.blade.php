@@ -1,0 +1,2 @@
+{{-- Marca de check en SVG: su caja es simétrica (centrada en el lienzo de 16, con el trazo y la unión inferior compensados), así que queda centrada en el círculo. --}}
+<svg class="hoy-check-marca" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.4 7.3l2.8 2.3L11.4 4.6"/></svg>

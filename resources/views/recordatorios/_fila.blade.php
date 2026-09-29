@@ -27,7 +27,16 @@
         @endif
     </td>
     <td class="text-end text-nowrap">
-        @unless ($recordatorio->avisado_en)
+        @if ($recordatorio->avisado_en)
+            <form method="POST" action="{{ route('recordatorios.reactivar', $recordatorio) }}" class="d-inline"
+                  hx-patch="{{ route('recordatorios.reactivar', $recordatorio) }}" hx-target="closest tr" hx-swap="outerHTML">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn-icono" title="Volver a pendiente" aria-label="Volver a pendiente: {{ $recordatorio->mensaje }}">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </form>
+        @else
             <form method="POST" action="{{ route('recordatorios.avisar', $recordatorio) }}" class="d-inline"
                   hx-patch="{{ route('recordatorios.avisar', $recordatorio) }}" hx-target="closest tr" hx-swap="outerHTML">
                 @csrf
@@ -36,7 +45,7 @@
                     <i class="bi bi-check2-circle"></i>
                 </button>
             </form>
-        @endunless
+        @endif
         <a href="{{ route('recordatorios.edit', $recordatorio) }}" class="btn-icono" title="Editar" aria-label="Editar {{ $recordatorio->mensaje }}">
             <i class="bi bi-pencil"></i>
         </a>

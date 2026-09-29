@@ -11,11 +11,11 @@ $cepeda = ['Cepeda et al. (2006), práctica distribuida (317 experimentos)', 'ht
 
 return [
 
-    // [mínimo, máximo] de cada tiempo editable (minutos; ciclos en cantidad de pomodoros).
+    // [mínimo, máximo] de cada tiempo editable (segundos: de 5 s a 180 min; ciclos en cantidad de pomodoros).
     'limites' => [
-        'foco' => [5, 180],
-        'descanso' => [1, 60],
-        'largo' => [5, 90],
+        'foco' => [5, 10800],
+        'descanso' => [5, 10800],
+        'largo' => [5, 10800],
         'ciclos' => [2, 12],
     ],
 

@@ -24,7 +24,8 @@
                 </div>
 
                 <div class="text-center py-3">
-                    <div class="pomodoro-tiempo pomodoro-tiempo-grande" data-p="tiempo" role="timer" aria-live="off">25:00</div>
+                    <button type="button" class="pomodoro-tiempo pomodoro-tiempo-grande" data-p="tiempo" data-tamano="normal" aria-label="Editar tiempo, 25:00">25:00</button>
+                    <span class="visually-hidden" role="status" aria-live="polite" data-p="anuncio"></span>
                     <div class="pomodoro-puntos mt-3" data-p="puntos" aria-hidden="true"></div>
                     <p class="text-secondary mt-3 mb-0" data-p="ayuda" aria-live="polite"></p>
                 </div>
@@ -69,33 +70,41 @@
                             <select id="p-preset" class="form-select">
                                 @foreach ($estilos as $estilo)
                                     <option value="{{ $estilo->value }}">
-                                        {{ $estilo->etiqueta() }}@if ($estilo->tiempos()) ({{ $estilo->tiempos()['foco'] }}/{{ $estilo->tiempos()['descanso'] }})@endif
+                                        {{ $estilo->etiqueta() }}@if ($estilo->tiempos()) ({{ intdiv($estilo->tiempos()['foco'], 60) }}/{{ intdiv($estilo->tiempos()['descanso'], 60) }})@endif
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <label for="p-foco" class="form-label">Foco (min)</label>
-                            <input id="p-foco" type="number" class="form-control" value="25" data-nombre="Foco"
-                                   min="{{ $limites['foco'][0] }}" max="{{ $limites['foco'][1] }}" step="1" inputmode="numeric" required>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label for="p-descanso" class="form-label">Descanso (min)</label>
-                            <input id="p-descanso" type="number" class="form-control" value="5" data-nombre="Descanso corto"
-                                   min="{{ $limites['descanso'][0] }}" max="{{ $limites['descanso'][1] }}" step="1" inputmode="numeric" required>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label for="p-largo" class="form-label">Descanso largo</label>
-                            <input id="p-largo" type="number" class="form-control" value="15" data-nombre="Descanso largo"
-                                   min="{{ $limites['largo'][0] }}" max="{{ $limites['largo'][1] }}" step="1" inputmode="numeric" required>
-                        </div>
-                        <div class="col-6 col-md-3">
+                        @foreach ([
+                            ['clave' => 'foco', 'titulo' => 'Foco', 'nombre' => 'Foco', 'defecto' => 1500],
+                            ['clave' => 'descanso', 'titulo' => 'Descanso corto', 'nombre' => 'Descanso corto', 'defecto' => 300],
+                            ['clave' => 'largo', 'titulo' => 'Descanso largo', 'nombre' => 'Descanso largo', 'defecto' => 900],
+                        ] as $campo)
+                            <div class="col-12 col-md-4">
+                                <fieldset class="pomodoro-duracion" data-duracion="{{ $campo['clave'] }}" data-nombre="{{ $campo['nombre'] }}">
+                                    <legend class="form-label">{{ $campo['titulo'] }}</legend>
+                                    <div class="pomodoro-duracion-campos">
+                                        <div class="input-group">
+                                            <input id="p-{{ $campo['clave'] }}-min" type="number" class="form-control" aria-label="{{ $campo['titulo'] }}, minutos"
+                                                   value="{{ intdiv($campo['defecto'], 60) }}" min="0" max="{{ intdiv($limites[$campo['clave']][1], 60) }}" step="1" inputmode="numeric" required>
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <div class="input-group">
+                                            <input id="p-{{ $campo['clave'] }}-seg" type="number" class="form-control" aria-label="{{ $campo['titulo'] }}, segundos"
+                                                   value="{{ $campo['defecto'] % 60 }}" min="0" max="59" step="1" inputmode="numeric" required>
+                                            <span class="input-group-text">seg</span>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        @endforeach
+                        <div class="col-12 col-md-4">
                             <label for="p-ciclos" class="form-label">Pomodoros por ciclo</label>
                             <input id="p-ciclos" type="number" class="form-control" value="4" data-nombre="Pomodoros por ciclo"
                                    min="{{ $limites['ciclos'][0] }}" max="{{ $limites['ciclos'][1] }}" step="1" inputmode="numeric" required>
                         </div>
-                        <div class="col-12">
-                            <div class="form-text mt-0">Foco de {{ $limites['foco'][0] }} a {{ $limites['foco'][1] }} min, descanso corto de {{ $limites['descanso'][0] }} a {{ $limites['descanso'][1] }}, largo de {{ $limites['largo'][0] }} a {{ $limites['largo'][1] }}. Los tiempos se guardan en este navegador.</div>
+                        <div class="col-12 col-md-8">
+                            <div class="form-text mt-0 pomodoro-ayuda-tiempos">Cada tiempo va de 00:05 a 180:00 (minutos y segundos), por ejemplo 0 min y 5 seg para probar. Los tiempos se guardan en este navegador.</div>
                         </div>
 
                         <div class="col-md-6">
@@ -133,8 +142,8 @@
                     <div class="row g-3">
                         <div class="col-6"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor" data-p="completados">0</div></div>
                         <div class="col-6"><div class="metrica-etiqueta">Interrumpidos</div><div class="metrica-valor" data-p="interrumpidos">0</div></div>
-                        <div class="col-6"><div class="metrica-etiqueta">Descanso real</div><div class="metrica-valor" data-p="descanso">0 min</div></div>
-                        <div class="col-6"><div class="metrica-etiqueta">Tiempo libre</div><div class="metrica-valor" data-p="libre">0 min</div></div>
+                        <div class="col-6"><div class="metrica-etiqueta">Descanso real</div><div class="metrica-valor" data-p="descanso">0 s</div></div>
+                        <div class="col-6"><div class="metrica-etiqueta">Tiempo libre</div><div class="metrica-valor" data-p="libre">0 s</div></div>
                     </div>
                 </div>
 
@@ -142,9 +151,9 @@
                     <h2 class="tarjeta-titulo d-flex justify-content-between">Hoy <a href="{{ route('estudio.historial') }}" class="text-decoration-none text-lowercase fw-normal">historial</a></h2>
                     <div class="lista-fila"><span>Pomodoros completos</span><span class="lista-fila-meta">{{ $resumenHoy['pomodoros'] }}</span></div>
                     <div class="lista-fila"><span>Interrumpidos</span><span class="lista-fila-meta">{{ $resumenHoy['interrumpidos'] }}</span></div>
-                    <div class="lista-fila"><span>Foco</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatear($resumenHoy['foco_seg'] / 60) }}</span></div>
-                    <div class="lista-fila"><span>Descanso</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatear($resumenHoy['descanso_seg'] / 60) }}</span></div>
-                    <div class="lista-fila"><span>Tiempo libre entre pomodoros</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatear($resumenHoy['libre_seg'] / 60) }}</span></div>
+                    <div class="lista-fila"><span>Foco</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['foco_seg']) }}</span></div>
+                    <div class="lista-fila"><span>Descanso</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['descanso_seg']) }}</span></div>
+                    <div class="lista-fila"><span>Tiempo libre entre pomodoros</span><span class="lista-fila-meta">{{ \App\Support\Duracion::formatearSegundos($resumenHoy['libre_seg']) }}</span></div>
                 </div>
 
                 <div class="tarjeta tarjeta-relleno">

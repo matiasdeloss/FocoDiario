@@ -184,9 +184,9 @@ class CalendarioTest extends TestCase
 
         $respuesta->assertSee('Esta semana')
             ->assertSee('data-hoy', false)
-            ->assertSee('martes 29: 2 eventos', false)
-            ->assertSee('miércoles 30, hoy: 1 evento', false)
-            ->assertSee('domingo 4: 1 evento', false)
+            ->assertSee('martes 29: 2 tareas', false)
+            ->assertSee('miércoles 30, hoy: 1 recordatorio', false)
+            ->assertSee('domingo 4: 1 nota', false)
             ->assertSee('lunes 28: sin eventos', false);
 
         // Los datos de la semana viajan embebidos: de lunes 28 a domingo 4, sin el lunes siguiente.

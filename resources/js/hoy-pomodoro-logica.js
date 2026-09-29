@@ -6,8 +6,22 @@ import { DESCANSO, FOCO, LIBRE } from './pomodoro-logica.js';
 
 export const MODOS = ['foco', 'descanso', 'largo'];
 export const PUNTOS = 4;
-export const RADIO_ANILLO = 43;
+export const RADIO_ANILLO = 77;
 export const CIRCUNFERENCIA = 2 * Math.PI * RADIO_ANILLO;
+
+/**
+ * Tamaño del reloj según cuántos caracteres tiene ("25:00" = 5, "180:00" = 6, "2:59:59" = 7, "12:34:56" = 8):
+ * cuanto más largo el texto, más chico, para que siempre quepa dentro del anillo.
+ */
+export function tamanoReloj(texto) {
+    const largo = String(texto).length;
+
+    if (largo <= 5) return 'normal';
+    if (largo === 6) return 'medio';
+    if (largo === 7) return 'largo';
+
+    return 'extra';
+}
 
 /** Modo del control segmentado que corresponde a la fase en curso (el tiempo libre cuenta como descanso). */
 export function modoDeEstado(estado) {
@@ -16,8 +30,8 @@ export function modoDeEstado(estado) {
     return estado.descansoLargo ? 'largo' : 'descanso';
 }
 
-/** Minutos planificados de un modo según la configuración guardada. */
-export function minutosDeModo(config, modo) {
+/** Segundos planificados de un modo según la configuración guardada. */
+export function segundosDeModo(config, modo) {
     if (modo === 'descanso') return config.descanso;
     if (modo === 'largo') return config.largo;
 

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\EstadoSesion;
+use App\Enums\EstiloEstudio;
 use App\Enums\OrigenBloque;
 use App\Enums\TipoCategoria;
 use App\Enums\TipoIntervalo;
@@ -11,6 +12,7 @@ use App\Models\Contexto;
 use App\Models\IntervaloEstudio;
 use App\Models\SesionEstudio;
 use App\Models\Tarea;
+use App\Support\Duracion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,9 +24,9 @@ class EstudioTest extends TestCase
     {
         return array_merge([
             'estilo' => 'clasico',
-            'foco_min' => 25,
-            'descanso_min' => 5,
-            'descanso_largo_min' => 15,
+            'foco_seg' => 1500,
+            'descanso_seg' => 300,
+            'descanso_largo_seg' => 900,
             'pomodoros_antes_largo' => 4,
         ], $cambios);
     }
@@ -36,7 +38,7 @@ class EstudioTest extends TestCase
             'clave' => '1-1',
             'inicio' => '2026-09-29T15:00:00Z',
             'fin' => '2026-09-29T15:25:00Z',
-            'planificado_min' => 25,
+            'planificado_seg' => 1500,
             'pausado_seg' => 0,
             'completado' => true,
         ], $cambios);
@@ -67,7 +69,7 @@ class EstudioTest extends TestCase
         $this->assertSame($tarea->id, $sesion->tarea_id);
         $this->assertSame($contexto->id, $sesion->contexto_id);
         $this->assertSame(EstadoSesion::EnCurso, $sesion->estado);
-        $this->assertSame(25, $sesion->foco_min);
+        $this->assertSame(1500, $sesion->foco_seg);
     }
 
     public function test_al_crear_una_sesion_se_cierra_la_que_quedo_en_curso(): void
@@ -82,28 +84,73 @@ class EstudioTest extends TestCase
 
     public function test_los_tiempos_editables_se_validan_con_minimos_y_maximos(): void
     {
+        $rango = fn (string $nombre) => "{$nombre} debe durar entre 00:05 y 180:00 (min:seg).";
         $casos = [
-            'foco_min' => [[4, 'El foco debe durar entre 5 y 180 minutos.'], [181, 'El foco debe durar entre 5 y 180 minutos.']],
-            'descanso_min' => [[0, 'El descanso corto debe durar entre 1 y 60 minutos.'], [61, 'El descanso corto debe durar entre 1 y 60 minutos.']],
-            'descanso_largo_min' => [[4, 'El descanso largo debe durar entre 5 y 90 minutos.'], [91, 'El descanso largo debe durar entre 5 y 90 minutos.']],
-            'pomodoros_antes_largo' => [[1, 'Los pomodoros antes del descanso largo deben ser entre 2 y 12.'], [13, 'Los pomodoros antes del descanso largo deben ser entre 2 y 12.']],
+            'foco_seg' => $rango('El foco'),
+            'descanso_seg' => $rango('El descanso corto'),
+            'descanso_largo_seg' => $rango('El descanso largo'),
         ];
 
-        foreach ($casos as $campo => $valores) {
-            foreach ($valores as [$valor, $mensaje]) {
-                $this->postJson(route('estudio.sesiones.store'), $this->datosSesion([$campo => $valor]))
+        foreach ($casos as $campo => $mensaje) {
+            // 4 s y 10801 s quedan fuera; 5 s y 10800 s (180 min) son los bordes válidos.
+            foreach ([0, 4, 10801] as $invalido) {
+                $this->postJson(route('estudio.sesiones.store'), $this->datosSesion([$campo => $invalido]))
                     ->assertUnprocessable()
                     ->assertJsonValidationErrors([$campo => $mensaje]);
             }
+
+            foreach ([5, 10800] as $valido) {
+                $this->postJson(route('estudio.sesiones.store'), $this->datosSesion([$campo => $valido]))->assertCreated();
+            }
         }
 
-        // Los extremos válidos se aceptan.
-        $this->postJson(route('estudio.sesiones.store'), $this->datosSesion([
-            'foco_min' => 5, 'descanso_min' => 1, 'descanso_largo_min' => 90, 'pomodoros_antes_largo' => 12,
-        ]))->assertCreated();
+        foreach ([1, 13] as $ciclos) {
+            $this->postJson(route('estudio.sesiones.store'), $this->datosSesion(['pomodoros_antes_largo' => $ciclos]))
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors(['pomodoros_antes_largo' => 'Los pomodoros antes del descanso largo deben ser entre 2 y 12.']);
+        }
 
-        $this->postJson(route('estudio.sesiones.store'), $this->datosSesion(['foco_min' => 'abc', 'estilo' => 'raro']))
-            ->assertJsonValidationErrors(['foco_min' => 'Los minutos de foco deben ser un número entero.', 'estilo' => 'El estilo de estudio elegido no es válido.']);
+        // Los extremos válidos juntos se aceptan y se guardan tal cual, en segundos.
+        $this->postJson(route('estudio.sesiones.store'), $this->datosSesion([
+            'foco_seg' => 5, 'descanso_seg' => 5, 'descanso_largo_seg' => 10800, 'pomodoros_antes_largo' => 12,
+        ]))->assertCreated();
+        $sesion = SesionEstudio::latest('id')->firstOrFail();
+        $this->assertSame([5, 5, 10800, 12], [$sesion->foco_seg, $sesion->descanso_seg, $sesion->descanso_largo_seg, $sesion->pomodoros_antes_largo]);
+
+        $this->postJson(route('estudio.sesiones.store'), $this->datosSesion(['foco_seg' => 'abc', 'estilo' => 'raro']))
+            ->assertJsonValidationErrors(['foco_seg' => 'La duración del foco debe ser un número entero de segundos.', 'estilo' => 'El estilo de estudio elegido no es válido.']);
+
+        $this->postJson(route('estudio.sesiones.store'), $this->datosSesion(['foco_seg' => 90.5]))
+            ->assertJsonValidationErrors(['foco_seg' => 'La duración del foco debe ser un número entero de segundos.']);
+
+        $this->postJson(route('estudio.sesiones.store'), array_diff_key($this->datosSesion(), ['descanso_seg' => 1]))
+            ->assertJsonValidationErrors(['descanso_seg' => 'Indicá la duración del descanso corto.']);
+    }
+
+    public function test_los_presets_pasan_a_segundos_y_son_validos(): void
+    {
+        $this->assertSame(
+            ['clasico' => ['foco' => 1500, 'descanso' => 300, 'largo' => 900, 'ciclos' => 4], 'bloques_largos' => ['foco' => 3000, 'descanso' => 600, 'largo' => 1200, 'ciclos' => 3]],
+            EstiloEstudio::presets(),
+        );
+
+        foreach (EstiloEstudio::presets() as $clave => $t) {
+            $this->postJson(route('estudio.sesiones.store'), [
+                'estilo' => $clave, 'foco_seg' => $t['foco'], 'descanso_seg' => $t['descanso'],
+                'descanso_largo_seg' => $t['largo'], 'pomodoros_antes_largo' => $t['ciclos'],
+            ])->assertCreated();
+        }
+    }
+
+    public function test_la_configuracion_de_estudio_ofrece_minutos_y_segundos_por_duracion(): void
+    {
+        $this->get(route('estudio.index'))->assertOk()
+            ->assertSee('id="p-foco-min"', false)->assertSee('id="p-foco-seg"', false)
+            ->assertSee('id="p-descanso-min"', false)->assertSee('id="p-descanso-seg"', false)
+            ->assertSee('id="p-largo-min"', false)->assertSee('id="p-largo-seg"', false)
+            ->assertSee('max="180"', false)
+            ->assertSee('00:05 a 180:00')
+            ->assertSee('Pomodoro clásico (25/5)');
     }
 
     public function test_el_foco_completado_genera_un_bloque_productivo_de_estudio(): void
@@ -131,10 +178,10 @@ class EstudioTest extends TestCase
         $sesion = SesionEstudio::factory()->enCurso()->create();
 
         $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo([
-            'tipo' => 'descanso', 'clave' => '1-2', 'inicio' => '2026-09-29T15:25:00Z', 'fin' => '2026-09-29T15:30:00Z', 'planificado_min' => 5,
+            'tipo' => 'descanso', 'clave' => '1-2', 'inicio' => '2026-09-29T15:25:00Z', 'fin' => '2026-09-29T15:30:00Z', 'planificado_seg' => 300,
         ]))->assertCreated();
         $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo([
-            'tipo' => 'libre', 'clave' => '1-3', 'inicio' => '2026-09-29T15:30:00Z', 'fin' => '2026-09-29T15:37:00Z', 'planificado_min' => null,
+            'tipo' => 'libre', 'clave' => '1-3', 'inicio' => '2026-09-29T15:30:00Z', 'fin' => '2026-09-29T15:37:00Z', 'planificado_seg' => null,
         ]))->assertCreated();
 
         $this->assertSame(2, BloqueTiempo::whereHas('categoria', fn ($c) => $c->where('nombre', 'Descanso')->where('tipo', TipoCategoria::Descanso))->count());
@@ -189,6 +236,45 @@ class EstudioTest extends TestCase
         $this->assertSame(0, BloqueTiempo::count());
     }
 
+    public function test_un_intervalo_de_5_segundos_se_registra_sin_bloque_y_uno_de_60_con_bloque(): void
+    {
+        $sesion = SesionEstudio::factory()->enCurso()->create();
+
+        $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo([
+            'fin' => '2026-09-29T15:00:05Z', 'planificado_seg' => 5, 'completado' => true,
+        ]))->assertCreated();
+        $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo([
+            'clave' => '1-2', 'inicio' => '2026-09-29T15:01:00Z', 'fin' => '2026-09-29T15:01:59Z', 'completado' => false,
+        ]))->assertCreated();
+        $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo([
+            'clave' => '1-3', 'inicio' => '2026-09-29T15:02:00Z', 'fin' => '2026-09-29T15:03:00Z', 'completado' => false,
+        ]))->assertCreated();
+
+        $corto = IntervaloEstudio::where('clave', '1-1')->firstOrFail();
+        $this->assertSame(5, $corto->duracion_seg);
+        $this->assertSame(5, $corto->planificado_seg);
+        $this->assertTrue($corto->completado);
+        $this->assertNull($corto->bloque_tiempo_id);
+        $this->assertNull(IntervaloEstudio::where('clave', '1-2')->firstOrFail()->bloque_tiempo_id);
+
+        $justo = IntervaloEstudio::where('clave', '1-3')->firstOrFail();
+        $this->assertSame(60, $justo->duracion_seg);
+        $this->assertNotNull($justo->bloque_tiempo_id);
+        $this->assertSame(1, BloqueTiempo::count());
+        $this->assertSame(1, BloqueTiempo::first()->duracionEnMinutos());
+    }
+
+    public function test_el_planificado_del_intervalo_se_valida_en_segundos(): void
+    {
+        $sesion = SesionEstudio::factory()->enCurso()->create();
+
+        $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo(['planificado_seg' => 10801]))
+            ->assertJsonValidationErrors(['planificado_seg' => 'Los segundos planificados deben estar entre 0 y 10800 (3 horas).']);
+        $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo(['planificado_seg' => 'x']))
+            ->assertJsonValidationErrors(['planificado_seg' => 'Los segundos planificados deben ser un número entero.']);
+        $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo(['planificado_seg' => 10800]))->assertCreated();
+    }
+
     public function test_reenviar_el_mismo_intervalo_no_duplica_nada(): void
     {
         $sesion = SesionEstudio::factory()->enCurso()->create();
@@ -228,8 +314,8 @@ class EstudioTest extends TestCase
         $sesion = SesionEstudio::factory()->create(['iniciada_en' => '2026-09-20 10:00:00', 'tema' => 'Sesion de repaso']);
         IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'a', 'duracion_seg' => 1500, 'completado' => true]);
         IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'b', 'duracion_seg' => 600, 'completado' => false]);
-        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'c', 'tipo' => TipoIntervalo::Descanso, 'planificado_min' => 5, 'duracion_seg' => 360]);
-        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'd', 'tipo' => TipoIntervalo::Libre, 'planificado_min' => null, 'duracion_seg' => 240]);
+        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'c', 'tipo' => TipoIntervalo::Descanso, 'planificado_seg' => 300, 'duracion_seg' => 360]);
+        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'd', 'tipo' => TipoIntervalo::Libre, 'planificado_seg' => null, 'duracion_seg' => 240]);
 
         $respuesta = $this->get(route('estudio.historial'))->assertOk();
         $respuesta->assertSee('Sesion de repaso')
@@ -244,6 +330,35 @@ class EstudioTest extends TestCase
             ['pomodoros' => 1, 'interrumpidos' => 1, 'foco_seg' => 2100, 'descanso_seg' => 360, 'libre_seg' => 240],
             $respuesta->viewData('totales'),
         );
+    }
+
+    public function test_el_historial_muestra_tiempos_cortos_en_segundos_y_horas(): void
+    {
+        $sesion = SesionEstudio::factory()->create(['iniciada_en' => '2026-09-21 10:00:00', 'foco_seg' => 5, 'descanso_seg' => 5, 'tema' => 'Prueba corta']);
+        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'a', 'duracion_seg' => 5, 'planificado_seg' => 5, 'completado' => true]);
+        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'b', 'duracion_seg' => 85, 'planificado_seg' => 300, 'completado' => false]);
+        IntervaloEstudio::factory()->for($sesion, 'sesion')->create(['clave' => 'c', 'tipo' => TipoIntervalo::Libre, 'planificado_seg' => null, 'duracion_seg' => 7500]);
+
+        $this->get(route('estudio.historial'))->assertOk()
+            ->assertSee('Prueba corta')
+            ->assertSee('1 min 30 s de foco')
+            ->assertSee('5 s / 5 s')
+            ->assertSee('5 s / 1 min 30 s')
+            ->assertSee('2 h 05 min');
+    }
+
+    public function test_duracion_formatea_segundos(): void
+    {
+        $this->assertSame('0 s', Duracion::formatearSegundos(0));
+        $this->assertSame('5 s', Duracion::formatearSegundos(5));
+        $this->assertSame('59 s', Duracion::formatearSegundos(59));
+        $this->assertSame('1 min', Duracion::formatearSegundos(60));
+        $this->assertSame('1 min 30 s', Duracion::formatearSegundos(90));
+        $this->assertSame('25 min', Duracion::formatearSegundos(1500));
+        $this->assertSame('59 min 59 s', Duracion::formatearSegundos(3599));
+        $this->assertSame('1 h', Duracion::formatearSegundos(3600));
+        $this->assertSame('2 h 05 min', Duracion::formatearSegundos(7500));
+        $this->assertSame('3 h', Duracion::formatearSegundos(10800));
     }
 
     public function test_el_historial_filtra_por_rango_de_fechas_y_por_contexto(): void

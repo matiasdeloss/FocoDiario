@@ -13,10 +13,13 @@
  */
 import { adquirirCandado, liberarCandado } from './pomodoro-candado.js';
 import {
-    avanzar, crearEstado, DESCANSO, describir, FOCO, iniciarSiguienteFoco, pausar, reanudar, reiniciar, saltar, terminar,
+    avanzar, CONFIG_POR_DEFECTO, crearEstado, DESCANSO, describir, FOCO, iniciarSiguienteFoco, migrarConfig, migrarEstado,
+    migrarEvento, pausar, reanudar, reiniciar, saltar, terminar,
 } from './pomodoro-logica.js';
 
-export const CLAVE_CONFIG = 'focodiario.estudio.config';
+export const CLAVE_CONFIG = 'focodiario.estudio.config.v2';
+/** Clave de las versiones anteriores, que guardaban los tiempos en minutos. Se lee una vez, se convierte y se borra. */
+const CLAVE_CONFIG_ANTIGUA = 'focodiario.estudio.config';
 export const CLAVE_ESTADO = 'focodiario.estudio.estado';
 export const CLAVE_PENDIENTES = 'focodiario.estudio.pendientes';
 export const CLAVE_SONIDO = 'focodiario.estudio.sonido';
@@ -51,10 +54,33 @@ export const encabezados = () => ({
     'X-CSRF-TOKEN': csrf(),
 });
 
-export const CONFIG_INICIAL = { foco: 25, descanso: 5, largo: 15, ciclos: 4, estilo: 'clasico', tarea_id: '', contexto_id: '', tema: '' };
+export const CONFIG_INICIAL = CONFIG_POR_DEFECTO;
 
-/** Última configuración guardada (tiempos, estilo, tarea, contexto, tema), completada con los valores por defecto. */
-export const configGuardada = () => ({ ...CONFIG_INICIAL, ...leer(CLAVE_CONFIG, {}) });
+/**
+ * Última configuración guardada (tiempos en segundos, estilo, tarea, contexto, tema), completada con los valores por defecto.
+ * Si solo existe la de versiones anteriores (en minutos) se convierte y se guarda en el formato nuevo.
+ */
+export function configGuardada() {
+    const nueva = leer(CLAVE_CONFIG, null);
+
+    if (nueva !== null) return migrarConfig({ ...nueva, seg: true });
+
+    const antigua = leer(CLAVE_CONFIG_ANTIGUA, null);
+
+    if (antigua === null) return { ...CONFIG_INICIAL };
+
+    const convertida = migrarConfig(antigua);
+
+    escribir(CLAVE_CONFIG, { ...convertida, seg: true });
+    escribir(CLAVE_CONFIG_ANTIGUA, null);
+
+    return convertida;
+}
+
+/** Guarda la duración de una fase ('foco', 'descanso' o 'largo'), en segundos, en la configuración de siempre. */
+export function guardarDuracion(clave, seg) {
+    escribir(CLAVE_CONFIG, { ...configGuardada(), [clave]: seg, estilo: 'personalizado', seg: true });
+}
 
 /** URL base de las sesiones: la publica el widget (o la tarjeta de Estudio) en data-url-sesiones. */
 export const urlSesiones = () => document.querySelector('[data-url-sesiones]')?.dataset.urlSesiones ?? '/estudio/sesiones';
@@ -150,7 +176,8 @@ export function vaciarPendientes({ forzar = false } = {}) {
 
                 if (cola.length === 0) break;
 
-                const { sesionId, evento } = cola[0];
+                const { sesionId } = cola[0];
+                const evento = migrarEvento(cola[0].evento);
                 const cuerpo = {
                     ...evento,
                     inicio: new Date(evento.inicio).toISOString(),
@@ -201,8 +228,8 @@ export async function crearSesionEnServidor(c) {
         headers: encabezados(),
         body: JSON.stringify({
             tarea_id: c.tarea_id || null, contexto_id: c.contexto_id || null, tema: c.tema || null,
-            estilo: c.estilo, foco_min: c.foco, descanso_min: c.descanso,
-            descanso_largo_min: c.largo, pomodoros_antes_largo: c.ciclos,
+            estilo: c.estilo, foco_seg: c.foco, descanso_seg: c.descanso,
+            descanso_largo_seg: c.largo, pomodoros_antes_largo: c.ciclos,
         }),
     });
     const datos = await respuesta.json().catch(() => ({}));
@@ -225,7 +252,7 @@ export async function finalizarEnServidor(sesionId) {
 }
 
 /* ---------- Estado y suscriptores ---------- */
-const recargar = () => { estado = leer(CLAVE_ESTADO, null); };
+const recargar = () => { estado = migrarEstado(leer(CLAVE_ESTADO, null)); };
 const guardar = () => escribir(CLAVE_ESTADO, estado);
 
 /** Estado guardado tal cual (sin recalcular fases). */

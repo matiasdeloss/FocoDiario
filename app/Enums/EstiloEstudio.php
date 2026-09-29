@@ -17,12 +17,12 @@ enum EstiloEstudio: string
         };
     }
 
-    /** Tiempos del preset: foco, descanso corto, descanso largo y pomodoros antes del largo. */
+    /** Tiempos del preset: foco, descanso corto y descanso largo en segundos, y pomodoros antes del largo. */
     public function tiempos(): ?array
     {
         return match ($this) {
-            self::Clasico => ['foco' => 25, 'descanso' => 5, 'largo' => 15, 'ciclos' => 4],
-            self::BloquesLargos => ['foco' => 50, 'descanso' => 10, 'largo' => 20, 'ciclos' => 3],
+            self::Clasico => ['foco' => 1500, 'descanso' => 300, 'largo' => 900, 'ciclos' => 4],
+            self::BloquesLargos => ['foco' => 3000, 'descanso' => 600, 'largo' => 1200, 'ciclos' => 3],
             self::Personalizado => null,
         };
     }

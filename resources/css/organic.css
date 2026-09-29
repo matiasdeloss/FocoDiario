@@ -62,6 +62,8 @@
     --color-on-accent: #fff;
     /* Relleno de botones principales con texto blanco: 5,04:1 (el acento base da 4,0:1) */
     --color-accent-boton: #a75b27;
+    --color-accent-boton-hover: #8c491a;
+    --color-accent-boton-activo: #643312;
     --radius-card: 18px;
     --radius-pill: 999px;
     --radius-control: 8px;

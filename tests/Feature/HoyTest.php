@@ -92,9 +92,9 @@ class HoyTest extends TestCase
         $this->assertDatabaseHas('notas', ['contenido' => 'Repasar matrices', 'contexto_id' => $contexto->id, 'color' => 'salvia']);
     }
 
-    public function test_la_nota_rapida_ofrece_cinco_colores_y_el_contador(): void
+    public function test_la_nota_rapida_ofrece_cinco_colores_sin_contador(): void
     {
-        $html = $this->get(route('hoy'))->assertOk()->assertSee('0 caracteres')->getContent();
+        $html = $this->get(route('hoy'))->assertOk()->assertDontSee('0 caracteres')->getContent();
 
         $this->assertSame(5, substr_count($html, 'data-color-nota='));
         $this->assertStringContainsString('aria-label="Color de la nota"', $html);
@@ -343,7 +343,8 @@ class HoyTest extends TestCase
             ->assertSee('data-url-sesiones="'.route('estudio.sesiones.store').'"', false)
             ->assertSee('data-sesion-activa="'.$sesion->id.'"', false)
             ->assertSee('aria-label="Reiniciar temporizador"', false)
-            ->assertSee('role="timer"', false)
+            ->assertSee('data-reloj', false)
+            ->assertSee('aria-label="Editar tiempo, 25:00"', false)
             ->assertSee('0 pomodoros completados hoy')
             ->assertDontSee('id="pomodoro-widget"', false);
     }

@@ -55,7 +55,7 @@ prueba('sin almacenamiento o con datos rotos no bloquea', () => {
 });
 
 prueba('dos pestañas que reconstruyen el mismo estado generan los mismos eventos con la misma clave', () => {
-    const config = { foco: 25, descanso: 5, largo: 15, ciclos: 4 };
+    const config = { foco: 1500, descanso: 300, largo: 900, ciclos: 4 };
     const t0 = Date.UTC(2026, 8, 29, 12, 0, 0);
     const guardado = JSON.parse(JSON.stringify(crearEstado(7, config, t0))); // lo que dejó otra pestaña en localStorage
     const a = avanzar(guardado, t0 + 26 * MIN);
@@ -65,7 +65,7 @@ prueba('dos pestañas que reconstruyen el mismo estado generan los mismos evento
 });
 
 prueba('describir: nombre, tiempo y progreso de cada fase', () => {
-    const config = { foco: 25, descanso: 5, largo: 15, ciclos: 4 };
+    const config = { foco: 1500, descanso: 300, largo: 900, ciclos: 4 };
     const t0 = Date.UTC(2026, 8, 29, 12, 0, 0);
     const e = crearEstado(1, config, t0);
     const foco = describir(e, t0 + 5 * MIN);

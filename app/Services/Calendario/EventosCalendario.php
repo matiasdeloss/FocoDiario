@@ -86,7 +86,7 @@ class EventosCalendario
                         'tipo' => 'sesion',
                         'sesionId' => $sesion->id,
                         'estado' => $sesion->estado->etiqueta(),
-                        'foco_min' => $sesion->foco_min,
+                        'foco_seg' => $sesion->foco_seg,
                     ],
                 ];
 

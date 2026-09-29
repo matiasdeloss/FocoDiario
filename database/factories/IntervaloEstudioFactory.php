@@ -22,7 +22,7 @@ class IntervaloEstudioFactory extends Factory
             'clave' => fake()->unique()->uuid(),
             'inicio' => $inicio,
             'fin' => (clone $inicio)->modify('+25 minutes'),
-            'planificado_min' => 25,
+            'planificado_seg' => 1500,
             'pausado_seg' => 0,
             'duracion_seg' => 1500,
             'completado' => true,

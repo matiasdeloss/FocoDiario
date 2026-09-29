@@ -1,17 +1,18 @@
 {{-- Recordatorios pendientes con fecha. Requiere: $recordatorios, $recordatoriosSinFecha --}}
-<section id="hoy-recordatorios" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-recordatorios-titulo" data-recordatorios>
+<section id="hoy-recordatorios" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-recordatorios-titulo" @if (! empty($oob)) hx-swap-oob="true" @endif data-recordatorios>
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-recordatorios-titulo"><i class="bi bi-bell hoy-titulo-icono" aria-hidden="true"></i>Recordatorios</h2>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-recordatorios-titulo">Recordatorios</h2>
         <a href="{{ route('recordatorios.index') }}" class="hoy-enlace">ver todos</a>
     </div>
 
     <ul class="hoy-lista" role="list">
         @foreach ($recordatorios as $recordatorio)
             @php $atrasado = $recordatorio->recordar_en->isPast(); @endphp
-            <li class="hoy-item">
+            <li class="hoy-item" data-recordatorio="{{ $recordatorio->id }}">
                 <button type="button" class="hoy-fila" role="checkbox" aria-checked="false"
-                        data-url="{{ route('recordatorios.avisar', $recordatorio) }}">
-                    <span class="hoy-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                        data-url-avisar="{{ route('recordatorios.avisar', $recordatorio) }}"
+                        data-url-reactivar="{{ route('recordatorios.reactivar', $recordatorio) }}">
+                    <span class="hoy-check" aria-hidden="true">@include('hoy._icono-check')</span>
                     <span class="hoy-fila-texto">
                         <span class="hoy-fila-titulo">{{ $recordatorio->mensaje !== '' ? $recordatorio->mensaje : 'Sin título' }}</span>
                         <span @class(['hoy-fila-cuando', 'es-atrasado' => $atrasado])>

@@ -2,12 +2,12 @@
 import assert from 'node:assert/strict';
 import { avanzar, crearEstado, DESCANSO, describir, FOCO, LIBRE, pausar } from '../../resources/js/pomodoro-logica.js';
 import {
-    actualizarContador, botonPrincipal, CIRCUNFERENCIA, contadorInicial, desplazamientoAnillo, etiquetaFase, minutosDeModo,
-    modoDeEstado, puntosLlenos,
+    actualizarContador, botonPrincipal, CIRCUNFERENCIA, contadorInicial, desplazamientoAnillo, etiquetaFase, segundosDeModo,
+    modoDeEstado, puntosLlenos, tamanoReloj,
 } from '../../resources/js/hoy-pomodoro-logica.js';
 
 const MIN = 60_000;
-const config = { foco: 25, descanso: 5, largo: 15, ciclos: 4 };
+const config = { foco: 1500, descanso: 300, largo: 900, ciclos: 4 };
 let pruebas = 0;
 const prueba = (nombre, fn) => { fn(); pruebas++; console.log('ok -', nombre); };
 
@@ -33,7 +33,7 @@ prueba('un descanso iniciado directamente pasa a tiempo libre sin contar pomodor
     assert.equal(estado.completados, 0);
     assert.equal(eventos.length, 1);
     assert.equal(eventos[0].tipo, 'descanso');
-    assert.equal(eventos[0].planificado_min, 5);
+    assert.equal(eventos[0].planificado_seg, 300);
 });
 
 prueba('el modo del control segmentado sale de la fase (el tiempo libre cuenta como descanso)', () => {
@@ -43,11 +43,11 @@ prueba('el modo del control segmentado sale de la fase (el tiempo libre cuenta c
     assert.equal(modoDeEstado(avanzar(crearEstado(1, config, 0, 'descanso'), 6 * MIN).estado), 'descanso');
 });
 
-prueba('minutosDeModo usa la configuración guardada', () => {
-    assert.equal(minutosDeModo(config, 'foco'), 25);
-    assert.equal(minutosDeModo(config, 'descanso'), 5);
-    assert.equal(minutosDeModo(config, 'largo'), 15);
-    assert.equal(minutosDeModo({ ...config, foco: 50 }, 'foco'), 50);
+prueba('segundosDeModo usa la configuración guardada', () => {
+    assert.equal(segundosDeModo(config, 'foco'), 1500);
+    assert.equal(segundosDeModo(config, 'descanso'), 300);
+    assert.equal(segundosDeModo(config, 'largo'), 900);
+    assert.equal(segundosDeModo({ ...config, foco: 3000 }, 'foco'), 3000);
 });
 
 prueba('el anillo está lleno al empezar, medio vacío a la mitad y vacío al final', () => {
@@ -57,7 +57,7 @@ prueba('el anillo está lleno al empezar, medio vacío a la mitad y vacío al fi
     assert.equal(desplazamientoAnillo(null), 0);
     assert.equal(desplazamientoAnillo(-3), 0);
     assert.ok(Math.abs(desplazamientoAnillo(7) - CIRCUNFERENCIA) < 1e-9);
-    assert.ok(Math.abs(CIRCUNFERENCIA - 270.18) < 0.01);
+    assert.ok(Math.abs(CIRCUNFERENCIA - 483.81) < 0.01);
 });
 
 prueba('el progreso del anillo sigue al motor (pausa incluida)', () => {
@@ -118,6 +118,14 @@ prueba('sin sesión al abrir, el primer pomodoro cuenta', () => {
     c = actualizarContador(c, { sesionId: 1, completados: 0 });
     c = actualizarContador(c, { sesionId: 1, completados: 1 });
     assert.equal(c.extra, 1);
+});
+
+prueba('el tamaño del reloj baja cuando el texto tiene más caracteres', () => {
+    assert.equal(tamanoReloj('25:00'), 'normal');
+    assert.equal(tamanoReloj('00:05'), 'normal');
+    assert.equal(tamanoReloj('180:00'), 'medio');
+    assert.equal(tamanoReloj('2:59:59'), 'largo');
+    assert.equal(tamanoReloj('12:34:56'), 'extra');
 });
 
 console.log(`${pruebas} pruebas de la tarjeta Pomodoro de Hoy pasaron`);

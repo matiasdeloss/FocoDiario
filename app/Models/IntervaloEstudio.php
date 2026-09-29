@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'sesion_id', 'tipo', 'clave', 'inicio', 'fin', 'planificado_min', 'pausado_seg',
+    'sesion_id', 'tipo', 'clave', 'inicio', 'fin', 'planificado_seg', 'pausado_seg',
     'duracion_seg', 'completado', 'bloque_tiempo_id',
 ])]
 class IntervaloEstudio extends Model
@@ -26,7 +26,7 @@ class IntervaloEstudio extends Model
             'tipo' => TipoIntervalo::class,
             'inicio' => 'datetime',
             'fin' => 'datetime',
-            'planificado_min' => 'integer',
+            'planificado_seg' => 'integer',
             'pausado_seg' => 'integer',
             'duracion_seg' => 'integer',
             'completado' => 'boolean',

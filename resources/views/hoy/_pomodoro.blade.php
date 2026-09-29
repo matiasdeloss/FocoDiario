@@ -4,7 +4,7 @@
          data-url-sesiones="{{ route('estudio.sesiones.store') }}"
          data-sesion-activa="{{ $sesionActivaId }}" data-completados-hoy="{{ $pomodorosHoy }}">
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-pomodoro-titulo"><i class="bi bi-stopwatch hoy-titulo-icono" aria-hidden="true"></i>Pomodoro</h2>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-pomodoro-titulo">Pomodoro</h2>
         <span class="hoy-puntos" data-puntos role="img"
               aria-label="{{ $pomodorosHoy }} {{ $pomodorosHoy === 1 ? 'pomodoro completado' : 'pomodoros completados' }} hoy"
               title="{{ $pomodorosHoy }} hoy">
@@ -21,12 +21,12 @@
     </div>
 
     <div class="hoy-anillo">
-        <svg viewBox="0 0 96 96" width="112" height="112" aria-hidden="true" focusable="false">
-            <circle class="hoy-anillo-fondo" cx="48" cy="48" r="43"></circle>
-            <circle class="hoy-anillo-progreso" cx="48" cy="48" r="43" data-anillo></circle>
+        <svg viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+            <circle class="hoy-anillo-fondo" cx="80" cy="80" r="77"></circle>
+            <circle class="hoy-anillo-progreso" cx="80" cy="80" r="77" data-anillo></circle>
         </svg>
         <div class="hoy-anillo-centro">
-            <span class="hoy-reloj" data-reloj role="timer" aria-live="off">25:00</span>
+            <button type="button" class="hoy-reloj" data-reloj data-tamano="normal" aria-label="Editar tiempo, 25:00">25:00</button>
             <span class="hoy-fase" data-fase-texto>LISTO</span>
         </div>
     </div>

@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'contexto_id', 'tarea_id', 'tema', 'estilo', 'foco_min', 'descanso_min', 'descanso_largo_min',
+    'contexto_id', 'tarea_id', 'tema', 'estilo', 'foco_seg', 'descanso_seg', 'descanso_largo_seg',
     'pomodoros_antes_largo', 'estado', 'iniciada_en', 'finalizada_en',
 ])]
 class SesionEstudio extends Model
@@ -32,9 +32,9 @@ class SesionEstudio extends Model
             'estado' => EstadoSesion::class,
             'iniciada_en' => 'datetime',
             'finalizada_en' => 'datetime',
-            'foco_min' => 'integer',
-            'descanso_min' => 'integer',
-            'descanso_largo_min' => 'integer',
+            'foco_seg' => 'integer',
+            'descanso_seg' => 'integer',
+            'descanso_largo_seg' => 'integer',
             'pomodoros_antes_largo' => 'integer',
         ];
     }
@@ -95,9 +95,9 @@ class SesionEstudio extends Model
         return (int) $this->intervalos->where('tipo', $tipo)->sum('duracion_seg');
     }
 
-    /** Minutos que se habían previsto para ese tipo de intervalo. */
-    public function minutosPlanificadosDe(TipoIntervalo $tipo): int
+    /** Segundos que se habían previsto para ese tipo de intervalo. */
+    public function segundosPlanificadosDe(TipoIntervalo $tipo): int
     {
-        return (int) $this->intervalos->where('tipo', $tipo)->sum('planificado_min');
+        return (int) $this->intervalos->where('tipo', $tipo)->sum('planificado_seg');
     }
 }

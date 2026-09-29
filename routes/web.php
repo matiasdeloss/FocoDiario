@@ -15,6 +15,7 @@ Route::resource('registro', RegistroController::class);
 // Acciones extra de los módulos
 Route::patch('tareas/{tarea}/estado', [TareaController::class, 'cambiarEstado'])->name('tareas.estado');
 Route::patch('recordatorios/{recordatorio}/avisar', [RecordatorioController::class, 'avisar'])->name('recordatorios.avisar');
+Route::patch('recordatorios/{recordatorio}/reactivar', [RecordatorioController::class, 'reactivar'])->name('recordatorios.reactivar');
 
 // ---- Notas y contextos (agente de notas) ----
 Route::resource('notas', \App\Http\Controllers\NotaController::class);
@@ -49,3 +50,6 @@ Route::delete('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaC
     ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.destroy');
 
 // ---- Tablero de tareas (agente de tablero) ----
+
+// ---- Captura rápida de Hoy ----
+Route::post('hoy/captura', \App\Http\Controllers\CapturaRapidaController::class)->name('hoy.captura');

@@ -5,13 +5,14 @@
  * abrir Hoy, la tarjeta la refleja porque el motor la recupera del estado guardado.
  */
 import {
-    acciones, conciliarSesion, configGuardada, crearSesionEnServidor, estadoGuardado, iniciarEstado, iniciarMotor,
+    acciones, conciliarSesion, configGuardada, crearSesionEnServidor, estadoGuardado, guardarDuracion, iniciarEstado, iniciarMotor,
     prepararAudio, suscribir, terminarSesion,
 } from './pomodoro-motor.js';
+import { hacerEditable } from './reloj-editable.js';
 import { describir, estaPausado, formatearTiempo, LIBRE } from './pomodoro-logica.js';
 import {
-    actualizarContador, botonPrincipal, CIRCUNFERENCIA, contadorInicial, desplazamientoAnillo, etiquetaFase, minutosDeModo,
-    modoDeEstado, PUNTOS, puntosLlenos,
+    actualizarContador, botonPrincipal, CIRCUNFERENCIA, contadorInicial, desplazamientoAnillo, etiquetaFase, segundosDeModo,
+    modoDeEstado, PUNTOS, puntosLlenos, tamanoReloj,
 } from './hoy-pomodoro-logica.js';
 
 function iniciarTarjeta(raiz) {
@@ -34,6 +35,20 @@ function iniciarTarjeta(raiz) {
     let contador;
     let ultimaFraseAnunciada = '';
     let iniciando = false;
+    let modoActual = 'foco';
+    const NOMBRES_MODO = { foco: 'Enfoque', descanso: 'Descanso', largo: 'Pausa larga' };
+
+    const relojEditable = hacerEditable(elementos.reloj, {
+        nombre: () => NOMBRES_MODO[modoActual],
+        segundos: () => segundosDeModo(configGuardada(), modoActual),
+        puedeEditar: () => !estadoGuardado(),
+        confirmar: (seg) => {
+            guardarDuracion(modoActual, seg);
+            dibujar({ estado: null, ahora: Date.now() });
+        },
+        error: (texto) => { elementos.mensaje.textContent = texto; },
+        anunciar: (texto) => { elementos.anuncio.textContent = texto; ultimaFraseAnunciada = texto; },
+    });
 
     elementos.anillo.style.strokeDasharray = CIRCUNFERENCIA.toFixed(2);
 
@@ -62,6 +77,8 @@ function iniciarTarjeta(raiz) {
         dibujarPuntos();
 
         const modo = activo ? modoDeEstado(estado) : modoElegido;
+
+        modoActual = modo;
         const d = activo ? describir(estado, ahora) : null;
 
         raiz.dataset.fase = activo ? estado.fase : 'inactivo';
@@ -73,8 +90,12 @@ function iniciarTarjeta(raiz) {
             boton.disabled = activo;
         });
 
-        elementos.reloj.textContent = activo ? d.texto : formatearTiempo(minutosDeModo(config, modo) * 60_000);
+        const textoReloj = activo ? d.texto : formatearTiempo(segundosDeModo(config, modo) * 1000);
+
+        elementos.reloj.textContent = textoReloj;
+        elementos.reloj.dataset.tamano = tamanoReloj(textoReloj);
         elementos.fase.textContent = etiquetaFase(estado, pausado, modo);
+        relojEditable.actualizar();
         elementos.anillo.style.setProperty('--hoy-anillo', desplazamientoAnillo(activo ? d.progreso : 0).toFixed(2));
 
         const principal = botonPrincipal(estado, pausado);

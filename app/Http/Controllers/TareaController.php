@@ -8,6 +8,7 @@ use App\Http\Requests\CambiarEstadoTareaRequest;
 use App\Http\Requests\FiltroTareasRequest;
 use App\Http\Requests\TareaRequest;
 use App\Models\Tarea;
+use App\Services\Hoy\ListasHoy;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -92,7 +93,7 @@ class TareaController extends Controller
         ])));
     }
 
-    public function store(TareaRequest $request): RedirectResponse|JsonResponse
+    public function store(TareaRequest $request, ListasHoy $listas): RedirectResponse|JsonResponse
     {
         $tarea = Tarea::create($request->validated());
 
@@ -104,7 +105,7 @@ class TareaController extends Controller
                 'prioridad' => $tarea->prioridad->value,
                 'estado' => $tarea->estado->value,
                 'html' => view('hoy._tarea', ['tarea' => $tarea])->render(),
-            ], 201);
+            ] + $this->listaHoy($listas), 201);
         }
 
         return redirect()->route('tareas.index')->with('estado', 'Tarea creada.');
@@ -139,12 +140,12 @@ class TareaController extends Controller
     }
 
     /** Cambia el estado con un clic. Con HTMX devuelve solo la fila actualizada. */
-    public function cambiarEstado(CambiarEstadoTareaRequest $request, Tarea $tarea): View|RedirectResponse|JsonResponse
+    public function cambiarEstado(CambiarEstadoTareaRequest $request, Tarea $tarea, ListasHoy $listas): View|RedirectResponse|JsonResponse
     {
         $tarea->update($request->validated());
 
         if ($request->expectsJson()) {
-            return response()->json(['estado' => $tarea->estado->value]);
+            return response()->json(['id' => $tarea->id, 'estado' => $tarea->estado->value] + $this->listaHoy($listas));
         }
 
         if ($request->header('HX-Request')) {
@@ -152,6 +153,23 @@ class TareaController extends Controller
         }
 
         return back()->with('estado', 'Estado actualizado.');
+    }
+
+    /**
+     * Estado de la tarjeta Tareas abiertas de Hoy tal como queda en la base: la lista ya ordenada
+     * (abiertas por prioridad, últimas completadas al final) y el total de pendientes.
+     * Hoy lo toma como fuente de verdad tras cada cambio.
+     *
+     * @return array{lista: string, pendientes: int}
+     */
+    private function listaHoy(ListasHoy $listas): array
+    {
+        $datos = $listas->tareas();
+
+        return [
+            'lista' => view('hoy._tareas-lista', $datos)->render(),
+            'pendientes' => $datos['totalPendientes'],
+        ];
     }
 
     private function proyectos()

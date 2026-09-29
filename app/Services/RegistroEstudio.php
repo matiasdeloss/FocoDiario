@@ -22,7 +22,7 @@ class RegistroEstudio
      * el foco (completo o interrumpido, con su duración real) va a "Estudio" y el
      * descanso y el tiempo libre van a "Descanso". Repetir la misma clave no duplica nada.
      *
-     * @param  array{tipo: string, clave: string, inicio: string, fin: string, planificado_min?: ?int, pausado_seg?: ?int, completado: bool}  $datos
+     * @param  array{tipo: string, clave: string, inicio: string, fin: string, planificado_seg?: ?int, pausado_seg?: ?int, completado: bool}  $datos
      */
     public function registrarIntervalo(SesionEstudio $sesion, array $datos): IntervaloEstudio
     {
@@ -57,7 +57,7 @@ class RegistroEstudio
                 'clave' => $datos['clave'],
                 'inicio' => $inicio,
                 'fin' => $fin,
-                'planificado_min' => $datos['planificado_min'] ?? null,
+                'planificado_seg' => $datos['planificado_seg'] ?? null,
                 'pausado_seg' => $pausadoSeg,
                 'duracion_seg' => $duracionSeg,
                 'completado' => (bool) $datos['completado'],

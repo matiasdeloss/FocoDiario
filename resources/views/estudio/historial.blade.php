@@ -52,13 +52,13 @@
             <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor">{{ $totales['pomodoros'] }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Minutos de foco</div><div class="metrica-valor">{{ round($totales['foco_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Tiempo de foco</div><div class="metrica-valor">{{ Duracion::formatearSegundos($totales['foco_seg']) }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Minutos de descanso</div><div class="metrica-valor">{{ round($totales['descanso_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Tiempo de descanso</div><div class="metrica-valor">{{ Duracion::formatearSegundos($totales['descanso_seg']) }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Minutos de tiempo libre</div><div class="metrica-valor">{{ round($totales['libre_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Tiempo libre</div><div class="metrica-valor">{{ Duracion::formatearSegundos($totales['libre_seg']) }}</div></div>
         </div>
     </div>
     <p class="small text-secondary">Totales {{ $hayFiltros ? 'de los filtros aplicados' : 'de todo el historial' }}, {{ $totales['interrumpidos'] }} {{ $totales['interrumpidos'] === 1 ? 'foco interrumpido' : 'focos interrumpidos' }}.</p>
@@ -73,8 +73,8 @@
                 <h2 id="dia-{{ $dia }}" class="h5 mb-0">{{ $fecha->translatedFormat('l j \d\e F') }}</h2>
                 <span class="small text-secondary">
                     {{ $t['pomodoros'] }} {{ $t['pomodoros'] === 1 ? 'pomodoro' : 'pomodoros' }} ·
-                    {{ round($t['foco_seg'] / 60) }} min de foco ·
-                    {{ round($t['descanso_seg'] / 60) }} min de descanso
+                    {{ Duracion::formatearSegundos($t['foco_seg']) }} de foco ·
+                    {{ Duracion::formatearSegundos($t['descanso_seg']) }} de descanso
                 </span>
             </div>
             <div class="tabla-foco-contenedor">
@@ -94,10 +94,10 @@
                     <tbody>
                         @foreach ($sesionesDelDia as $sesion)
                             @php
-                                $focoPrevisto = $sesion->minutosPlanificadosDe(TipoIntervalo::Foco);
-                                $focoReal = $sesion->segundosDe(TipoIntervalo::Foco) / 60;
-                                $descansoPrevisto = $sesion->minutosPlanificadosDe(TipoIntervalo::Descanso);
-                                $descansoReal = $sesion->segundosDe(TipoIntervalo::Descanso) / 60;
+                                $focoPrevisto = $sesion->segundosPlanificadosDe(TipoIntervalo::Foco);
+                                $focoReal = $sesion->segundosDe(TipoIntervalo::Foco);
+                                $descansoPrevisto = $sesion->segundosPlanificadosDe(TipoIntervalo::Descanso);
+                                $descansoReal = $sesion->segundosDe(TipoIntervalo::Descanso);
                             @endphp
                             <tr>
                                 <td class="text-nowrap">
@@ -115,8 +115,8 @@
                                         <div class="small text-secondary">{{ $sesion->contexto->rutaCompleta() }}</div>
                                     @endif
                                 </td>
-                                <td class="text-nowrap">{{ $sesion->estilo->etiqueta() }}<div class="small text-secondary">{{ $sesion->foco_min }}/{{ $sesion->descanso_min }}</div></td>
-                                <td class="text-nowrap">{{ Duracion::formatear($focoPrevisto) }} / {{ Duracion::formatear($focoReal) }}</td>
+                                <td class="text-nowrap">{{ $sesion->estilo->etiqueta() }}<div class="small text-secondary">{{ Duracion::formatearSegundos($sesion->foco_seg) }} / {{ Duracion::formatearSegundos($sesion->descanso_seg) }}</div></td>
+                                <td class="text-nowrap">{{ Duracion::formatearSegundos($focoPrevisto) }} / {{ Duracion::formatearSegundos($focoReal) }}</td>
                                 <td class="text-nowrap">
                                     {{ $sesion->pomodorosCompletados() }} completos
                                     @if ($sesion->pomodorosInterrumpidos() > 0)
@@ -124,12 +124,12 @@
                                     @endif
                                 </td>
                                 <td class="text-nowrap">
-                                    {{ Duracion::formatear($descansoReal) }}
+                                    {{ Duracion::formatearSegundos($descansoReal) }}
                                     @if ($descansoPrevisto > 0)
-                                        <div class="small text-secondary">de {{ Duracion::formatear($descansoPrevisto) }} previstos</div>
+                                        <div class="small text-secondary">de {{ Duracion::formatearSegundos($descansoPrevisto) }} previstos</div>
                                     @endif
                                 </td>
-                                <td class="text-nowrap">{{ Duracion::formatear($sesion->segundosDe(TipoIntervalo::Libre) / 60) }}</td>
+                                <td class="text-nowrap">{{ Duracion::formatearSegundos($sesion->segundosDe(TipoIntervalo::Libre)) }}</td>
                                 <td class="text-end text-nowrap">
                                     <form method="POST" action="{{ route('estudio.sesiones.destroy', $sesion) }}" class="d-inline"
                                           hx-delete="{{ route('estudio.sesiones.destroy', $sesion) }}" hx-swap="none"

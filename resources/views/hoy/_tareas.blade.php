@@ -1,18 +1,14 @@
 {{-- Tareas abiertas y las últimas completadas. Requiere: $tareasAbiertas, $tareasCompletadas, $totalPendientes --}}
 <section id="hoy-tareas" class="hoy-tarjeta hoy-lateral" aria-labelledby="hoy-tareas-titulo"
+         @if (! empty($oob)) hx-swap-oob="true" @endif
          data-tareas data-url-crear="{{ route('tareas.store') }}" data-total-pendientes="{{ $totalPendientes }}">
     <div class="hoy-tarjeta-cab">
-        <h2 class="hoy-tarjeta-titulo" id="hoy-tareas-titulo"><i class="bi bi-check2-square hoy-titulo-icono" aria-hidden="true"></i>Tareas abiertas</h2>
-        <span class="hoy-insignia" data-pendientes>{{ $totalPendientes }} {{ $totalPendientes === 1 ? 'pendiente' : 'pendientes' }}</span>
+        <h2 class="hoy-tarjeta-titulo" id="hoy-tareas-titulo">Tareas abiertas</h2>
+        <span @class(['hoy-insignia', 'es-al-dia' => $totalPendientes === 0]) data-pendientes>{{ \App\Support\TextoPendientes::para($totalPendientes) }}</span>
     </div>
 
     <ul class="hoy-lista" role="list" data-lista>
-        @foreach ($tareasAbiertas as $tarea)
-            @include('hoy._tarea', ['tarea' => $tarea])
-        @endforeach
-        @foreach ($tareasCompletadas as $tarea)
-            @include('hoy._tarea', ['tarea' => $tarea])
-        @endforeach
+        @include('hoy._tareas-lista')
     </ul>
 
     <p class="hoy-vacio" data-vacio @if ($tareasAbiertas->isNotEmpty()) hidden @endif>No tenés tareas abiertas.</p>

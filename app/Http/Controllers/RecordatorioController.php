@@ -94,6 +94,22 @@ class RecordatorioController extends Controller
         return back()->with('estado', 'Recordatorio marcado como avisado.');
     }
 
+    /** Deshace el aviso: el recordatorio vuelve a pendiente (conserva su fecha, así que recupera su lugar por fecha). */
+    public function reactivar(Request $request, Recordatorio $recordatorio): View|RedirectResponse|JsonResponse
+    {
+        $recordatorio->update(['avisado_en' => null]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['id' => $recordatorio->id, 'avisado' => false]);
+        }
+
+        if ($request->header('HX-Request')) {
+            return view('recordatorios._fila', ['recordatorio' => $recordatorio->load('tarea')]);
+        }
+
+        return back()->with('estado', 'Recordatorio vuelto a pendiente.');
+    }
+
     private function datosFormulario(Recordatorio $recordatorio): array
     {
         // Tareas abiertas, más la ya vinculada aunque esté completada.

@@ -10,15 +10,23 @@ import {
     acciones as accionesMotor, CLAVE_CONFIG, CLAVE_SONIDO, conciliarSesion, configGuardada as config, crearSesionEnServidor,
     escribir, estadoGuardado, iniciarEstado, iniciarMotor, prepararAudio, sonidoActivo, suscribir, terminarSesion,
 } from './pomodoro-motor.js';
-import { DESCANSO, describir, estaPausado, FOCO, formatearTiempo, LIBRE, transcurridoMs } from './pomodoro-logica.js';
+import { hacerEditable } from './reloj-editable.js';
+import {
+    DESCANSO, describir, dividirSegundos, estaPausado, FOCO, formatearDuracion, formatearTiempo, LIBRE, transcurridoMs, validarDuracion,
+} from './pomodoro-logica.js';
+import { tamanoReloj } from './hoy-pomodoro-logica.js';
 
 /* ---------- Temporizador en la vista Estudio ---------- */
 function iniciarTemporizador(raiz) {
     const q = (selector) => raiz.querySelector(selector);
     const campos = {
-        preset: q('#p-preset'), foco: q('#p-foco'), descanso: q('#p-descanso'), largo: q('#p-largo'),
-        ciclos: q('#p-ciclos'), tarea: q('#p-tarea'), contexto: q('#p-contexto'), tema: q('#p-tema'),
+        preset: q('#p-preset'), ciclos: q('#p-ciclos'), tarea: q('#p-tarea'), contexto: q('#p-contexto'), tema: q('#p-tema'),
     };
+    // Cada duración se escribe en dos campos (min y seg) y se guarda en segundos.
+    const duraciones = Object.fromEntries(['foco', 'descanso', 'largo'].map((clave) => [clave, {
+        grupo: q(`[data-duracion="${clave}"]`), min: q(`#p-${clave}-min`), seg: q(`#p-${clave}-seg`),
+    }]));
+    const camposTiempo = Object.values(duraciones).flatMap((d) => [d.min, d.seg]);
     const presets = JSON.parse(raiz.dataset.presets);
     let estado = null;
 
@@ -31,9 +39,7 @@ function iniciarTemporizador(raiz) {
     }
 
     function aplicarConfig(c) {
-        campos.foco.value = c.foco;
-        campos.descanso.value = c.descanso;
-        campos.largo.value = c.largo;
+        ponerDuraciones(c);
         campos.ciclos.value = c.ciclos;
         campos.preset.value = c.estilo;
         campos.tarea.value = c.tarea_id ?? '';
@@ -41,10 +47,26 @@ function iniciarTemporizador(raiz) {
         campos.tema.value = c.tema ?? '';
     }
 
+    function ponerDuraciones(c) {
+        Object.entries(duraciones).forEach(([clave, d]) => {
+            const { min, seg } = dividirSegundos(c[clave]);
+
+            d.min.value = min;
+            d.seg.value = seg;
+        });
+    }
+
+    /** Segundos de una duración según sus dos campos; NaN si no es válida (la validación al iniciar explica por qué). */
+    const segundosDe = (d) => {
+        const r = validarDuracion(d.min.value, d.seg.value);
+
+        return r.ok ? r.seg : Number.NaN;
+    };
+
     function leerFormulario() {
         return {
-            foco: Number(campos.foco.value), descanso: Number(campos.descanso.value),
-            largo: Number(campos.largo.value), ciclos: Number(campos.ciclos.value),
+            foco: segundosDe(duraciones.foco), descanso: segundosDe(duraciones.descanso),
+            largo: segundosDe(duraciones.largo), ciclos: Number(campos.ciclos.value),
             estilo: campos.preset.value, tarea_id: campos.tarea.value, contexto_id: campos.contexto.value,
             tema: campos.tema.value.trim(),
         };
@@ -62,16 +84,37 @@ function iniciarTemporizador(raiz) {
         const preset = presets[campos.preset.value];
 
         if (preset) {
-            campos.foco.value = preset.foco;
-            campos.descanso.value = preset.descanso;
-            campos.largo.value = preset.largo;
+            ponerDuraciones(preset);
             campos.ciclos.value = preset.ciclos;
         }
 
         escribir(CLAVE_CONFIG, leerFormulario());
     });
-    [campos.foco, campos.descanso, campos.largo, campos.ciclos].forEach((c) => c.addEventListener('input', detectarEstilo));
+    [...camposTiempo, campos.ciclos].forEach((c) => c.addEventListener('input', detectarEstilo));
     [campos.tarea, campos.contexto, campos.tema].forEach((c) => c.addEventListener('change', () => escribir(CLAVE_CONFIG, leerFormulario())));
+
+    /* --- Reloj editable: sin fase en marcha, tocarlo cambia la duración del foco --- */
+    const relojEditable = hacerEditable(q('[data-p="tiempo"]'), {
+        nombre: () => 'foco',
+        segundos: () => (Number.isFinite(leerFormulario().foco) ? leerFormulario().foco : config().foco),
+        puedeEditar: () => estado === null,
+        confirmar: (seg) => {
+            ponerDuraciones({ ...leerFormularioSeguro(), foco: seg });
+            detectarEstilo();
+            q('[data-p="tiempo"]').textContent = formatearTiempo(seg * 1000);
+            relojEditable.actualizar();
+        },
+        error: (texto) => mostrarErrores(texto ? [texto] : []),
+        anunciar: (texto) => { q('[data-p="anuncio"]').textContent = texto; },
+    });
+
+    /** Formulario con los valores inválidos reemplazados por los guardados, para no escribir NaN en los campos. */
+    function leerFormularioSeguro() {
+        const c = leerFormulario();
+        const guardada = config();
+
+        return { foco: Number.isFinite(c.foco) ? c.foco : guardada.foco, descanso: Number.isFinite(c.descanso) ? c.descanso : guardada.descanso, largo: Number.isFinite(c.largo) ? c.largo : guardada.largo };
+    }
 
     /* --- Dibujo --- */
     function dibujar(foto) {
@@ -86,7 +129,7 @@ function iniciarTemporizador(raiz) {
         q('#p-formulario').disabled = activo;
         q('[data-p="resumen-sesion"]').hidden = !activo;
 
-        let texto = formatearTiempo(c.foco * 60_000);
+        let texto = formatearTiempo((Number.isFinite(c.foco) ? c.foco : 0) * 1000);
         let etiqueta = 'Listo para empezar';
         let ayuda = 'Elegí los tiempos y qué vas a trabajar. El tiempo sigue corriendo aunque cambies de pestaña o de sección.';
 
@@ -126,6 +169,8 @@ function iniciarTemporizador(raiz) {
         }
 
         q('[data-p="tiempo"]').textContent = texto;
+        q('[data-p="tiempo"]').dataset.tamano = tamanoReloj(texto);
+        relojEditable.actualizar();
         q('[data-p="fase"]').textContent = etiqueta;
         q('[data-p="ayuda"]').textContent = ayuda;
 
@@ -137,7 +182,7 @@ function iniciarTemporizador(raiz) {
         });
     }
 
-    const minutos = (seg) => `${Math.round(seg / 60)} min`;
+    const minutos = (seg) => formatearDuracion(seg);
 
     function detalleSesion() {
         const partes = [];
@@ -153,12 +198,26 @@ function iniciarTemporizador(raiz) {
     async function iniciar() {
         mostrarErrores([]);
 
-        const formulario = q('#p-formulario');
-        const invalido = [...formulario.querySelectorAll('input[type="number"]')].find((campo) => !campo.checkValidity());
+        const errores = [];
 
-        if (invalido) {
-            mostrarErrores([`${invalido.dataset.nombre}: ${invalido.validationMessage}`]);
-            invalido.focus();
+        Object.values(duraciones).forEach((d) => {
+            const r = validarDuracion(d.min.value, d.seg.value, d.grupo.dataset.nombre);
+
+            [d.min, d.seg].forEach((campo) => campo.setAttribute('aria-invalid', r.ok ? 'false' : 'true'));
+
+            if (!r.ok) errores.push(r.error);
+        });
+
+        if (!campos.ciclos.checkValidity()) {
+            errores.push(`Pomodoros por ciclo: ${campos.ciclos.validationMessage}`);
+            campos.ciclos.setAttribute('aria-invalid', 'true');
+        } else {
+            campos.ciclos.setAttribute('aria-invalid', 'false');
+        }
+
+        if (errores.length > 0) {
+            mostrarErrores(errores);
+            (camposTiempo.find((campo) => campo.getAttribute('aria-invalid') === 'true') ?? campos.ciclos).focus();
 
             return;
         }
@@ -236,6 +295,9 @@ function iniciarTemporizador(raiz) {
     const sesionActivaServidor = raiz.dataset.sesionActiva ? Number(raiz.dataset.sesionActiva) : null;
 
     aplicarConfig(config());
+
+    // Un tiempo escrito en el reloj de Hoy se guarda como personalizado: si coincide con un estilo, se lo reconoce.
+    if (config().estilo === 'personalizado') detectarEstilo();
     iniciarMotor();
 
     conciliarSesion(sesionActivaServidor);
