@@ -178,7 +178,7 @@ class HoyTest extends TestCase
         Tarea::factory()->create(['titulo' => 'Tarea media', 'prioridad' => PrioridadTarea::Media, 'fecha_limite' => null]);
 
         foreach (range(1, 5) as $n) {
-            Tarea::factory()->create(['titulo' => "Hecha {$n}", 'estado' => EstadoTarea::Completada, 'updated_at' => now()->subMinutes(10 - $n)]);
+            Tarea::factory()->create(['titulo' => "Hecha {$n}", 'estado' => EstadoTarea::Completada, 'fecha_limite' => null, 'updated_at' => now()->subMinutes(10 - $n)]);
         }
 
         $this->get(route('hoy'))

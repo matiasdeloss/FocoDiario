@@ -49,16 +49,16 @@
 
     <div class="row g-3 mb-3">
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor">{{ $totales['pomodoros'] }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor">{{ $totales['pomodoros'] }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Minutos de foco</div><div class="metrica-valor">{{ round($totales['foco_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Minutos de foco</div><div class="metrica-valor">{{ round($totales['foco_seg'] / 60) }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Minutos de descanso</div><div class="metrica-valor">{{ round($totales['descanso_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Minutos de descanso</div><div class="metrica-valor">{{ round($totales['descanso_seg'] / 60) }}</div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="tarjeta tarjeta-relleno h-100"><div class="metrica-etiqueta">Minutos de tiempo libre</div><div class="metrica-valor">{{ round($totales['libre_seg'] / 60) }}</div></div>
+            <div class="tarjeta tarjeta-relleno tarjeta-resumen h-100"><div class="metrica-etiqueta">Minutos de tiempo libre</div><div class="metrica-valor">{{ round($totales['libre_seg'] / 60) }}</div></div>
         </div>
     </div>
     <p class="small text-secondary">Totales {{ $hayFiltros ? 'de los filtros aplicados' : 'de todo el historial' }}, {{ $totales['interrumpidos'] }} {{ $totales['interrumpidos'] === 1 ? 'foco interrumpido' : 'focos interrumpidos' }}.</p>

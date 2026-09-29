@@ -37,9 +37,9 @@
     --foco-acento-suave: var(--color-accent-200);      /* fondos tintados: estado activo, hoy, selección */
     --foco-acento-anillo: color-mix(in srgb, var(--color-accent) 40%, transparent);
     /* Botón primario del diseño: acento con texto blanco, hover acento 600 */
-    --foco-boton: var(--color-accent);
-    --foco-boton-hover: var(--color-accent-600);
-    --foco-boton-activo: var(--color-accent-700);
+    --foco-boton: var(--color-accent-boton);
+    --foco-boton-hover: var(--color-accent-700);
+    --foco-boton-activo: var(--color-accent-800);
 
     /* Segundo acento salvia */
     --foco-salvia: var(--color-accent-2-600);
@@ -57,7 +57,7 @@
     --foco-fuente: var(--font-body), system-ui, -apple-system, 'Segoe UI', sans-serif;
     --foco-fuente-titulo: var(--font-heading), system-ui, sans-serif;
     --foco-fuente-mono: ui-monospace, 'SF Mono', Consolas, monospace;
-    --foco-texto-xs: 0.75rem;                           /* 12px */
+    --foco-texto-xs: 0.75rem;                           /* 18px */
     --foco-texto-sm: 0.8125rem;                         /* 13px */
     --foco-texto-base: 0.9375rem;                       /* 15px */
     --foco-texto-lg: 1.25rem;
@@ -74,9 +74,9 @@
     --foco-espacio-6: 2rem;
 
     /* Forma y movimiento */
-    --foco-radio: var(--radius-card);                  /* tarjetas: 12px */
+    --foco-radio: var(--radius-card);                  /* tarjetas: 18px */
     --foco-radio-sm: var(--radius-control);            /* 8px: elementos internos */
-    --foco-radio-lg: var(--radius-card);                  /* 12px */
+    --foco-radio-lg: var(--radius-card);                  /* 18px */
     --foco-radio-pastilla: var(--radius-control);                      /* botones, campos, etiquetas */
     --foco-transicion: 150ms cubic-bezier(0.2, 0, 0, 1);
     --foco-transicion-entrada: 200ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -293,6 +293,7 @@ a { text-underline-offset: 0.2em; }
 .btn-sm { height: 30px; padding: 0 14px; font-size: var(--foco-texto-xs); }
 .btn:disabled, .btn.disabled { cursor: not-allowed; }
 .btn:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; box-shadow: none; }
+.btn:active:not(:disabled):not(.disabled) { transform: scale(0.98); }
 
 .btn-foco {
     --bs-btn-bg: var(--foco-boton);
@@ -495,6 +496,42 @@ tr.htmx-request { opacity: 0.6; }
 
 /* Formularios de una sola columna: ancho cómodo para leer */
 .formulario-angosto { max-width: 42rem; }
+
+/* Pantallas de lectura: ancho cómodo, alineadas a la izquierda como el resto de la página */
+.contenido-lectura { max-width: 72rem; }
+.contenido-lectura > * + .tarjeta,
+.contenido-lectura > * + section { margin-top: 1.75rem; }
+
+/* Atajos de teclado */
+kbd {
+    display: inline-block;
+    padding: 0.05em 0.45em;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: 4px;
+    background: var(--color-neutral-100);
+    color: var(--foco-texto);
+    font-family: 'Geist Mono', var(--foco-fuente-mono);
+    font-size: 0.85em;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+/* Hover casi imperceptible en tarjetas de resumen y de tareas */
+.tarjeta-resumen { transition: box-shadow 200ms ease; }
+.tarjeta-resumen:hover, .tarea-tarjeta:hover { box-shadow: 0 2px 8px rgba(46, 43, 37, 0.045); }
+
+/* Entrada suave al hacer scroll: entrada-scroll.js agrega la clase inicial solo si hay IntersectionObserver */
+.entrada-pendiente {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--indice, 0) * 80ms);
+}
+.entrada-pendiente.entrada-lista { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+    .entrada-pendiente { opacity: 1; transform: none; transition: none; }
+}
 
 /* Tarea completada o recordatorio avisado */
 .texto-tachado { text-decoration: line-through; color: var(--foco-texto-suave); }
@@ -873,7 +910,7 @@ tr.htmx-request { opacity: 0.6; }
     border-radius: var(--foco-radio-sm);
     padding: var(--foco-espacio-3) 28px var(--foco-espacio-1) var(--foco-espacio-3);
     cursor: grab;
-    transition: opacity var(--foco-transicion);
+    transition: opacity var(--foco-transicion), box-shadow 200ms ease;
 }
 /* La prioridad se lee en el punto de 6px de la esquina (como el punto de prioridad de Hoy) */
 .tarea-tarjeta::before {
@@ -962,7 +999,7 @@ tr.htmx-request { opacity: 0.6; }
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 .semana-dia:hover { background: var(--color-neutral-200); color: var(--foco-texto); }
-.semana-dia-hoy { background: var(--foco-acento); color: var(--color-on-accent); }
+.semana-dia-hoy { background: var(--foco-boton); color: var(--color-on-accent); }
 .semana-dia-nombre { font-size: 11px; color: var(--foco-texto-meta); }
 .semana-dia-hoy .semana-dia-nombre, .semana-dia-hoy .semana-punto { color: var(--color-on-accent); }
 .semana-dia-numero { font-family: var(--foco-fuente-titulo); font-size: 20px; font-weight: 400; font-synthesis: none; line-height: 1.2; font-variant-numeric: tabular-nums; }

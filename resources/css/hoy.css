@@ -162,7 +162,7 @@
     padding: 0 20px;
     border: 0;
     border-radius: var(--radius-control);
-    background: var(--color-accent);
+    background: var(--color-accent-boton);
     color: var(--color-on-accent);
     font-family: var(--font-body);
     font-weight: 600;
@@ -181,19 +181,21 @@
     padding: 0;
     border: 0;
     border-radius: 999px;
-    background: var(--color-accent);
+    background: var(--color-accent-boton);
     color: var(--color-on-accent);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
 }
 
-.hoy-boton:hover, .hoy-boton-redondo:hover { background: var(--color-accent-600); }
+.hoy-boton:hover, .hoy-boton-redondo:hover { background: var(--color-accent-700); }
+.hoy-boton:active:not(:disabled), .hoy-boton-redondo:active:not(:disabled) { background: var(--color-accent-800); transform: scale(0.98); }
 .hoy-boton:disabled, .hoy-boton-redondo:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Botón de reinicio del diseño: 39 x 36, fondo de la página, flecha en neutral-700. */
 .hoy-boton-suave { width: 39px; height: 36px; background: var(--color-bg); color: var(--color-neutral-700); font-size: 13px; }
 .hoy-boton-suave:hover { background: var(--color-neutral-200); }
+.hoy-boton-suave:active:not(:disabled) { background: var(--color-neutral-300); }
 
 /* Botón de texto (Limpiar del diseño: 12px neutral-600, hover acento 700). */
 .hoy-boton-texto {
@@ -327,7 +329,7 @@
 
 .hoy-dia[aria-pressed="true"] .hoy-dia-celda,
 .hoy-dia[aria-pressed="true"]:hover .hoy-dia-celda {
-    background: var(--color-accent);
+    background: var(--color-accent-boton);
     color: var(--color-on-accent);
     font-weight: 600;
     box-shadow: none;
@@ -365,18 +367,17 @@
 /* ---------- Recomendaciones (acordeón) ---------- */
 .hoy-recs { gap: 6px; }
 .hoy-recs > .hoy-tarjeta-cab { margin-bottom: 8px; }
-.hoy-acordeon { display: flex; flex-direction: column; gap: 6px; }
+.hoy-acordeon { display: flex; flex-direction: column; }
 
 .hoy-tono-sugerencia { --tono-fondo: var(--color-accent-200); --tono-texto: var(--color-accent-800); }
 .hoy-tono-info { --tono-fondo: var(--color-accent-2-200); --tono-texto: var(--color-accent-2-800); }
 .hoy-tono-alerta { --tono-fondo: var(--color-accent-700); --tono-texto: var(--color-accent-100); }
 .hoy-tono-logro { --tono-fondo: var(--color-accent-2-700); --tono-texto: var(--color-accent-2-100); }
 
-.hoy-rec { display: flex; flex-direction: column; border-radius: var(--radius-control); }
-.hoy-rec.es-abierta { background: var(--color-bg); }
+.hoy-rec { display: flex; flex-direction: column; border-bottom: 1px solid var(--color-divider); }
+.hoy-rec:last-child { border-bottom: 0; }
 
-.hoy-rec-cabecera { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 12px; border-radius: var(--radius-control); }
-.hoy-rec:not(.es-abierta) .hoy-rec-cabecera:hover { background: var(--color-neutral-200); }
+.hoy-rec-cabecera { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 16px 0; }
 
 .hoy-rec-icono {
     flex: none;
@@ -418,7 +419,7 @@
 }
 
 /* El botón cubre toda la cabecera: el área de clic es la fila entera, como en el diseño. */
-.hoy-rec-boton::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-control); }
+.hoy-rec-boton::after { content: ""; position: absolute; inset: 0; }
 .hoy-rec-boton:focus-visible { outline: none; }
 .hoy-rec-boton:focus-visible::after { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 
@@ -434,20 +435,18 @@
     line-height: 1.5;
 }
 
-.hoy-rec-flecha { position: absolute; top: 18px; right: 12px; font-size: 12px; color: var(--color-neutral-500); }
-.hoy-rec-boton[aria-expanded="true"] .hoy-rec-flecha { transform: rotate(180deg); }
+.hoy-rec-mas, .hoy-rec-menos { position: absolute; top: 15px; right: 0; font-size: 22px; line-height: 1; color: var(--color-neutral-700); }
+.hoy-rec-menos { display: none; }
+.hoy-rec-boton[aria-expanded="true"] .hoy-rec-mas { display: none; }
+.hoy-rec-boton[aria-expanded="true"] .hoy-rec-menos { display: block; }
 
-@media (prefers-reduced-motion: no-preference) {
-    .hoy-rec-flecha { transition: transform 0.2s; }
-}
-
-.hoy-rec-texto { margin: 0; font-size: 13px; line-height: 1.55; color: var(--color-neutral-700); text-wrap: pretty; padding-right: 22px; }
+.hoy-rec-texto { margin: 0; font-size: 13px; line-height: 1.55; color: var(--color-neutral-700); text-wrap: pretty; padding-right: 30px; }
 
 .hoy-rec-detalle {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 0 12px 14px 56px;
+    padding: 0 0 18px 44px;
     font-size: 13px;
 }
 

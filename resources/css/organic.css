@@ -60,10 +60,12 @@
 
     /* Tokens añadidos por la app (no existen en el sistema original) */
     --color-on-accent: #fff;
-    --radius-card: 12px;
+    /* Relleno de botones principales con texto blanco: 5,04:1 (el acento base da 4,0:1) */
+    --color-accent-boton: #a75b27;
+    --radius-card: 18px;
     --radius-pill: 999px;
     --radius-control: 8px;
-    --color-card-border: var(--color-neutral-300);
+    --color-card-border: transparent;
     --color-danger-bg: #f8dcd5;
     --color-danger-text: #8a2a1f;
     --color-danger-border: #b3402f;

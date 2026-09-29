@@ -3,6 +3,7 @@ import htmx from 'htmx.org';
 import './pomodoro.js';
 import './tablero.js';
 import './pomodoro-widget.js';
+import './entrada-scroll.js';
 
 window.htmx = htmx;
 

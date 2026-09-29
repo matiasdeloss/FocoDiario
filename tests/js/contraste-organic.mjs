@@ -15,7 +15,7 @@ const ratio = (a, b) => { const [l1, l2] = [lum(a), lum(b)].sort((x, y) => y - x
 const T = {
     bg: '#f5ead8', text: '#201e1d',
     n100: '#f9f4ed', n200: '#eee7db', n300: '#dcd3c4', n400: '#c0b6a5', n500: '#a19786', n600: '#82796a', n700: '#645c50', n800: '#474238', n900: '#2e2b25',
-    a100: '#fff2eb', a200: '#ffe1d0', a300: '#ffc6a5', a400: '#f6a06b', a500: '#d67f48', a600: '#b2622d', a700: '#8c491a', a800: '#643312', a900: '#402310', accent: '#c67139',
+    a100: '#fff2eb', a200: '#ffe1d0', a300: '#ffc6a5', a400: '#f6a06b', a500: '#d67f48', a600: '#b2622d', a700: '#8c491a', a800: '#643312', a900: '#402310', accent: '#c67139', boton: '#a75b27',
     s100: '#f0fae1', s200: '#e1eecc', s300: '#ccdbb2', s500: '#8fa073', s600: '#728157', s700: '#56633f', s800: '#3d472b', s900: '#272e1b',
 };
 // Colores nuevos de app.css (deben coincidir con los valores declarados allí)
@@ -34,8 +34,13 @@ N.sesionBorde = mezcla(T.a700, T.s700, 0.5);
 const blanco = '#ffffff';
 const pares = [
     // --- Pares del diseño Hoy v2 (copiados tal cual)
-    ['[diseño] Botón/día activo: blanco sobre acento base', blanco, T.accent, 4.5],
-    ['[diseño] Botón hover: blanco sobre acento 600', blanco, T.a600, 4.5],
+    ['[diseño] Botón/día activo con el acento base (sustituido por --color-accent-boton)', blanco, T.accent, 4.5],
+    ['[diseño] Botón hover con acento 600 (sustituido por acento 700)', blanco, T.a600, 4.5],
+    // --- Botón principal (token --color-accent-boton, más oscuro que el acento base)
+    ['Botón principal: blanco sobre --color-accent-boton', blanco, T.boton, 4.5],
+    ['Botón principal hover: blanco sobre acento 700', blanco, T.a700, 4.5],
+    ['Botón principal pressed: blanco sobre acento 800', blanco, T.a800, 4.5],
+    ['Día seleccionado: blanco sobre --color-accent-boton', blanco, T.boton, 4.5],
     ['[diseño] Kicker/metadatos: n600 sobre fondo', T.n600, T.bg, 4.5],
     ['[diseño] Metadatos: n600 sobre papel', T.n600, T.n100, 4.5],
     ['[diseño] Fase del anillo (8px): n600 sobre papel', T.n600, T.n100, 4.5],
@@ -51,7 +56,7 @@ const pares = [
     ['[diseño] Pista del anillo Pomodoro: n200 sobre papel (no texto)', T.n200, T.n100, 3],
     ['[diseño] Progreso del anillo: acento sobre papel (no texto)', T.accent, T.n100, 3],
     ['[diseño] Punto de ronda vacío: n300 sobre papel (no texto)', T.n300, T.n100, 3],
-    ['[diseño] Chevron de recomendación: n500 sobre fondo', T.n500, T.bg, 3],
+    ['Ícono más/menos de recomendación: n700 sobre papel', T.n700, T.n100, 3],
     ['[diseño] Enlace: a700 sobre papel', T.a700, T.n100, 4.5],
     ['[diseño] Foco de campos: acento sobre fondo (no texto)', T.accent, T.bg, 3],
     ['[diseño] Texto sobre fondo', T.text, T.bg, 4.5],

@@ -16,7 +16,8 @@
                             <button type="button" class="hoy-rec-boton" aria-expanded="{{ $abierta ? 'true' : 'false' }}" aria-controls="hoy-rec-{{ $i }}">
                                 <span class="hoy-rec-nombre">{{ $recomendacion->titulo }}</span>
                                 <span class="hoy-etiqueta">{{ mb_strtoupper($recomendacion->tipo->etiqueta()) }}</span>
-                                <i class="bi bi-chevron-down hoy-rec-flecha" aria-hidden="true"></i>
+                                <i class="bi bi-plus hoy-rec-mas" aria-hidden="true"></i>
+                                <i class="bi bi-dash hoy-rec-menos" aria-hidden="true"></i>
                             </button>
                         </h3>
                         <p class="hoy-rec-texto">{{ $recomendacion->mensaje }}</p>
