@@ -81,6 +81,24 @@ class TareaTest extends TestCase
         $this->assertSame(EstadoTarea::Completada, $tarea->fresh()->estado);
     }
 
+    public function test_alternar_varias_veces_la_fila_refleja_el_estado_guardado_y_es_coherente(): void
+    {
+        $tarea = Tarea::factory()->create(['estado' => EstadoTarea::Pendiente]);
+        $id = $tarea->id;
+
+        foreach (['completada', 'pendiente', 'completada', 'pendiente'] as $estado) {
+            $html = $this->withHeaders(['HX-Request' => 'true'])
+                ->patch(route('tareas.estado', $tarea), ['estado' => $estado])
+                ->assertOk()->getContent();
+
+            $this->assertSame($estado, $tarea->fresh()->estado->value);
+            $this->assertStringContainsString('hx-sync="this:queue last"', $html);
+            $this->assertStringContainsString('id="tarea-'.$id.'-'.$estado.'"', $html);
+            $this->assertMatchesRegularExpression('/id="tarea-'.$id.'-'.$estado.'"[^>]*aria-pressed="true"/s', $html);
+            $this->assertSame(1, substr_count($html, 'aria-pressed="true"'));
+        }
+    }
+
     public function test_el_cambio_de_estado_sin_htmx_redirige_y_valida(): void
     {
         $tarea = Tarea::factory()->create();

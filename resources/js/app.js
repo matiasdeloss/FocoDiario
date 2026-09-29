@@ -2,6 +2,7 @@ import 'bootstrap';
 import htmx from 'htmx.org';
 import './pomodoro.js';
 import './tablero.js';
+import './dialogos-tablero.js';
 import './pomodoro-widget.js';
 import './entrada-scroll.js';
 

@@ -7,6 +7,7 @@ use App\Enums\PrioridadTarea;
 use App\Http\Requests\CambiarEstadoTareaRequest;
 use App\Http\Requests\FiltroTareasRequest;
 use App\Http\Requests\TareaRequest;
+use App\Models\ColumnaTablero;
 use App\Models\Tarea;
 use App\Services\Hoy\ListasHoy;
 use Illuminate\Contracts\View\View;
@@ -41,41 +42,41 @@ class TareaController extends Controller
             'tareas' => $tareas,
             'proyectos' => $this->proyectos(),
             'estados' => EstadoTarea::cases(),
+            'columnasOrden' => ColumnaTablero::ordenadas()->get(),
             'estadoFiltro' => $filtros['estado'] ?? null,
             'proyectoFiltro' => $filtros['proyecto'] ?? null,
             'vista' => 'lista',
         ]);
     }
 
-    /** Vista de tablero: una columna por estado; la de completadas muestra solo las más recientes. */
+    /** Vista de tablero: una columna por cada columna del usuario; las de tipo completada muestran solo las más recientes. */
     private function tablero(?string $proyecto): View
     {
         $filtrarProyecto = fn ($consulta) => $consulta->when($proyecto, fn ($c) => $c->where('proyecto', $proyecto));
+        $columnasTablero = ColumnaTablero::ordenadas()->withCount('tareas')->get();
 
         $abiertas = $filtrarProyecto(Tarea::query()->abiertas())
             ->orderByRaw('fecha_limite is null')
             ->orderBy('fecha_limite')
             ->orderByDesc('id')
             ->get()
-            ->groupBy(fn (Tarea $tarea) => $tarea->estado->value);
+            ->groupBy('columna_id');
 
-        $completadas = $filtrarProyecto(Tarea::query()->where('estado', EstadoTarea::Completada))
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->limit(self::COMPLETADAS_EN_TABLERO)
-            ->get();
+        $columnas = $columnasTablero->map(function (ColumnaTablero $columna) use ($filtrarProyecto, $abiertas) {
+            if (! $columna->esCompletada()) {
+                return ['columna' => $columna, 'tareas' => $abiertas[$columna->id] ?? collect(), 'ocultas' => 0];
+            }
 
-        $totalCompletadas = $filtrarProyecto(Tarea::query()->where('estado', EstadoTarea::Completada))->count();
+            $consulta = fn () => $filtrarProyecto(Tarea::query()->where('columna_id', $columna->id)->where('estado', EstadoTarea::Completada));
+            $tareas = $consulta()->orderByDesc('updated_at')->orderByDesc('id')->limit(self::COMPLETADAS_EN_TABLERO)->get();
 
-        $columnas = collect(EstadoTarea::cases())->map(fn (EstadoTarea $estado) => [
-            'estado' => $estado,
-            'tareas' => $estado === EstadoTarea::Completada ? $completadas : ($abiertas[$estado->value] ?? collect()),
-            'ocultas' => $estado === EstadoTarea::Completada ? max(0, $totalCompletadas - $completadas->count()) : 0,
-        ]);
+            return ['columna' => $columna, 'tareas' => $tareas, 'ocultas' => max(0, $consulta()->count() - $tareas->count())];
+        })->values();
 
         return view('tareas.index', [
             'columnas' => $columnas,
-            'total' => $abiertas->flatten()->count() + $totalCompletadas,
+            'total' => $columnas->sum(fn ($c) => $c['tareas']->count() + $c['ocultas']),
+            'columnasOrden' => $columnasTablero,
             'proyectos' => $this->proyectos(),
             'proyectoFiltro' => $proyecto,
             'estadoFiltro' => null,
@@ -96,6 +97,13 @@ class TareaController extends Controller
     public function store(TareaRequest $request, ListasHoy $listas): RedirectResponse|JsonResponse
     {
         $tarea = Tarea::create($request->validated());
+
+        // Modal de tareas: solo confirma; la página se recarga y muestra el aviso.
+        if ($request->expectsJson() && $request->hasHeader('X-Modal')) {
+            $request->session()->flash('estado', 'Tarea creada.');
+
+            return response()->json(['id' => $tarea->id, 'mensaje' => 'Tarea creada.'], 201);
+        }
 
         // Alta rápida de Hoy: se responde con lo necesario para dibujar la fila sin recargar.
         if ($request->expectsJson()) {
@@ -121,9 +129,15 @@ class TareaController extends Controller
         return view('tareas.editar', $this->datosFormulario($tarea));
     }
 
-    public function update(TareaRequest $request, Tarea $tarea): RedirectResponse
+    public function update(TareaRequest $request, Tarea $tarea): RedirectResponse|JsonResponse
     {
         $tarea->update($request->validated());
+
+        if ($request->expectsJson()) {
+            $request->session()->flash('estado', 'Tarea actualizada.');
+
+            return response()->json(['id' => $tarea->id, 'mensaje' => 'Tarea actualizada.']);
+        }
 
         return redirect()->route('tareas.index')->with('estado', 'Tarea actualizada.');
     }

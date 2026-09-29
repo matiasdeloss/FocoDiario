@@ -20,7 +20,12 @@ class TareaRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        if ($this->expectsJson()) {
+        // Un estado vacío es "sin estado": así no pisa al que fija la columna elegida.
+        if ($this->has('estado') && $this->input('estado') === null) {
+            $this->request->remove('estado');
+        }
+
+        if ($this->expectsJson() && $this->isMethod('POST') && ! $this->filled('columna_id')) {
             $this->mergeIfMissing([
                 'prioridad' => PrioridadTarea::Media->value,
                 'estado' => EstadoTarea::Pendiente->value,
@@ -36,7 +41,9 @@ class TareaRequest extends FormRequest
             'proyecto' => ['nullable', 'string', 'max:255'],
             'fecha_limite' => ['nullable', 'date'],
             'prioridad' => ['required', Rule::enum(PrioridadTarea::class)],
-            'estado' => ['required', Rule::enum(EstadoTarea::class)],
+            // El modal manda la columna del tablero (su tipo fija el estado); el formulario clásico manda el estado.
+            'columna_id' => ['nullable', 'integer', Rule::exists('columnas_tablero', 'id')],
+            'estado' => ['required_without:columna_id', 'nullable', Rule::enum(EstadoTarea::class)],
         ];
     }
 
@@ -50,7 +57,9 @@ class TareaRequest extends FormRequest
             'fecha_limite.date' => 'La fecha límite no es una fecha válida.',
             'prioridad.required' => 'Elegí una prioridad.',
             'prioridad.enum' => 'La prioridad elegida no es válida.',
-            'estado.required' => 'Elegí un estado.',
+            'estado.required_without' => 'Elegí un estado.',
+            'columna_id.exists' => 'La columna elegida no existe.',
+            'columna_id.integer' => 'La columna elegida no es válida.',
             'estado.enum' => 'El estado elegido no es válido.',
         ];
     }

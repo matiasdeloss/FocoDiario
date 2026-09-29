@@ -1,40 +1,147 @@
 @php
-    $estadosTablero = \App\Enums\EstadoTarea::cases();
-    $etiquetas = collect($estadosTablero)->mapWithKeys(fn ($e) => [$e->value => $e->etiqueta()]);
+    $categorias = \App\Enums\EstadoTarea::cases();
+    $etiquetasColumnas = $columnasOrden->mapWithKeys(fn ($c) => [$c->id => $c->nombre]);
 @endphp
-<div id="tablero" data-url-estado="{{ url('tareas/__ID__/estado') }}"
-     data-orden="{{ json_encode(array_map(fn ($e) => $e->value, $estadosTablero)) }}"
-     data-etiquetas="{{ json_encode($etiquetas) }}">
+<div id="tablero" data-url-columna="{{ url('tareas/__ID__/columna') }}"
+     data-orden="{{ json_encode($columnasOrden->pluck('id')) }}"
+     data-etiquetas="{{ json_encode($etiquetasColumnas) }}"
+     data-categorias="{{ json_encode($columnasOrden->mapWithKeys(fn ($c) => [$c->id => $c->categoria->value])) }}">
     <div id="tablero-aviso" class="aviso-foco" role="alert" hidden></div>
+    @if ($errors->any())
+        <div class="aviso-foco" role="alert">
+            @foreach ($errors->all() as $mensajeError)
+                <div>{{ $mensajeError }}</div>
+            @endforeach
+        </div>
+    @endif
 
     <div class="tablero">
-        @foreach ($columnas as $columna)
-            @php($estado = $columna['estado'])
-            <section class="tablero-columna" aria-labelledby="col-{{ $estado->value }}" data-estado="{{ $estado->value }}">
+        @foreach ($columnas as $indice => $datos)
+            @php
+                $columna = $datos['columna'];
+                $categoria = $columna->categoria;
+                $esUnica = $columnasOrden->where('categoria', $categoria)->count() === 1;
+                $obligatoria = $esUnica && $categoria !== \App\Enums\EstadoTarea::EnProgreso;
+                $puedeQuitarse = $columnasOrden->count() > 1 && ! $obligatoria;
+                $otras = $columnasOrden->where('id', '!=', $columna->id);
+                $datosColumna = [
+                    'id' => $columna->id,
+                    'nombre' => $columna->nombre,
+                    'categoria' => $categoria->value,
+                    'categoriaEtiqueta' => $categoria->etiqueta(),
+                    'obligatoria' => $obligatoria,
+                    'tareas' => $columna->tareas_count ?? $columna->tareas()->count(),
+                    'urlEditar' => route('tablero.columnas.update', $columna),
+                    'urlEliminar' => route('tablero.columnas.destroy', $columna),
+                    'otras' => $otras->map(fn ($o) => ['id' => $o->id, 'nombre' => $o->nombre])->values(),
+                ];
+            @endphp
+            <section class="tablero-columna" aria-labelledby="col-{{ $columna->id }}" data-columna="{{ $columna->id }}" data-categoria="{{ $categoria->value }}">
                 <header class="tablero-columna-cabecera">
-                    <h2 id="col-{{ $estado->value }}" class="tablero-columna-titulo"><i class="bi {{ $estado->icono() }}"></i> {{ $estado->etiqueta() }}</h2>
-                    <span class="badge-foco {{ $estado->claseBadge() }}" data-contador data-ocultas="{{ $columna['ocultas'] }}">{{ $columna['tareas']->count() + $columna['ocultas'] }}</span>
+                    <h2 id="col-{{ $columna->id }}" class="tablero-columna-titulo"><i class="bi {{ $categoria->icono() }}"></i> <span>{{ $columna->nombre }}</span></h2>
+                    <span class="badge-foco {{ $categoria->claseBadge() }}" data-contador data-ocultas="{{ $datos['ocultas'] }}">{{ $datos['tareas']->count() + $datos['ocultas'] }}</span>
+                    <details class="tablero-menu">
+                        <summary class="btn-icono" aria-label="Opciones de la columna {{ $columna->nombre }}" title="Opciones"><i class="bi bi-three-dots"></i></summary>
+                        <div class="tablero-menu-cuerpo">
+                            <button type="button" class="tablero-menu-accion" hidden data-requiere-js data-abrir-columna="editar"
+                                    data-columna-datos="{{ json_encode($datosColumna, JSON_UNESCAPED_UNICODE) }}"><i class="bi bi-pencil" aria-hidden="true"></i> Editar columna</button>
+                            <noscript>
+                            <form method="POST" action="{{ route('tablero.columnas.update', $columna) }}" class="tablero-form">
+                                @csrf
+                                @method('PATCH')
+                                <label class="form-label" for="nombre-{{ $columna->id }}">Nombre</label>
+                                <input id="nombre-{{ $columna->id }}" name="nombre" class="form-control form-control-sm" maxlength="60" required value="{{ $columna->nombre }}">
+                                <label class="form-label" for="tipo-{{ $columna->id }}">Cuenta como</label>
+                                <select id="tipo-{{ $columna->id }}" name="categoria" class="form-select form-select-sm" @disabled($obligatoria)>
+                                    @foreach ($categorias as $opcion)
+                                        <option value="{{ $opcion->value }}" @selected($opcion === $categoria)>{{ $opcion->etiqueta() }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" class="btn btn-foco-suave btn-sm">Guardar</button>
+                            </form>
+                            </noscript>
+                            <form method="POST" action="{{ route('tablero.columnas.mover', $columna) }}" class="tablero-menu-fila">
+                                @csrf
+                                @method('PATCH')
+                                <span>Posición</span>
+                                <button type="submit" name="direccion" value="izquierda" class="btn-icono" title="Mover a la izquierda" aria-label="Mover {{ $columna->nombre }} a la izquierda" @disabled($indice === 0)><i class="bi bi-arrow-left"></i></button>
+                                <button type="submit" name="direccion" value="derecha" class="btn-icono" title="Mover a la derecha" aria-label="Mover {{ $columna->nombre }} a la derecha" @disabled($indice === $columnas->count() - 1)><i class="bi bi-arrow-right"></i></button>
+                            </form>
+                            @if ($puedeQuitarse)
+                                <button type="button" class="tablero-menu-accion peligro" hidden data-requiere-js data-abrir-columna="eliminar"
+                                        data-columna-datos="{{ json_encode($datosColumna, JSON_UNESCAPED_UNICODE) }}"><i class="bi bi-trash" aria-hidden="true"></i> Eliminar columna</button>
+                                <noscript>
+                                <form method="POST" action="{{ route('tablero.columnas.destroy', $columna) }}" class="tablero-form"
+                                      onsubmit="return confirm('¿Eliminar la columna &quot;{{ e($columna->nombre) }}&quot;? Sus tareas pasan a la columna elegida.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <label class="form-label" for="reasignar-{{ $columna->id }}">Al eliminar, pasar sus tareas a</label>
+                                    <select id="reasignar-{{ $columna->id }}" name="reasignar_a" class="form-select form-select-sm">
+                                        @foreach ($otras as $otra)
+                                            <option value="{{ $otra->id }}">{{ $otra->nombre }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="btn btn-foco-suave btn-sm"><i class="bi bi-trash"></i> Eliminar columna</button>
+                                </form>
+                                </noscript>
+                            @else
+                                <p class="tablero-menu-nota">No se puede eliminar: el tablero necesita al menos una columna de tipo {{ $categoria->etiqueta() }}.</p>
+                            @endif
+                        </div>
+                    </details>
                 </header>
                 <div class="tablero-lista" data-lista>
-                    @foreach ($columna['tareas'] as $tarea)
+                    @foreach ($datos['tareas'] as $tarea)
                         @include('tareas._tarjeta')
                     @endforeach
                 </div>
-                <p class="estado-vacio tablero-vacio" data-vacio @if ($columna['tareas']->isNotEmpty()) hidden @endif>
-                    @if ($estado === \App\Enums\EstadoTarea::Completada)
+                <p class="estado-vacio tablero-vacio" data-vacio @if ($datos['tareas']->isNotEmpty()) hidden @endif>
+                    @if ($categoria === \App\Enums\EstadoTarea::Completada)
                         Todavía no completaste ninguna. Arrastrá una tarea acá cuando la termines.
-                    @elseif ($estado === \App\Enums\EstadoTarea::EnProgreso)
-                        Nada en marcha. Traé acá una tarea cuando la empieces.
                     @else
-                        Sin tareas pendientes.
+                        Sin tareas. Arrastrá una acá o añadí una tarjeta.
                     @endif
                 </p>
-                @if ($columna['ocultas'] > 0)
+                @if ($datos['ocultas'] > 0)
                     <a class="tablero-ver-todas" href="{{ route('tareas.index', array_filter(['estado' => 'completada', 'proyecto' => $proyectoFiltro])) }}">
-                        Ver todas las completadas ({{ $columna['tareas']->count() + $columna['ocultas'] }})
+                        Ver todas las completadas ({{ $datos['tareas']->count() + $datos['ocultas'] }})
                     </a>
                 @endif
+                <button type="button" class="tablero-anadir-boton" hidden data-requiere-js data-abrir-tarea="nueva" data-columna="{{ $columna->id }}"
+                        aria-label="Añadir tarjeta a {{ $columna->nombre }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Añadir tarjeta</button>
+                <noscript>
+                <details class="tablero-anadir">
+                    <summary><i class="bi bi-plus-lg"></i> Añadir tarjeta</summary>
+                    <form method="POST" action="{{ route('tablero.columnas.tarjetas.store', $columna) }}" class="tablero-form">
+                        @csrf
+                        <label class="visually-hidden" for="nueva-{{ $columna->id }}">Título de la nueva tarjeta</label>
+                        <input id="nueva-{{ $columna->id }}" name="titulo" class="form-control form-control-sm" maxlength="255" required placeholder="Título de la tarjeta">
+                        <button type="submit" class="btn btn-foco btn-sm">Añadir</button>
+                    </form>
+                </details>
+                </noscript>
             </section>
         @endforeach
+
+        <div class="tablero-columna tablero-columna-nueva">
+            <button type="button" class="tablero-anadir-boton" hidden data-requiere-js data-abrir-columna="nueva"><i class="bi bi-plus-lg" aria-hidden="true"></i> Añadir columna</button>
+            <noscript>
+            <details class="tablero-anadir">
+                <summary><i class="bi bi-plus-lg"></i> Añadir columna</summary>
+                <form method="POST" action="{{ route('tablero.columnas.store') }}" class="tablero-form">
+                    @csrf
+                    <label class="visually-hidden" for="columna-nueva-nombre">Nombre de la nueva columna</label>
+                    <input id="columna-nueva-nombre" name="nombre" class="form-control form-control-sm" maxlength="60" required placeholder="Nombre de la columna">
+                    <label class="form-label" for="columna-nueva-tipo">Cuenta como</label>
+                    <select id="columna-nueva-tipo" name="categoria" class="form-select form-select-sm">
+                        @foreach ($categorias as $opcion)
+                            <option value="{{ $opcion->value }}" @selected($opcion === \App\Enums\EstadoTarea::EnProgreso)>{{ $opcion->etiqueta() }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-foco btn-sm">Añadir columna</button>
+                </form>
+            </details>
+            </noscript>
+        </div>
     </div>
 </div>

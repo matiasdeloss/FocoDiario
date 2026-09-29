@@ -49,7 +49,28 @@ Route::patch('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaCa
 Route::delete('calendario/tarjetas/{tipo}/{id}', [\App\Http\Controllers\TarjetaCalendarioController::class, 'destroy'])
     ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.destroy');
 
-// ---- Tablero de tareas (agente de tablero) ----
+// ---- Tablero de tareas: columnas personalizables ----
+Route::post('tablero/columnas', [\App\Http\Controllers\ColumnaTableroController::class, 'store'])->name('tablero.columnas.store');
+Route::patch('tablero/columnas/{columna}', [\App\Http\Controllers\ColumnaTableroController::class, 'update'])->name('tablero.columnas.update');
+Route::delete('tablero/columnas/{columna}', [\App\Http\Controllers\ColumnaTableroController::class, 'destroy'])->name('tablero.columnas.destroy');
+Route::patch('tablero/columnas/{columna}/mover', [\App\Http\Controllers\ColumnaTableroController::class, 'mover'])->name('tablero.columnas.mover');
+Route::post('tablero/columnas/{columna}/tarjetas', [\App\Http\Controllers\ColumnaTableroController::class, 'tarjeta'])->name('tablero.columnas.tarjetas.store');
+Route::patch('tareas/{tarea}/columna', [\App\Http\Controllers\ColumnaTableroController::class, 'moverTarea'])->name('tareas.columna');
 
 // ---- Captura rápida de Hoy ----
 Route::post('hoy/captura', \App\Http\Controllers\CapturaRapidaController::class)->name('hoy.captura');
+
+// ---- Agenda ----
+Route::get('agenda', [\App\Http\Controllers\AgendaController::class, 'index'])->name('agenda.index');
+Route::get('agenda/dia/{fecha}', [\App\Http\Controllers\AgendaController::class, 'dia'])
+    ->where('fecha', '\d{4}-\d{2}-\d{2}')->name('agenda.dia');
+Route::patch('agenda/dia/{fecha}/layout', [\App\Http\Controllers\CajaController::class, 'layout'])
+    ->where('fecha', '\d{4}-\d{2}-\d{2}')->name('agenda.dia.layout');
+Route::put('agenda/semana/{semana}/{zona}', [\App\Http\Controllers\CajaController::class, 'guardarSemana'])
+    ->where('semana', '\d{4}-\d{2}-\d{2}')->name('agenda.semana.guardar');
+Route::post('agenda/cajas', [\App\Http\Controllers\CajaController::class, 'store'])->name('agenda.cajas.store');
+Route::patch('agenda/cajas/{caja}', [\App\Http\Controllers\CajaController::class, 'update'])->name('agenda.cajas.update');
+Route::delete('agenda/cajas/{caja}', [\App\Http\Controllers\CajaController::class, 'destroy'])->name('agenda.cajas.destroy');
+Route::post('agenda/actividades', [\App\Http\Controllers\ActividadController::class, 'store'])->name('agenda.actividades.store');
+Route::patch('agenda/actividades/{actividad}', [\App\Http\Controllers\ActividadController::class, 'update'])->name('agenda.actividades.update');
+Route::delete('agenda/actividades/{actividad}', [\App\Http\Controllers\ActividadController::class, 'destroy'])->name('agenda.actividades.destroy');

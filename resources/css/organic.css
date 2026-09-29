@@ -80,3 +80,41 @@
     --shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);
     --shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
 }
+
+/*
+ * Colores de las actividades de la agenda: paleta cerrada de 10 tonos armonizados con Organic.
+ * Cada color tiene fondo pastel (títulos y líneas), acento (filete y punto) y texto oscuro (contraste AA sobre el fondo).
+ * El acento en hex es el valor que se guarda en contextos.color (App\Enums\ColorActividad).
+ */
+:root {
+    --actividad-terracota-fondo: #fbdcc8;
+    --actividad-terracota-acento: #c0663a;
+    --actividad-terracota-texto: #5a2a10;
+    --actividad-salvia-fondo: #dbe7cf;
+    --actividad-salvia-acento: #728a58;
+    --actividad-salvia-texto: #2f3d1f;
+    --actividad-ocre-fondo: #f5e2a8;
+    --actividad-ocre-acento: #a97f1c;
+    --actividad-ocre-texto: #59410a;
+    --actividad-azul-polvo-fondo: #d3e1ea;
+    --actividad-azul-polvo-acento: #5f86a3;
+    --actividad-azul-polvo-texto: #1f3d52;
+    --actividad-ciruela-fondo: #e6d0dc;
+    --actividad-ciruela-acento: #8e4f73;
+    --actividad-ciruela-texto: #4a1f3a;
+    --actividad-rosa-fondo: #f6d5d9;
+    --actividad-rosa-acento: #c0677a;
+    --actividad-rosa-texto: #6b2233;
+    --actividad-oliva-fondo: #e0e2b5;
+    --actividad-oliva-acento: #78802a;
+    --actividad-oliva-texto: #3c3f0d;
+    --actividad-arena-fondo: #eadfc7;
+    --actividad-arena-acento: #9a8350;
+    --actividad-arena-texto: #4d4127;
+    --actividad-celeste-fondo: #cfeaee;
+    --actividad-celeste-acento: #3b8e9b;
+    --actividad-celeste-texto: #1a4750;
+    --actividad-lavanda-fondo: #ddd8ee;
+    --actividad-lavanda-acento: #8378b5;
+    --actividad-lavanda-texto: #372f63;
+}

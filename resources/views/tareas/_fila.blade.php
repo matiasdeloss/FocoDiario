@@ -1,4 +1,4 @@
-<tr id="tarea-{{ $tarea->id }}">
+<tr id="tarea-{{ $tarea->id }}" data-sin-animar>
     <td>
         <div class="{{ $tarea->estado === \App\Enums\EstadoTarea::Completada ? 'texto-tachado' : 'fw-medium' }}">{{ $tarea->titulo }}</div>
         @if ($tarea->proyecto)
@@ -19,12 +19,13 @@
     <td><span class="badge-foco {{ $tarea->estado->claseBadge() }}">{{ $tarea->estado->etiqueta() }}</span></td>
     <td>
         <form method="POST" action="{{ route('tareas.estado', $tarea) }}" class="d-inline-flex"
-              hx-patch="{{ route('tareas.estado', $tarea) }}" hx-target="closest tr" hx-swap="outerHTML"
+              hx-patch="{{ route('tareas.estado', $tarea) }}" hx-target="closest tr" hx-swap="outerHTML swap:0ms settle:0ms"
+              hx-sync="this:queue last" hx-disabled-elt="find button"
               role="group" aria-label="Cambiar estado de {{ $tarea->titulo }}">
             @csrf
             @method('PATCH')
             @foreach (\App\Enums\EstadoTarea::cases() as $estado)
-                <button type="submit" name="estado" value="{{ $estado->value }}"
+                <button type="submit" id="tarea-{{ $tarea->id }}-{{ $estado->value }}" name="estado" value="{{ $estado->value }}"
                         class="btn-icono {{ $tarea->estado === $estado ? 'activo' : '' }}"
                         title="Marcar como {{ mb_strtolower($estado->etiqueta()) }}"
                         aria-label="Marcar como {{ mb_strtolower($estado->etiqueta()) }}"
@@ -35,7 +36,7 @@
         </form>
     </td>
     <td class="text-end text-nowrap">
-        <a href="{{ route('tareas.edit', $tarea) }}" class="btn-icono" title="Editar" aria-label="Editar {{ $tarea->titulo }}">
+        <a href="{{ route('tareas.edit', $tarea) }}" class="btn-icono" data-abrir-tarea="editar" data-tarea="{{ json_encode($tarea->datosModal(), JSON_UNESCAPED_UNICODE) }}" title="Editar" aria-label="Editar {{ $tarea->titulo }}">
             <i class="bi bi-pencil"></i>
         </a>
         <form method="POST" action="{{ route('tareas.destroy', $tarea) }}" class="d-inline"

@@ -16,7 +16,7 @@
                 <a href="{{ route('tareas.index', array_filter(['vista' => 'tablero', 'proyecto' => $proyectoFiltro])) }}"
                    @if ($vista === 'tablero') aria-current="page" @endif><i class="bi bi-kanban"></i> Tablero</a>
             </nav>
-            <a href="{{ route('tareas.create') }}" class="btn btn-foco"><i class="bi bi-plus-lg"></i> Nueva tarea</a>
+            <a href="{{ route('tareas.create') }}" class="btn btn-foco" data-abrir-tarea="nueva"><i class="bi bi-plus-lg"></i> Nueva tarea</a>
         </div>
     </div>
 
@@ -88,6 +88,11 @@
                 </div>
             @endif
         </div>
+    @endif
+
+    @include('tareas._dialogo-tarea')
+    @if ($vista === 'tablero')
+        @include('tareas._dialogos-columna')
     @endif
 
     <script>

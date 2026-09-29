@@ -31,6 +31,9 @@
                         <a class="nav-link {{ request()->routeIs('hoy') ? 'active' : '' }}" href="{{ route('hoy') }}" @if (request()->routeIs('hoy')) aria-current="page" @endif>Hoy</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}" href="{{ route('agenda.index') }}" @if (request()->routeIs('agenda.*')) aria-current="page" @endif>Agenda</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('tareas.*') ? 'active' : '' }}" href="{{ route('tareas.index') }}" @if (request()->routeIs('tareas.*')) aria-current="page" @endif>Tareas</a>
                     </li>
                     <li class="nav-item">

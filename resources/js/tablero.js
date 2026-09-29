@@ -1,11 +1,12 @@
 // Tablero de tareas: arrastrar y soltar nativo (sin dependencias) + botones de mover.
-// Sin JS, los botones de cada tarjeta funcionan como formularios comunes.
+// Las columnas son personalizables (data-columna = id). Sin JS, todo funciona con formularios comunes.
 
 const tablero = document.getElementById('tablero');
 
 if (tablero) {
     const orden = JSON.parse(tablero.dataset.orden);
     const etiquetas = JSON.parse(tablero.dataset.etiquetas);
+    const categorias = JSON.parse(tablero.dataset.categorias);
     const aviso = document.getElementById('tablero-aviso');
     const token = () => document.querySelector('meta[name="csrf-token"]')?.content;
     let arrastrada = null;
@@ -18,11 +19,12 @@ if (tablero) {
         temporizadorAviso = setTimeout(() => { aviso.hidden = true; }, 6000);
     };
 
-    const columna = (estado) => tablero.querySelector(`.tablero-columna[data-estado="${estado}"]`);
+    const columna = (id) => tablero.querySelector(`.tablero-columna[data-columna="${id}"]`);
+    const columnaDe = (tarjeta) => tarjeta.closest('.tablero-columna')?.dataset.columna;
 
     // Contadores y estados vacíos según las tarjetas que hay realmente en cada columna.
     const recontar = () => {
-        tablero.querySelectorAll('.tablero-columna').forEach((col) => {
+        tablero.querySelectorAll('.tablero-columna[data-columna]').forEach((col) => {
             const cantidad = col.querySelectorAll('.tarea-tarjeta').length;
             const contador = col.querySelector('[data-contador]');
             contador.textContent = cantidad + Number(contador.dataset.ocultas || 0);
@@ -30,10 +32,11 @@ if (tablero) {
         });
     };
 
-    // Ajusta los botones y textos de la tarjeta al estado nuevo.
-    const actualizarTarjeta = (tarjeta, estado) => {
-        const posicion = orden.indexOf(estado);
+    // Ajusta los botones y textos de la tarjeta a la columna nueva.
+    const actualizarTarjeta = (tarjeta, id) => {
+        const posicion = orden.indexOf(Number(id));
         const titulo = tarjeta.dataset.titulo;
+        const estado = categorias[id];
         tarjeta.dataset.estado = estado;
         tarjeta.querySelector('[data-titulo-texto]').classList.toggle('texto-tachado', estado === 'completada');
         tarjeta.querySelector('[data-titulo-texto]').classList.toggle('fw-medium', estado !== 'completada');
@@ -48,21 +51,21 @@ if (tablero) {
         });
     };
 
-    // Guarda el estado con la misma ruta (PATCH + CSRF); si falla, la tarjeta vuelve a su sitio.
-    const mover = async (tarjeta, estado, deshacer) => {
-        const anterior = tarjeta.dataset.estado;
+    // Guarda la columna con PATCH + CSRF; si falla, la tarjeta vuelve a su sitio.
+    const mover = async (tarjeta, id) => {
+        const anterior = columnaDe(tarjeta);
 
-        if (estado === anterior) {
+        if (String(id) === String(anterior)) {
             return;
         }
 
-        columna(estado).querySelector('[data-lista]').prepend(tarjeta);
-        actualizarTarjeta(tarjeta, estado);
+        columna(id).querySelector('[data-lista]').prepend(tarjeta);
+        actualizarTarjeta(tarjeta, id);
         recontar();
         tarjeta.classList.add('guardando');
 
         try {
-            const respuesta = await fetch(tablero.dataset.urlEstado.replace('__ID__', tarjeta.dataset.id), {
+            const respuesta = await fetch(tablero.dataset.urlColumna.replace('__ID__', tarjeta.dataset.id), {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,16 +73,13 @@ if (tablero) {
                     'X-CSRF-TOKEN': token(),
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify({ estado }),
+                body: JSON.stringify({ columna_id: Number(id) }),
             });
 
             if (!respuesta.ok) {
                 throw new Error(String(respuesta.status));
             }
         } catch {
-            if (deshacer) {
-                deshacer();
-            }
             columna(anterior).querySelector('[data-lista]').prepend(tarjeta);
             actualizarTarjeta(tarjeta, anterior);
             recontar();
@@ -97,15 +97,14 @@ if (tablero) {
             return;
         }
 
+        evento.preventDefault();
         const boton = evento.submitter;
         const tarjeta = formulario.closest('.tarea-tarjeta');
 
         if (!boton || !boton.value) {
-            evento.preventDefault();
             return;
         }
 
-        evento.preventDefault();
         const clave = boton.dataset.moverA;
         mover(tarjeta, boton.value).then(() => {
             const activo = tarjeta.querySelector(`[data-mover-a="${clave}"]:not(:disabled)`)
@@ -134,8 +133,10 @@ if (tablero) {
         tablero.querySelectorAll('.tablero-columna.sobre').forEach((col) => col.classList.remove('sobre'));
     });
 
+    const columnaDestino = (evento) => evento.target.closest?.('.tablero-columna[data-columna]');
+
     tablero.addEventListener('dragover', (evento) => {
-        const col = evento.target.closest?.('.tablero-columna');
+        const col = columnaDestino(evento);
 
         if (arrastrada && col) {
             evento.preventDefault();
@@ -146,12 +147,28 @@ if (tablero) {
     });
 
     tablero.addEventListener('drop', (evento) => {
-        const col = evento.target.closest?.('.tablero-columna');
+        const col = columnaDestino(evento);
 
         if (arrastrada && col) {
             evento.preventDefault();
             col.classList.remove('sobre');
-            mover(arrastrada, col.dataset.estado);
+            mover(arrastrada, col.dataset.columna);
+        }
+    });
+
+    // Al abrir "Añadir ...", el foco va al campo; Escape lo cierra.
+    tablero.addEventListener('toggle', (evento) => {
+        if (evento.target.matches('details.tablero-anadir') && evento.target.open) {
+            evento.target.querySelector('input')?.focus();
+        }
+    }, true);
+
+    tablero.addEventListener('keydown', (evento) => {
+        const abierto = evento.key === 'Escape' && evento.target.closest?.('details[open]');
+
+        if (abierto) {
+            abierto.open = false;
+            abierto.querySelector('summary')?.focus();
         }
     });
 
