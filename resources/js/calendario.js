@@ -9,14 +9,8 @@ import '../css/calendario.css';
 const CLAVE_FILTROS = 'focodiario.calendario.tipos';
 const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
 const TIPOS_TARJETA = ['tarea', 'recordatorio', 'nota'];
-const ICONOS = { tarea: 'bi-check2-square', recordatorio: 'bi-bell', nota: 'bi-journal-text' };
-const ETIQUETAS = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota' };
-const ARTICULOS = { tarea: 'la tarea', recordatorio: 'el recordatorio', nota: 'la nota' };
-const ETIQUETAS_FECHA = { tarea: 'Fecha límite', recordatorio: 'Fecha y hora del aviso', nota: 'Fecha' };
-const AYUDA_BLOQUEADA = {
-    tarea: 'Las tareas completadas no se pueden reubicar.',
-    recordatorio: 'Los recordatorios ya avisados no se pueden reubicar.',
-};
+const ETIQUETAS = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota', sesion: 'Sesión de estudio' };
+const ARTICULOS = { tarea: 'la tarea', recordatorio: 'el recordatorio', nota: 'la nota', sesion: 'la sesión' };
 
 const raiz = document.querySelector('[data-calendario]');
 
@@ -365,19 +359,9 @@ function iniciar(raiz) {
     });
     arrastre.dragging.pointer.handleSelector = '.tarj-cabeza';
 
-    /* ---------- Popovers (menú de tipo y editor simple) ---------- */
+    /* ---------- Popover para crear en un día ---------- */
     const popTipos = document.getElementById('popover-tipos');
-    const popEditor = document.getElementById('popover-editor');
-    const edTitulo = document.getElementById('editor-titulo');
-    const edComentario = document.getElementById('editor-comentario');
-    const edFecha = document.getElementById('editor-fecha');
-    const edFechaEtiqueta = document.getElementById('editor-fecha-etiqueta');
-    const edAyuda = document.getElementById('editor-fecha-ayuda');
-    const edGuardado = document.getElementById('editor-guardado');
-    const edTipo = document.getElementById('editor-tipo');
     let dia = null; // día tocado: { fecha, hora, rect }
-    let editor = null; // tarjeta abierta en el editor
-    let retorno = null; // elemento que recupera el foco al cerrar
 
     function posicionar(pop, rect) {
         pop.hidden = false;
@@ -394,175 +378,30 @@ function iniciar(raiz) {
         pop.style.top = `${arriba}px`;
     }
 
+    const rectPunto = (x, y) => ({ left: x, right: x, top: y, bottom: y });
     const rectDe = (elemento) => {
         const r = elemento.getBoundingClientRect();
         return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
     };
-    const rectPunto = (x, y) => ({ left: x, right: x, top: y, bottom: y });
 
     function cerrarTipos() {
         popTipos.hidden = true;
         dia = null;
     }
 
-    async function cerrarEditor({ devolverFoco = true } = {}) {
-        if (popEditor.hidden || !editor) return;
-        const actual = editor;
-        editor = null;
-        popEditor.hidden = true;
-
-        // Recién creada y sin título ni comentario: se descarta.
-        if (actual.nueva && edTitulo.value.trim() === '' && edComentario.value.trim() === '') {
-            try {
-                await pedir(urlTarjeta(actual.tipo, actual.id), 'DELETE');
-            } catch (error) {
-                mostrarAviso(error.message);
-            }
-            calendario.refetchEvents();
-        }
-
-        if (devolverFoco && retorno?.isConnected) retorno.focus();
-        retorno = null;
-    }
-
-    function abrirEditor(tarjeta, rect, { nueva = false, origen = null } = {}) {
-        cerrarTipos();
-        if (!popEditor.hidden) cerrarEditor({ devolverFoco: false });
-
-        editor = { tipo: tarjeta.tipo, id: tarjeta.id, nueva, datos: tarjeta };
-        retorno = origen;
-
-        popEditor.className = `popover-foco popover-editor tipo-${tarjeta.tipo}`;
-        edTipo.innerHTML = '';
-        const icono = document.createElement('i');
-        icono.className = `bi ${ICONOS[tarjeta.tipo]}`;
-        icono.setAttribute('aria-hidden', 'true');
-        edTipo.append(icono, ` ${ETIQUETAS[tarjeta.tipo]}`);
-
-        edTitulo.value = tarjeta.titulo ?? '';
-        edTitulo.dataset.valor = tarjeta.titulo ?? '';
-        edTitulo.setAttribute('aria-label', `Título de ${ARTICULOS[tarjeta.tipo]}`);
-        edComentario.value = tarjeta.comentario ?? '';
-        edComentario.dataset.valor = tarjeta.comentario ?? '';
-
-        edFecha.type = tarjeta.tipo === 'recordatorio' ? 'datetime-local' : 'date';
-        edFecha.value = tarjeta.fecha ?? '';
-        edFecha.disabled = Boolean(tarjeta.bloqueada);
-        edFechaEtiqueta.textContent = ETIQUETAS_FECHA[tarjeta.tipo];
-        edAyuda.hidden = !tarjeta.bloqueada;
-        edAyuda.textContent = AYUDA_BLOQUEADA[tarjeta.tipo] ?? '';
-
-        document.getElementById('editor-mas').href = tarjeta.editar;
-        document.getElementById('editor-mas').setAttribute('aria-label', `Más opciones de ${ARTICULOS[tarjeta.tipo]}`);
-        document.getElementById('editor-borrar').setAttribute('aria-label', `Eliminar ${ARTICULOS[tarjeta.tipo]}`);
-        edGuardado.textContent = '';
-
-        posicionar(popEditor, rect);
-        ajustarAlto(edComentario);
-        edTitulo.focus();
-        if (nueva) edTitulo.select();
-    }
-
-    async function guardarCampoDelEditor(campo, nombre) {
-        if (!editor) return;
-        const valor = campo.value.trim();
-        if (valor === (campo.dataset.valor ?? '')) return;
-
-        if (nombre === 'titulo' && valor === '') {
-            if (!editor.nueva) campo.value = campo.dataset.valor ?? '';
-            return;
-        }
-
-        const guardado = await guardarCampo({ ...editor, campo: nombre, valor, indicador: edGuardado });
-        if (guardado) {
-            campo.dataset.valor = valor;
-            if (nombre === 'titulo' && editor) editor.nueva = false;
-            calendario.refetchEvents();
-        }
-    }
-
-    edTitulo.addEventListener('change', () => guardarCampoDelEditor(edTitulo, 'titulo'));
-    edComentario.addEventListener('change', () => guardarCampoDelEditor(edComentario, 'comentario'));
-    edComentario.addEventListener('input', () => ajustarAlto(edComentario));
-    edTitulo.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); edTitulo.blur(); }
-    });
-    edComentario.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); edComentario.blur(); }
-    });
-
-    edFecha.addEventListener('change', async () => {
-        if (!editor) return;
-        const { tipo, id } = editor;
-        edFecha.disabled = true;
-        indicar(edGuardado, 'Guardando…');
-        try {
-            const respuesta = await ponerFecha(tipo, id, edFecha.value || null);
-            indicar(edGuardado, 'Guardado');
-            if (editor) editor.datos.fecha = edFecha.value || null;
-            if (!edFecha.value) {
-                // Sin fecha vuelve a ser tarjeta del panel.
-                if (respuesta.panel) insertarTarjeta(respuesta.panel);
-                editor = null;
-                popEditor.hidden = true;
-                retorno = null;
-            }
-            calendario.refetchEvents();
-        } catch (error) {
-            indicar(edGuardado, 'No se guardó', true);
-            edFecha.value = editor?.datos.fecha ?? '';
-            mostrarAviso(error.message);
-        } finally {
-            edFecha.disabled = Boolean(editor?.datos.bloqueada);
-        }
-    });
-
-    document.getElementById('editor-borrar').addEventListener('click', async () => {
-        if (!editor) return;
-        const { tipo, id } = editor;
-        if (!window.confirm(`¿Eliminar ${ARTICULOS[tipo]}? No se puede deshacer.`)) return;
-        try {
-            await pedir(urlTarjeta(tipo, id), 'DELETE');
-            editor = null;
-            popEditor.hidden = true;
-            retorno = null;
-            calendario.refetchEvents();
-        } catch (error) {
-            mostrarAviso(error.message);
-        }
-    });
-
-    popEditor.querySelector('[data-editor-cerrar]').addEventListener('click', () => cerrarEditor());
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key !== 'Escape') return;
-        if (!popEditor.hidden) cerrarEditor();
-        if (!popTipos.hidden) cerrarTipos();
-    });
-
-    document.addEventListener('pointerdown', (e) => {
-        if (!popEditor.hidden && !popEditor.contains(e.target)) cerrarEditor({ devolverFoco: false });
-        if (!popTipos.hidden && !popTipos.contains(e.target)) cerrarTipos();
-    });
-
-    window.addEventListener('resize', () => {
-        cerrarTipos();
-        if (!popEditor.hidden) cerrarEditor({ devolverFoco: false });
-    });
-
-    /* Crear una tarjeta directamente en el día tocado */
+    /* Crear una tarjeta directamente en el día tocado y abrir su detalle */
     popTipos.querySelectorAll('[data-crear-en-dia]').forEach((boton) => {
         boton.addEventListener('click', async () => {
             if (!dia) return;
             const tipo = boton.dataset.crearEnDia;
-            const { fecha, hora, rect } = dia;
+            const { fecha, hora } = dia;
             cerrarTipos();
 
             const valor = tipo === 'recordatorio' ? `${fecha}T${hora ?? '09:00:00'}` : fecha;
             try {
                 const respuesta = await pedir(datos.urlTarjetas, 'POST', { tipo, fecha: valor });
-                await new Promise((resolver) => { calendario.refetchEvents(); setTimeout(resolver, 0); });
-                abrirEditor(respuesta.tarjeta, rect, { nueva: true });
+                calendario.refetchEvents();
+                abrirDetalle(tipo, respuesta.tarjeta.id, { nueva: true });
             } catch (error) {
                 mostrarAviso(error.message);
             }
@@ -570,7 +409,7 @@ function iniciar(raiz) {
     });
 
     function abrirTipos(info) {
-        if (!popEditor.hidden) cerrarEditor({ devolverFoco: false });
+        cerrarDetalle({ devolverFoco: false });
         const conHora = !info.allDay;
         dia = {
             fecha: info.dateStr.slice(0, 10),
@@ -590,6 +429,418 @@ function iniciar(raiz) {
         const i = botones.indexOf(document.activeElement);
         botones[(i + (e.key === 'ArrowDown' ? 1 : -1) + botones.length) % botones.length].focus();
         e.preventDefault();
+    });
+
+    window.addEventListener('resize', cerrarTipos);
+
+    /* ---------- Panel lateral de detalle ----------
+       Un solo panel: al tocar otra card cambia su contenido sin cerrarse. Los cambios se guardan
+       solos (al salir de un campo o al elegir una opción) y se serializan; el calendario se refresca. */
+    const det = document.getElementById('detalle');
+    const porId = (id) => document.getElementById(`detalle-${id}`);
+    const dCuerpo = porId('cuerpo');
+    const dPill = porId('tipo');
+    const dTitulo = porId('titulo');
+    const dTituloFijo = porId('titulo-fijo');
+    const dAviso = porId('estado');
+    const dComentario = porId('comentario');
+    const dComentarioEtiqueta = porId('comentario-etiqueta');
+    const dPrioridad = porId('prioridad');
+    const dColor = porId('color');
+    const dFecha = porId('fecha');
+    const dFechaEtiqueta = porId('fecha-etiqueta');
+    const dFechaAyuda = porId('fecha-ayuda');
+    const dQuitarFecha = porId('quitar-fecha');
+    const dFilas = porId('filas');
+    const dCompletar = porId('completar');
+    const dEditar = porId('editar');
+    const dHistorial = porId('historial');
+    const dGuardado = porId('guardado');
+    const dBorrar = porId('borrar');
+    const dPie = porId('pie');
+    const dConfirmar = porId('confirmar');
+    const dConfirmarTexto = porId('confirmar-texto');
+    const dCampos = [[dTitulo, 'titulo'], [dComentario, 'comentario']];
+
+    let abierto = null; // { tipo, id, nueva, datos }
+    let solicitud = 0; // descarta respuestas de detalles que ya no son el abierto
+    let cola = Promise.resolve(); // guardados en orden: una respuesta nunca pisa a otra
+
+    const enCola = (tarea) => { cola = cola.then(tarea, tarea); return cola; };
+    const idEvento = (tipo, id) => `${tipo}-${id}`;
+    const eventosDe = (tipo, id) => [...document.querySelectorAll(`.fc [data-evento="${idEvento(tipo, id)}"]`)];
+    const esVisible = (el) => !el.closest('[hidden]');
+
+    function marcarAbierto() {
+        document.querySelectorAll('.fc .ev-abierto').forEach((el) => el.classList.remove('ev-abierto'));
+        if (abierto) eventosDe(abierto.tipo, abierto.id).forEach((el) => el.classList.add('ev-abierto'));
+    }
+
+    function pintarOpciones(contenedor, opciones, actual, alElegir, deshabilitado = false) {
+        contenedor.replaceChildren();
+        opciones.forEach((opcion) => {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'detalle-opcion';
+            boton.setAttribute('role', 'radio');
+            boton.setAttribute('aria-checked', String(opcion.valor === actual));
+            boton.tabIndex = opcion.valor === actual || (actual == null && contenedor.childElementCount === 0) ? 0 : -1;
+            boton.disabled = deshabilitado;
+            if (opcion.marca) {
+                const punto = document.createElement('i');
+                punto.style.setProperty('--punto-opcion', opcion.marca);
+                punto.setAttribute('aria-hidden', 'true');
+                boton.append(punto);
+            }
+            boton.append(opcion.etiqueta);
+            boton.addEventListener('click', () => alElegir(opcion.valor));
+            contenedor.append(boton);
+        });
+    }
+
+    // Flechas dentro de un grupo de opciones (radiogroup)
+    [dPrioridad, dColor].forEach((grupo) => grupo.addEventListener('keydown', (e) => {
+        const paso = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (!paso) return;
+        const botones = [...grupo.querySelectorAll('button:not(:disabled)')];
+        const i = botones.indexOf(document.activeElement);
+        if (i < 0) return;
+        e.preventDefault();
+        const siguiente = botones[(i + paso + botones.length) % botones.length];
+        siguiente.focus();
+        siguiente.click();
+    }));
+
+    /** Lo que cambia con cada guardado: filas de solo lectura, prioridad, color, completada y bloqueos. */
+    function pintarResto(d) {
+        const bloqueada = Boolean(d.bloqueada);
+        dAviso.hidden = !d.vencida;
+        dAviso.textContent = d.vencida ? 'Esta tarea está vencida' : '';
+
+        dFilas.replaceChildren();
+        (d.filas ?? []).forEach((fila) => {
+            const dt = document.createElement('dt');
+            const dd = document.createElement('dd');
+            dt.textContent = fila.etiqueta;
+            dd.textContent = fila.valor;
+            dFilas.append(dt, dd);
+        });
+
+        if (d.tipo === 'tarea') {
+            pintarOpciones(dPrioridad, d.prioridades, d.prioridad, (valor) => guardarCambio({ prioridad: valor }));
+            dCompletar.setAttribute('aria-pressed', String(d.completada));
+            dCompletar.innerHTML = '';
+            const icono = document.createElement('i');
+            icono.className = `bi ${d.completada ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'}`;
+            icono.setAttribute('aria-hidden', 'true');
+            dCompletar.append(icono, d.completada ? ' Reabrir tarea' : ' Marcar como completada');
+        }
+
+        if (d.tipo === 'nota') {
+            pintarOpciones(dColor, d.colores.map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca })), d.color,
+                (valor) => guardarCambio({ color: valor }));
+        }
+
+        dFecha.disabled = bloqueada;
+        dQuitarFecha.hidden = bloqueada || !d.fecha;
+        dFechaAyuda.hidden = !d.ayuda_fecha;
+        dFechaAyuda.textContent = d.ayuda_fecha ?? '';
+    }
+
+    /** Los campos de texto y la fecha, solo al abrir la card (no pisan lo que se está escribiendo). */
+    function pintarCampos(d) {
+        const solo = Boolean(d.solo_lectura);
+        dTitulo.value = d.titulo ?? '';
+        dTitulo.dataset.valor = d.titulo ?? '';
+        dTitulo.setAttribute('aria-label', `Título de ${ARTICULOS[d.tipo] ?? ''}`.trim());
+        dTituloFijo.textContent = d.titulo ?? '';
+        dComentario.value = d.comentario ?? '';
+        dComentario.dataset.valor = d.comentario ?? '';
+        dComentarioEtiqueta.textContent = d.etiqueta_comentario ?? '';
+        dFecha.type = d.tipo === 'recordatorio' ? 'datetime-local' : 'date';
+        dFecha.value = solo ? '' : (d.fecha ?? '');
+        dFechaEtiqueta.textContent = d.etiqueta_fecha ?? 'Fecha';
+        dEditar.href = d.editar ?? '#';
+        dEditar.setAttribute('aria-label', `Editar completo ${ARTICULOS[d.tipo] ?? ''}`.trim());
+        dHistorial.href = d.historial ?? '#';
+        dBorrar.setAttribute('aria-label', `Eliminar ${ARTICULOS[d.tipo] ?? ''}`.trim());
+    }
+
+    function pintarDetalle(d) {
+        abierto.datos = d;
+        pintarCampos(d);
+        pintarResto(d);
+        dCuerpo.setAttribute('aria-busy', 'false');
+        dCampos.forEach(([campo]) => ajustarAlto(campo));
+    }
+
+    function prepararTipo(tipo) {
+        [...det.classList].filter((c) => c.startsWith('tipo-')).forEach((c) => det.classList.remove(c));
+        det.classList.add(`tipo-${tipo}`);
+        det.querySelectorAll('[data-tipos]').forEach((el) => { el.hidden = !el.dataset.tipos.split(' ').includes(tipo); });
+        dPill.textContent = ETIQUETAS[tipo];
+    }
+
+    /** Abre el detalle de una card; si ya hay otra abierta, el panel cambia sin cerrarse. */
+    async function abrirDetalle(tipo, id, { titulo = '', nueva = false } = {}) {
+        cerrarTipos();
+        if (abierto && abierto.tipo === tipo && abierto.id === id) {
+            if (!det.contains(document.activeElement)) det.focus({ preventScroll: true });
+            return;
+        }
+
+        const habiaFoco = det.contains(document.activeElement);
+        if (abierto) await soltarActual();
+        const peticion = ++solicitud;
+        abierto = { tipo, id, nueva, datos: null };
+
+        prepararTipo(tipo);
+        dTitulo.value = dTituloFijo.textContent = titulo;
+        dTitulo.dataset.valor = titulo;
+        dComentario.value = '';
+        dFilas.replaceChildren();
+        dAviso.hidden = true;
+        dGuardado.textContent = '';
+        dPrioridad.replaceChildren();
+        dColor.replaceChildren();
+        cancelarConfirmacion();
+        dCuerpo.setAttribute('aria-busy', 'true');
+        det.hidden = false;
+        marcarAbierto();
+        if (!habiaFoco || !nueva) det.focus({ preventScroll: true });
+
+        try {
+            const respuesta = await pedir(urlDe(datos.urlDetalle, tipo, id), 'GET');
+            if (peticion !== solicitud) return;
+            pintarDetalle(respuesta.detalle);
+            if (nueva) {
+                dTitulo.focus();
+                dTitulo.select();
+            }
+        } catch (error) {
+            if (peticion !== solicitud) return;
+            mostrarAviso(error.message);
+            cerrarDetalle({ devolverFoco: false });
+        }
+    }
+
+    /** Guarda lo pendiente de la card actual y descarta la recién creada que quedó vacía. */
+    async function soltarActual() {
+        const item = abierto;
+        if (!item) return;
+        guardarPendiente();
+
+        if (item.nueva && dTitulo.value.trim() === '' && dComentario.value.trim() === '') {
+            abierto = null;
+            await enCola(async () => {
+                try { await pedir(urlTarjeta(item.tipo, item.id), 'DELETE'); } catch (error) { mostrarAviso(error.message); }
+            });
+            calendario.refetchEvents();
+        }
+    }
+
+    function cerrarDetalle({ devolverFoco = true } = {}) {
+        if (det.hidden) return;
+        const item = abierto;
+        soltarActual();
+        abierto = null;
+        solicitud += 1;
+        det.hidden = true;
+        cancelarConfirmacion();
+        marcarAbierto();
+
+        if (devolverFoco && item) {
+            const origen = eventosDe(item.tipo, item.id)[0];
+            if (origen) origen.focus({ preventScroll: true });
+        }
+    }
+
+    /* ---------- Guardado ---------- */
+    async function guardarCambio(cambio, { campo = null } = {}) {
+        const item = abierto;
+        if (!item || item.datos?.solo_lectura) return false;
+        const previo = campo ? campo.dataset.valor : null;
+        if (campo) campo.dataset.valor = campo.value.trim();
+
+        return enCola(async () => {
+            indicar(dGuardado, 'Guardando…');
+            try {
+                const respuesta = await enviar(urlTarjeta(item.tipo, item.id), cambio);
+                if (abierto === item && respuesta.detalle) {
+                    item.datos = respuesta.detalle;
+                    pintarResto(respuesta.detalle);
+                }
+                indicar(dGuardado, 'Guardado');
+                calendario.refetchEvents();
+                return true;
+            } catch (error) {
+                if (campo) campo.dataset.valor = previo ?? '';
+                indicar(dGuardado, 'No se guardó', true);
+                mostrarAviso(error.message);
+                return false;
+            }
+        });
+    }
+
+    function guardarCampoDetalle(campo, nombre) {
+        if (!abierto || !abierto.datos || campo.closest('[hidden]')) return;
+        const valor = campo.value.trim();
+        if (valor === (campo.dataset.valor ?? '')) return;
+
+        // Una card ya creada no puede quedar sin título: se restaura el anterior.
+        if (nombre === 'titulo' && valor === '') {
+            if (!abierto.nueva) campo.value = campo.dataset.valor ?? '';
+            return;
+        }
+
+        const item = abierto;
+        guardarCambio({ [nombre]: valor }, { campo }).then((guardado) => {
+            if (guardado && nombre === 'titulo') item.nueva = false;
+        });
+    }
+
+    const guardarPendiente = () => dCampos.forEach(([campo, nombre]) => guardarCampoDetalle(campo, nombre));
+
+    dTitulo.addEventListener('change', () => guardarCampoDetalle(dTitulo, 'titulo'));
+    dComentario.addEventListener('change', () => guardarCampoDetalle(dComentario, 'comentario'));
+    dTitulo.addEventListener('input', () => ajustarAlto(dTitulo));
+    dComentario.addEventListener('input', () => ajustarAlto(dComentario));
+    dTitulo.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); dTitulo.blur(); }
+    });
+    dComentario.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); dComentario.blur(); }
+    });
+
+    dCompletar.addEventListener('click', async () => {
+        const item = abierto;
+        if (!item?.datos) return;
+        dCompletar.disabled = true;
+        await guardarCambio({ completada: !item.datos.completada });
+        dCompletar.disabled = false;
+    });
+
+    /** Mueve la fecha desde el panel (valor null la quita y devuelve la card a "Por ubicar"). */
+    async function cambiarFecha(valor) {
+        const item = abierto;
+        if (!item?.datos) return;
+        const anterior = item.datos.fecha ?? '';
+        dFecha.disabled = true;
+        dQuitarFecha.disabled = true;
+
+        await enCola(async () => {
+            indicar(dGuardado, 'Guardando…');
+            try {
+                const respuesta = await ponerFecha(item.tipo, item.id, valor);
+                indicar(dGuardado, 'Guardado');
+                item.datos.fecha = valor;
+                if (!valor) {
+                    if (respuesta.panel) insertarTarjeta(respuesta.panel);
+                    if (abierto === item) cerrarDetalle({ devolverFoco: false });
+                } else if (abierto === item) {
+                    pintarResto(item.datos);
+                }
+                calendario.refetchEvents();
+            } catch (error) {
+                dFecha.value = anterior;
+                indicar(dGuardado, 'No se guardó', true);
+                mostrarAviso(error.message);
+            }
+        });
+
+        if (abierto === item) {
+            dFecha.disabled = Boolean(item.datos.bloqueada);
+            dQuitarFecha.disabled = false;
+        }
+    }
+
+    dFecha.addEventListener('change', () => {
+        // Un valor vacío es una edición a medias del campo: la fecha solo se quita con el botón.
+        if (!dFecha.value) { dFecha.value = abierto?.datos?.fecha ?? ''; return; }
+        cambiarFecha(dFecha.value);
+    });
+    dQuitarFecha.addEventListener('click', () => cambiarFecha(null));
+
+    /** Si la card abierta se movió arrastrándola en el calendario, el panel refleja la nueva fecha. */
+    function sincronizarFecha(tipo, id, valor) {
+        if (abierto?.datos && abierto.tipo === tipo && abierto.id === id) {
+            abierto.datos.fecha = valor;
+            dFecha.value = valor ?? '';
+            pintarResto(abierto.datos);
+        }
+    }
+
+    /* ---------- Eliminar con confirmación dentro del panel ---------- */
+    function cancelarConfirmacion() {
+        dConfirmar.hidden = true;
+        dPie.hidden = false;
+    }
+
+    dBorrar.addEventListener('click', () => {
+        if (!abierto?.datos) return;
+        const nombre = dTitulo.value.trim();
+        dConfirmarTexto.textContent = `¿Eliminar ${ARTICULOS[abierto.tipo]}${nombre ? ` «${nombre}»` : ''}? No se puede deshacer.`;
+        dPie.hidden = true;
+        dConfirmar.hidden = false;
+        porId('confirmar-no').focus();
+    });
+
+    porId('confirmar-no').addEventListener('click', () => {
+        cancelarConfirmacion();
+        dBorrar.focus();
+    });
+
+    porId('confirmar-si').addEventListener('click', async () => {
+        const item = abierto;
+        if (!item) return;
+        const boton = porId('confirmar-si');
+        boton.disabled = true;
+        try {
+            await enCola(() => pedir(urlTarjeta(item.tipo, item.id), 'DELETE'));
+            item.nueva = false;
+            if (abierto === item) cerrarDetalle({ devolverFoco: false });
+            calendario.refetchEvents();
+        } catch (error) {
+            mostrarAviso(error.message);
+        } finally {
+            boton.disabled = false;
+        }
+    });
+
+    det.querySelector('[data-detalle-cerrar]').addEventListener('click', () => cerrarDetalle());
+
+    /* ---------- Teclado y clic fuera ---------- */
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (!popTipos.hidden) { cerrarTipos(); return; }
+        if (det.hidden) return;
+        if (!dConfirmar.hidden) { cancelarConfirmacion(); dBorrar.focus(); return; }
+        cerrarDetalle();
+    });
+
+    // Foco atrapado dentro del panel mientras está abierto (Esc lo cierra y devuelve el foco a la card).
+    det.addEventListener('keydown', (e) => {
+        if (e.key !== 'Tab') return;
+        const enfocables = [...det.querySelectorAll('a[href], button, input, textarea, select, [tabindex="0"]')]
+            .filter((el) => !el.disabled && el.tabIndex >= 0 && esVisible(el));
+        if (enfocables.length === 0) return;
+        const primero = enfocables[0];
+        const ultimo = enfocables[enfocables.length - 1];
+        if (e.shiftKey && (document.activeElement === primero || document.activeElement === det)) {
+            e.preventDefault();
+            ultimo.focus();
+        } else if (!e.shiftKey && document.activeElement === ultimo) {
+            e.preventDefault();
+            primero.focus();
+        }
+    });
+
+    // Clic fuera lo cierra, salvo sobre otra card del calendario (que solo cambia el contenido).
+    document.addEventListener('pointerdown', (e) => {
+        if (!popTipos.hidden && !popTipos.contains(e.target)) cerrarTipos();
+        if (!det.hidden && !det.contains(e.target) && !e.target.closest('.fc-event, .fc-popover')) {
+            cerrarDetalle({ devolverFoco: false });
+        }
     });
 
     /* ---------- Calendario ---------- */
@@ -652,9 +903,8 @@ function iniciar(raiz) {
 
         eventClick: (info) => {
             const props = info.event.extendedProps;
-            if (!TIPOS_TARJETA.includes(props.tipo)) return; // las sesiones de estudio abren su historial
             info.jsEvent.preventDefault();
-            abrirEditor(props.tarjeta, rectDe(info.el), { origen: info.el });
+            abrirDetalle(props.tipo, idDe(props), { titulo: info.event.title });
         },
 
         // Tareas y notas solo viven en el "todo el día"; los recordatorios aceptan cualquier hueco.
@@ -673,6 +923,8 @@ function iniciar(raiz) {
                 partes.push(`sesión de estudio, ${props.estado?.toLowerCase()}`);
             }
             info.el.title = partes.join(' · ');
+            info.el.dataset.evento = info.event.id;
+            if (abierto && info.event.id === idEvento(abierto.tipo, abierto.id)) info.el.classList.add('ev-abierto');
         },
 
         // Tarjeta soltada desde el panel: se guarda la fecha o se deshace.
@@ -707,6 +959,7 @@ function iniciar(raiz) {
                 const respuesta = await ponerFecha(tipo, idDe(evento.extendedProps), null);
                 evento.remove();
                 if (respuesta.panel) insertarTarjeta(respuesta.panel);
+                if (abierto?.tipo === tipo && abierto.id === idDe(evento.extendedProps)) cerrarDetalle({ devolverFoco: false });
                 calendario.refetchEvents();
             } catch (error) {
                 mostrarAviso(error.message);
@@ -724,6 +977,7 @@ function iniciar(raiz) {
             try {
                 const valor = tipo === 'recordatorio' ? momentoRecordatorio(evento.start, evento.allDay) : fechaLocal(evento.start);
                 await ponerFecha(tipo, idDe(evento.extendedProps), valor);
+                sincronizarFecha(tipo, idDe(evento.extendedProps), tipo === 'recordatorio' ? valor.slice(0, 16) : valor);
                 calendario.refetchEvents();
             } catch (error) {
                 info.revert();

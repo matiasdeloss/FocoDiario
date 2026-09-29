@@ -41,6 +41,8 @@ Route::get('calendario/eventos', [\App\Http\Controllers\CalendarioController::cl
 Route::patch('calendario/tareas/{tarea}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaTarea'])->name('calendario.tareas.fecha');
 Route::patch('calendario/recordatorios/{recordatorio}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaRecordatorio'])->name('calendario.recordatorios.fecha');
 Route::patch('calendario/notas/{nota}/fecha', [\App\Http\Controllers\CalendarioController::class, 'fechaNota'])->name('calendario.notas.fecha');
+Route::get('calendario/detalle/{tipo}/{id}', [\App\Http\Controllers\DetalleCalendarioController::class, 'show'])
+    ->whereIn('tipo', ['tarea', 'recordatorio', 'nota', 'sesion'])->whereNumber('id')->name('calendario.detalle');
 Route::post('calendario/tarjetas', [\App\Http\Controllers\TarjetaCalendarioController::class, 'store'])->name('calendario.tarjetas.store');
 Route::get('calendario/tarjetas/{tipo}', [\App\Http\Controllers\TarjetaCalendarioController::class, 'index'])
     ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->name('calendario.tarjetas.index');

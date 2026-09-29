@@ -69,6 +69,7 @@ Guía de estilo que sale de las decisiones tomadas en el proyecto. Aplica a toda
 - Estados y confirmaciones al instante (actualización optimista), pero la respuesta del servidor es la fuente de verdad. Bloquear el control mientras hay una petición en vuelo y serializar las peticiones por elemento; nunca dejar que una segunda respuesta pise a la primera.
 - Al marcar una tarea como hecha en Hoy, su fila sale de la lista 300 ms después del clic; Hoy no lista tareas completadas.
 - Modales de creación y edición con `<dialog>` nativo (`.dialogo`): errores 422 dentro del modal sin perder lo escrito, cierre con Esc, botón o clic afuera, foco atrapado y devuelto a quien lo abrió. Sin JS, siguen funcionando los formularios de siempre.
+- Al tocar una card del calendario se abre un panel lateral derecho (hoja desde abajo bajo 992px) con su detalle: `role="dialog"` no modal, guardado automático con estado, eliminar con confirmación dentro del panel, Esc/botón/clic afuera lo cierran y devuelven el foco a la card; al tocar otra card solo cambia el contenido.
 - Días vacíos del calendario: al pasar el mouse muestran un "+" para crear algo en ese día.
 - El panel "Por ubicar" tiene un único scroll (la lista de tarjetas), sin scroll horizontal; los tres botones de creación (Tarea, Recordatorio, Nota) van en una sola línea en estilo pastilla.
 

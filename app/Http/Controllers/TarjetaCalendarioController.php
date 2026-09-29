@@ -8,6 +8,7 @@ use App\Http\Requests\PaginaTarjetasRequest;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
+use App\Services\Calendario\DetalleCalendario;
 use App\Services\Calendario\EventosCalendario;
 use App\Services\Calendario\TarjetasCalendario;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ class TarjetaCalendarioController extends Controller
     public function __construct(
         private readonly TarjetasCalendario $tarjetas,
         private readonly EventosCalendario $calendario,
+        private readonly DetalleCalendario $detalle,
     ) {
     }
 
@@ -51,7 +53,12 @@ class TarjetaCalendarioController extends Controller
         $tarjeta = $this->tarjetas->buscar($tipo, $id);
         $this->tarjetas->actualizar($tarjeta, $request->validated());
 
-        return response()->json(['tarjeta' => $this->tarjetas->datos($tarjeta->fresh())]);
+        $tarjeta = $tarjeta->fresh();
+
+        return response()->json([
+            'tarjeta' => $this->tarjetas->datos($tarjeta),
+            'detalle' => $this->detalle->datos($tarjeta),
+        ]);
     }
 
     public function destroy(string $tipo, int $id): Response

@@ -359,7 +359,7 @@
 .tarj-titulo { text-overflow: ellipsis; font-family: var(--foco-fuente-titulo); font-size: 17px; font-weight: 500; line-height: 1.3; }
 .tarj-comentario { font-size: var(--foco-texto-sm); color: var(--color-neutral-700); }
 
-.tarj-pie, .editor-pie { display: flex; align-items: center; gap: 4px; }
+.tarj-pie { display: flex; align-items: center; gap: 4px; }
 .tarj-pie { margin-top: 4px; }
 .tarj-fecha { flex: 0 1 auto; min-width: 0; }
 .tarj-fecha-campo {
@@ -389,13 +389,12 @@
     text-decoration: underline;
     text-underline-offset: 0.2em;
 }
-.editor-pie .tarj-accion:hover { color: var(--foco-texto); }
 .tarj-pie .tarj-accion { text-decoration: none; }
 .tarj-guardado { flex: 1; min-width: 0; text-align: right; font-size: 11px; color: var(--tipo-texto, var(--foco-texto-meta)); opacity: 0.8; }
 .tarj-guardado-error { color: var(--foco-rojo-texto); font-weight: 600; }
 .tarj-borrar { color: var(--foco-rojo-texto); }
 
-/* Popovers del calendario: menú de tipo al tocar un día y editor de un evento */
+/* Popover del calendario: menú de tipo al tocar un día */
 .popover-foco {
     position: fixed;
     z-index: 1080;
@@ -409,9 +408,6 @@
     animation: popover-entra 150ms cubic-bezier(0.2, 0, 0, 1);
 }
 .popover-foco[hidden] { display: none; }
-.popover-editor { display: grid; gap: var(--foco-espacio-1); background: var(--foco-papel); }
-.popover-editor .editor-cabeza { display: flex; align-items: center; justify-content: space-between; }
-.editor-etiqueta { font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); margin-top: var(--foco-espacio-1); }
 .popover-tipos { width: 15rem; }
 .popover-foco-titulo { margin: 0 0 var(--foco-espacio-2); font-family: var(--foco-fuente-titulo); font-size: 17px; font-weight: var(--font-heading-weight); }
 .popover-tipos-botones { display: grid; gap: var(--foco-espacio-2); }
@@ -428,7 +424,7 @@
     .tarj-cabeza { touch-action: auto; }
 }
 
-/* Celular: el editor y el menú suben como hoja desde abajo */
+/* Celular: el menú sube como hoja desde abajo */
 @media (max-width: 575.98px) {
     .popover-foco {
         inset: auto 0 0 0;
@@ -441,6 +437,160 @@
 
 @media (prefers-reduced-motion: reduce) {
     .popover-foco { animation: none; }
+}
+
+/* Panel lateral de detalle de una card (hoja desde abajo en pantallas angostas).
+   Un único scroll (el cuerpo), sin bordes de color: el tipo se lee en la pastilla. */
+.detalle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1070;
+    display: flex;
+    flex-direction: column;
+    width: min(420px, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    min-width: 0;
+    background: var(--foco-papel);
+    border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+    animation: detalle-entra-lado 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+.detalle:focus { outline: none; }
+.detalle[hidden], .detalle [hidden] { display: none !important; }
+.detalle-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 16px 4px 20px; }
+.detalle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--tipo-fondo);
+    color: var(--tipo-texto);
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.detalle-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--tipo-borde); }
+.detalle-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 16px;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 8px 20px 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-neutral-400) transparent;
+    transition: opacity 150ms;
+}
+.detalle-cuerpo[aria-busy="true"] { opacity: 0.55; pointer-events: none; }
+.detalle-cuerpo > * { min-width: 0; }
+.detalle-titulo, .detalle-titulo-fijo {
+    font-family: var(--foco-fuente-titulo);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+.detalle-titulo { margin: 0 -6px; width: calc(100% + 12px); }
+.detalle-titulo-fijo { margin: 0; }
+.detalle-texto { min-height: 4.5rem; overflow-wrap: anywhere; }
+.detalle-aviso { margin: 0; color: var(--foco-rojo-texto); font-size: var(--foco-texto-xs); font-weight: 600; }
+.detalle-campo { display: grid; gap: 6px; min-width: 0; }
+.detalle-etiqueta { font-size: var(--foco-texto-xs); font-weight: 600; color: var(--foco-texto-meta); }
+.detalle-ayuda { margin: 0; font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); }
+.detalle-fecha-fila { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.detalle-fecha-fila .form-control { flex: 1 1 auto; min-width: 0; width: auto; }
+.detalle-enlace {
+    flex: none;
+    padding: 4px 6px;
+    background: none;
+    border: 0;
+    color: var(--foco-acento-texto);
+    font-size: var(--foco-texto-xs);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+.detalle-enlace:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+.detalle-enlace:disabled { opacity: 0.45; }
+
+.detalle-opciones { display: flex; flex-wrap: wrap; gap: 6px; }
+.detalle-opcion {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 13px;
+    background: var(--color-neutral-200);
+    border: 0;
+    border-radius: var(--radius-pill);
+    color: var(--color-neutral-700);
+    font-size: 12.5px;
+    transition-property: background-color, color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.detalle-opcion:hover:not(:disabled) { background: var(--color-neutral-300); }
+.detalle-opcion[aria-checked="true"] { background: var(--foco-acento-suave); color: var(--foco-acento-texto-hover); font-weight: 600; }
+.detalle-opcion:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+.detalle-opcion:disabled { opacity: 0.55; }
+.detalle-opcion i { width: 8px; height: 8px; border-radius: 50%; background: var(--punto-opcion, var(--tipo-borde)); }
+
+.detalle-filas {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    gap: 8px 16px;
+    margin: 0;
+    padding: 12px 14px;
+    background: color-mix(in srgb, var(--tipo-fondo) 45%, var(--color-neutral-100));
+    border-radius: 14px;
+    font-size: var(--foco-texto-sm);
+}
+.detalle-filas:empty { display: none; }
+.detalle-filas dt { font-size: var(--foco-texto-xs); font-weight: 600; color: var(--foco-texto-meta); }
+.detalle-filas dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+
+.detalle-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.detalle-boton { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.detalle-enlace-boton { padding: 6px 14px; border-radius: var(--radius-pill); background: var(--color-bg); color: var(--color-neutral-700); font-size: var(--foco-texto-sm); text-decoration: none; }
+.detalle-enlace-boton:hover { background: var(--color-neutral-200); color: var(--color-neutral-700); }
+.detalle-enlace-boton:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+
+.detalle-pie { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 16px 12px 20px; }
+.detalle-confirmar { display: grid; gap: 10px; padding: 12px 20px 16px; background: var(--foco-rojo-fondo); color: var(--foco-rojo-texto); border-radius: 0 0 18px 18px; }
+.detalle-confirmar p { margin: 0; font-size: var(--foco-texto-sm); overflow-wrap: anywhere; }
+.detalle-confirmar div { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* La card abierta se marca en el calendario sin bordes de color */
+.fc .ev-abierto { outline: 2px solid var(--foco-acento); outline-offset: 1px; }
+
+@keyframes detalle-entra-lado {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes detalle-entra-abajo {
+    from { opacity: 0; transform: translateY(32px); }
+    to { opacity: 1; transform: none; }
+}
+@media (max-width: 991.98px) {
+    .detalle {
+        inset: auto 0 0 0;
+        width: 100%;
+        max-height: min(82dvh, 44rem);
+        border-radius: 18px 18px 0 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        animation-name: detalle-entra-abajo;
+    }
+    .detalle-confirmar { border-radius: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .detalle { animation: none; }
+    .detalle-cuerpo, .detalle-opcion { transition: none; }
 }
 
 /* Los chips de filtro toman el color de su tipo (igual que eventos y tarjetas) */

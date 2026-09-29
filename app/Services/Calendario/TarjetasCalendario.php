@@ -55,9 +55,9 @@ class TarjetasCalendario
     }
 
     /**
-     * Guarda solo los campos enviados (título y/o comentario).
+     * Guarda solo los campos enviados: título y comentario en todas; prioridad y completada en tareas; color en notas.
      *
-     * @param  array{titulo?: ?string, comentario?: ?string}  $datos
+     * @param  array{titulo?: ?string, comentario?: ?string, prioridad?: string, completada?: bool, color?: string}  $datos
      */
     public function actualizar(Model $tarjeta, array $datos): void
     {
@@ -79,6 +79,20 @@ class TarjetasCalendario
             } else {
                 $campos['descripcion'] = $datos['comentario'];
             }
+        }
+
+        if ($tarjeta instanceof Tarea) {
+            if (array_key_exists('prioridad', $datos)) {
+                $campos['prioridad'] = $datos['prioridad'];
+            }
+
+            if (array_key_exists('completada', $datos)) {
+                $campos['estado'] = $datos['completada'] ? EstadoTarea::Completada : EstadoTarea::Pendiente;
+            }
+        }
+
+        if ($tarjeta instanceof Nota && array_key_exists('color', $datos)) {
+            $campos['color'] = $datos['color'];
         }
 
         $tarjeta->update($campos);
