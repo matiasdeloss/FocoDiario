@@ -15,7 +15,6 @@
             </div>
             <div class="hoy-fecha">
                 <span class="hoy-fecha-larga">{{ $fechaLarga }}</span>
-                <span class="hoy-horas">{{ number_format($horasAprovechadas, 1, ',', '.') }} h aprovechadas hoy</span>
             </div>
         </header>
 

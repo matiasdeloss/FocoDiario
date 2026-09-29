@@ -4,7 +4,10 @@
          data-tareas data-url-crear="{{ route('tareas.store') }}" data-total-pendientes="{{ $totalPendientes }}">
     <div class="hoy-tarjeta-cab">
         <h2 class="hoy-tarjeta-titulo" id="hoy-tareas-titulo">Tareas abiertas</h2>
-        <span @class(['hoy-insignia', 'es-al-dia' => $totalPendientes === 0]) data-pendientes>{{ \App\Support\TextoPendientes::para($totalPendientes) }}</span>
+        <span class="hoy-meta-grupo">
+            <span @class(['hoy-insignia', 'es-al-dia' => $totalPendientes === 0]) data-pendientes>{{ \App\Support\TextoPendientes::para($totalPendientes) }}</span>
+            <a href="{{ route('tareas.index') }}" class="hoy-enlace">ver todos</a>
+        </span>
     </div>
 
     <ul class="hoy-lista" role="list" data-lista>
@@ -21,6 +24,4 @@
     </form>
 
     <p class="hoy-mensaje" role="status" data-mensaje></p>
-
-    <a href="{{ route('tareas.index') }}" class="hoy-enlace hoy-enlace-pie">ver todas las tareas</a>
 </section>

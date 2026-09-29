@@ -61,18 +61,6 @@ class HoyTest extends TestCase
         $this->get(route('hoy'))->assertSee('Buenas tardes');
     }
 
-    public function test_las_horas_aprovechadas_van_en_el_encabezado(): void
-    {
-        $this->miercoles('18:00');
-        $productiva = Categoria::factory()->create(['tipo' => TipoCategoria::Productiva]);
-        $ocio = Categoria::factory()->create(['tipo' => TipoCategoria::Ocio]);
-        BloqueTiempo::factory()->create(['categoria_id' => $productiva->id, 'inicio' => '2026-09-30 09:00', 'fin' => '2026-09-30 10:30']);
-        BloqueTiempo::factory()->create(['categoria_id' => $ocio->id, 'inicio' => '2026-09-30 11:00', 'fin' => '2026-09-30 12:00']);
-        BloqueTiempo::factory()->create(['categoria_id' => $productiva->id, 'inicio' => '2026-09-29 09:00', 'fin' => '2026-09-29 12:00']);
-
-        $this->get(route('hoy'))->assertSee('1,5 h aprovechadas hoy');
-    }
-
     public function test_la_nota_rapida_guarda_color_destino_y_fecha_con_htmx(): void
     {
         $contexto = Contexto::factory()->create(['nombre' => 'Álgebra']);

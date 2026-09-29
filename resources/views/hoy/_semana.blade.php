@@ -10,6 +10,7 @@
         <h2 class="hoy-tarjeta-titulo" id="hoy-semana-titulo">Esta semana</h2>
         <span class="hoy-meta-grupo">
             <span class="hoy-meta">{{ ucfirst(\Illuminate\Support\Carbon::parse($hoy['fecha'])->translatedFormat('F Y')) }}</span>
+            <a href="{{ route('agenda.index') }}" class="hoy-enlace">ver agenda</a>
             <a href="{{ route('calendario.index') }}" class="hoy-enlace">ver calendario</a>
         </span>
     </div>

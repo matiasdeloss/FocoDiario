@@ -56,7 +56,6 @@
 
 .hoy-fecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .hoy-fecha-larga { font-size: 14px; color: var(--color-neutral-700); }
-.hoy-horas { font-size: 12px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 575.98px) {
     .hoy-titulo { font-size: 28px; }
@@ -113,13 +112,20 @@
 .hoy-meta { font-size: 12px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
 .hoy-meta-grupo { display: flex; align-items: center; gap: 12px; }
 
+.hoy-tarjeta-cab > .hoy-enlace,
+.hoy-tarjeta-cab > .hoy-meta-grupo { margin-left: auto; flex-shrink: 0; justify-content: flex-end; }
+.hoy-tarjeta-cab { flex-wrap: wrap; }
+.hoy-tarjeta-cab > .hoy-tarjeta-titulo { flex: 1 1 auto; min-width: 0; }
+
 .hoy-enlace {
     font-size: 12px;
-    color: var(--color-accent-700);
+    color: var(--color-info-text);
     text-decoration: none;
+    border-radius: 4px;
 }
 
-.hoy-enlace:hover { color: var(--color-accent-800); }
+.hoy-enlace:hover { text-decoration: underline; text-underline-offset: 3px; }
+.hoy-enlace:focus-visible { outline: 2px solid var(--color-info-text); outline-offset: 2px; }
 .hoy-enlace-pie { align-self: flex-start; }
 
 .hoy-vacio { margin: 0; font-size: 13px; color: var(--color-neutral-600); }
