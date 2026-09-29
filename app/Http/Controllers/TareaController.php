@@ -92,9 +92,20 @@ class TareaController extends Controller
         ])));
     }
 
-    public function store(TareaRequest $request): RedirectResponse
+    public function store(TareaRequest $request): RedirectResponse|JsonResponse
     {
-        Tarea::create($request->validated());
+        $tarea = Tarea::create($request->validated());
+
+        // Alta rápida de Hoy: se responde con lo necesario para dibujar la fila sin recargar.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $tarea->id,
+                'titulo' => $tarea->titulo,
+                'prioridad' => $tarea->prioridad->value,
+                'estado' => $tarea->estado->value,
+                'html' => view('hoy._tarea', ['tarea' => $tarea])->render(),
+            ], 201);
+        }
 
         return redirect()->route('tareas.index')->with('estado', 'Tarea creada.');
     }

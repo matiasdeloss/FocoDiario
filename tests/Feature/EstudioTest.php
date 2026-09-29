@@ -313,6 +313,6 @@ class EstudioTest extends TestCase
     public function test_el_menu_marca_estudio_y_hoy_enlaza_al_temporizador(): void
     {
         $this->get(route('estudio.index'))->assertSee('href="'.route('estudio.index').'"', false);
-        $this->get(route('hoy'))->assertSee('Ir a Estudio')->assertSee(route('estudio.index'), false);
+        $this->get(route('hoy'))->assertSee('Ajustar tiempos y tema en Estudio')->assertSee(route('estudio.index'), false);
     }
 }

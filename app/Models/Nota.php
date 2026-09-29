@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ColorNota;
 use Database\Factories\NotaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
-#[Fillable(['titulo', 'contenido', 'contexto_id', 'fecha', 'fijada'])]
+#[Fillable(['titulo', 'contenido', 'contexto_id', 'fecha', 'fijada', 'color'])]
 class Nota extends Model
 {
     /** @use HasFactory<NotaFactory> */
@@ -24,6 +25,7 @@ class Nota extends Model
         return [
             'fecha' => 'date',
             'fijada' => 'boolean',
+            'color' => ColorNota::class,
         ];
     }
 

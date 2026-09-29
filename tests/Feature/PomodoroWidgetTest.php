@@ -11,7 +11,7 @@ class PomodoroWidgetTest extends TestCase
 
     public function test_el_layout_incluye_el_widget_con_marcado_accesible_en_todas_las_secciones(): void
     {
-        foreach (['hoy', 'tareas.index', 'recordatorios.index', 'registro.index', 'notas.index', 'recomendaciones.index', 'estudio.historial', 'estudio.metodos'] as $ruta) {
+        foreach (['tareas.index', 'recordatorios.index', 'registro.index', 'notas.index', 'recomendaciones.index', 'estudio.historial', 'estudio.metodos'] as $ruta) {
             $this->get(route($ruta))
                 ->assertOk()
                 ->assertSee('id="pomodoro-widget"', false)
@@ -24,9 +24,17 @@ class PomodoroWidgetTest extends TestCase
         }
     }
 
+    public function test_hoy_no_duplica_el_widget_porque_tiene_su_propia_tarjeta(): void
+    {
+        $this->get(route('hoy'))
+            ->assertOk()
+            ->assertDontSee('id="pomodoro-widget"', false)
+            ->assertSee('id="hoy-pomodoro"', false);
+    }
+
     public function test_el_widget_nace_oculto_y_publica_la_url_de_sesiones(): void
     {
-        $html = $this->get(route('hoy'))->getContent();
+        $html = $this->get(route('tareas.index'))->getContent();
 
         $this->assertMatchesRegularExpression('/id="pomodoro-widget"[^>]*data-url-sesiones="[^"]*estudio\/sesiones"[^>]*\shidden>/s', $html);
     }

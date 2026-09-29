@@ -183,13 +183,16 @@ class CalendarioTest extends TestCase
         $respuesta = $this->get(route('hoy'))->assertOk();
 
         $respuesta->assertSee('Esta semana')
-            ->assertSee('semana-dia-hoy', false)
-            ->assertSee(route('calendario.index', ['fecha' => '2026-09-28']), false)
-            ->assertSee(route('calendario.index', ['fecha' => '2026-10-04']), false)
-            ->assertDontSee(route('calendario.index', ['fecha' => '2026-10-05']), false)
-            ->assertSee('martes 29: 2 tareas', false)
-            ->assertSee('miércoles 30: 1 recordatorio', false)
-            ->assertSee('domingo 4: 1 nota', false);
+            ->assertSee('data-hoy', false)
+            ->assertSee('martes 29: 2 eventos', false)
+            ->assertSee('miércoles 30, hoy: 1 evento', false)
+            ->assertSee('domingo 4: 1 evento', false)
+            ->assertSee('lunes 28: sin eventos', false);
+
+        // Los datos de la semana viajan embebidos: de lunes 28 a domingo 4, sin el lunes siguiente.
+        $semana = $respuesta->viewData('semana');
+        $this->assertSame(['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'], array_column($semana, 'fecha'));
+        $this->assertStringNotContainsString('2026-10-05', $respuesta->getContent());
     }
 
     public function test_el_menu_tiene_el_item_calendario_activo(): void

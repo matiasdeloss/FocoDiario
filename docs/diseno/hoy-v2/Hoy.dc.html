@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-cbbe8fb5-a195-4132-bece-9c3154f47e23/styles.css">
+<script src="_ds/organic-cbbe8fb5-a195-4132-bece-9c3154f47e23/_ds_bundle.js"></script>
+</helmet>
+<div style="min-height:100vh;background:var(--color-bg);padding:32px 40px;font-family:var(--font-body);color:var(--color-text);display:flex;flex-direction:column;gap:20px;box-sizing:border-box">
+<div>
+<h1 style="margin:0;font-family:var(--font-body);font-size:36px;font-weight:600;letter-spacing:-.02em">Hoy</h1>
+<div style="margin-top:6px;opacity:.8">lunes 28 de septiembre de 2026</div>
+</div>
+
+<div style="background:var(--color-neutral-100);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><b style="letter-spacing:.1em;font-weight:600">ESTA SEMANA</b><a href="#" style="color:var(--color-accent-700)">ver calendario</a></div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+<button onClick="{{ d.pick }}" style="border:0;cursor:pointer;background:{{ d.bg }};border-radius:var(--radius-lg);padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--font-body);color:var(--color-text)" style-hover="background:var(--color-accent-2-100)">
+<span style="font-size:12px;letter-spacing:.1em;font-weight:600;font-weight:600">{{ d.name }}</span>
+<span style="font-family:var(--font-body);font-size:22px;font-weight:600">{{ d.num }}</span>
+<span style="font-size:12px;min-height:16px">{{ d.count }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div style="background:var(--color-neutral-100);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><b style="letter-spacing:.1em;font-weight:600">NOTA RÁPIDA</b><a href="#" style="color:var(--color-accent-700)">bandeja de entrada</a></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+<label style="flex:3 1 260px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">¿Qué querés anotar?<input class="input" value="{{ note }}" onInput="{{ setNote }}" onKeyDown="{{ noteKey }}" placeholder="Escribí y apretá Enter"></label>
+<label style="flex:1.4 1 180px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Destino<select class="input"><option>Bandeja de entrada</option><option>Tareas</option><option>Recordatorios</option></select></label>
+<label style="flex:1 1 150px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Fecha (opcional)<input class="input" type="date"></label>
+<button class="btn btn-primary" onClick="{{ save }}">+ Guardar</button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+<div style="background:var(--color-neutral-100);border-radius:var(--radius-lg);padding:20px 24px"><div style="font-size:14px">{{ s.label }}</div><div style="font-family:var(--font-body);font-size:32px;font-weight:600;letter-spacing:-.02em">{{ s.value }}</div></div>
+</sc-for>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+<div style="background:var(--color-neutral-100);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+<b style="font-size:13px;letter-spacing:.1em;font-weight:600">POMODORO</b>
+<div style="font-family:var(--font-body);font-size:60px;font-weight:300;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--color-accent-2-700);line-height:1">25:00</div>
+<div style="font-size:14px">Foco 25 min, descanso 5 min</div>
+<button class="btn btn-primary">▶ Ir a Estudio</button>
+</div>
+<div style="background:var(--color-neutral-100);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><b style="letter-spacing:.1em;font-weight:600">PRÓXIMAS TAREAS</b><a href="#" style="color:var(--color-accent-700)">ver todas</a></div>
+<sc-for list="{{ tasks }}" as="t" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between"><span>{{ t.title }}</span><span style="opacity:.8">{{ t.date }}</span></div></sc-for>
+</div>
+<div style="background:var(--color-neutral-100);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><b style="letter-spacing:.1em;font-weight:600">RECORDATORIOS</b><a href="#" style="color:var(--color-accent-700)">ver todos</a></div>
+<div>Sin recordatorios pendientes con fecha.</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sel: 0, note: '', tasks: [{ title: 'aaa', date: '29/09' }] };
+  renderVals() {
+    const names = ['LUN.','MAR.','MIÉ.','JUE.','VIE.','SÁB.','DOM.'], nums = [28,29,30,1,2,3,4], cnt = [2,1,0,0,0,0,0];
+    const save = () => { if (!this.state.note.trim()) return; this.setState(s => ({ tasks: [...s.tasks, { title: s.note, date: '' }], note: '' })); };
+    return {
+      days: names.map((n, i) => ({ name: n, num: nums[i], count: cnt[i] ? '● ' + cnt[i] : '', bg: i === this.state.sel ? 'var(--color-accent-2-200)' : 'transparent', pick: () => this.setState({ sel: i }) })),
+      stats: [['Tareas abiertas', this.state.tasks.length], ['Horas aprovechadas hoy', 0], ['Recordatorios pendientes', 0], ['Pomodoros hoy', 0]].map(a => ({ label: a[0], value: a[1] })),
+      tasks: this.state.tasks, note: this.state.note, save,
+      setNote: e => this.setState({ note: e.target.value }),
+      noteKey: e => { if (e.key === 'Enter') save(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

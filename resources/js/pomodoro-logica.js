@@ -20,8 +20,13 @@ export const LIBRE = 'libre';
 
 const MS = 1000;
 
-/** Estado nuevo de una sesión: arranca directamente en foco. */
-export function crearEstado(sesionId, config, ahora) {
+/**
+ * Estado nuevo de una sesión. Por defecto arranca en foco; `desde` permite arrancar directamente
+ * en un descanso corto ('descanso') o largo ('largo'), como hace la tarjeta de Hoy.
+ */
+export function crearEstado(sesionId, config, ahora, desde = 'foco') {
+    const enDescanso = desde === 'descanso' || desde === 'largo';
+
     return iniciarFase(
         {
             sesionId,
@@ -30,11 +35,11 @@ export function crearEstado(sesionId, config, ahora) {
             interrumpidos: 0,
             enCiclo: 0, // pomodoros completos desde el último descanso largo
             seq: 0,
-            descansoLargo: false,
+            descansoLargo: desde === 'largo',
             totalDescansoSeg: 0,
             totalLibreSeg: 0,
         },
-        FOCO,
+        enDescanso ? DESCANSO : FOCO,
         ahora,
     );
 }

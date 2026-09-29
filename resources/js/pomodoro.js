@@ -7,27 +7,10 @@
  * Configuración (tiempos, estilo, tarea, contexto, tema): localStorage, solo para precargar el formulario.
  */
 import {
-    acciones as accionesMotor, CLAVE_CONFIG, CLAVE_SONIDO, descartar, encabezados, escribir, estadoGuardado,
-    finalizarEnServidor, iniciarEstado, iniciarMotor, leer, prepararAudio, sonidoActivo, suscribir, terminarSesion,
+    acciones as accionesMotor, CLAVE_CONFIG, CLAVE_SONIDO, conciliarSesion, configGuardada as config, crearSesionEnServidor,
+    escribir, estadoGuardado, iniciarEstado, iniciarMotor, prepararAudio, sonidoActivo, suscribir, terminarSesion,
 } from './pomodoro-motor.js';
 import { DESCANSO, describir, estaPausado, FOCO, formatearTiempo, LIBRE, transcurridoMs } from './pomodoro-logica.js';
-
-const CONFIG_INICIAL = { foco: 25, descanso: 5, largo: 15, ciclos: 4, estilo: 'clasico', tarea_id: '', contexto_id: '', tema: '' };
-
-const config = () => ({ ...CONFIG_INICIAL, ...leer(CLAVE_CONFIG, {}) });
-
-/* ---------- Tarjeta de Hoy: solo muestra el último ajuste ---------- */
-function resumenEnHoy() {
-    const destino = document.querySelector('[data-pomodoro-resumen]');
-
-    if (!destino) return;
-
-    const c = config();
-    destino.textContent = `${String(c.foco).padStart(2, '0')}:00`;
-    const detalle = document.querySelector('[data-pomodoro-resumen-detalle]');
-
-    if (detalle) detalle.textContent = `Foco ${c.foco} min, descanso ${c.descanso} min`;
-}
 
 /* ---------- Temporizador en la vista Estudio ---------- */
 function iniciarTemporizador(raiz) {
@@ -37,7 +20,6 @@ function iniciarTemporizador(raiz) {
         ciclos: q('#p-ciclos'), tarea: q('#p-tarea'), contexto: q('#p-contexto'), tema: q('#p-tema'),
     };
     const presets = JSON.parse(raiz.dataset.presets);
-    const urlSesiones = raiz.dataset.urlSesiones;
     let estado = null;
 
     /* --- Formulario --- */
@@ -188,25 +170,16 @@ function iniciarTemporizador(raiz) {
         prepararAudio();
 
         try {
-            const respuesta = await fetch(urlSesiones, {
-                method: 'POST',
-                headers: encabezados(),
-                body: JSON.stringify({
-                    tarea_id: c.tarea_id || null, contexto_id: c.contexto_id || null, tema: c.tema || null,
-                    estilo: c.estilo, foco_min: c.foco, descanso_min: c.descanso,
-                    descanso_largo_min: c.largo, pomodoros_antes_largo: c.ciclos,
-                }),
-            });
-            const datos = await respuesta.json().catch(() => ({}));
+            const resultado = await crearSesionEnServidor(c);
 
-            if (!respuesta.ok) {
-                mostrarErrores(datos.errors ? Object.values(datos.errors).flat() : ['No se pudo iniciar la sesión. Probá de nuevo.']);
+            if (!resultado.ok) {
+                mostrarErrores(resultado.errores);
 
                 return;
             }
 
             escribir(CLAVE_CONFIG, c);
-            iniciarEstado(datos.id, { foco: c.foco, descanso: c.descanso, largo: c.largo, ciclos: c.ciclos });
+            iniciarEstado(resultado.id, { foco: c.foco, descanso: c.descanso, largo: c.largo, ciclos: c.ciclos });
         } catch {
             mostrarErrores(['No se pudo conectar con el servidor. Revisá tu conexión y probá de nuevo.']);
         } finally {
@@ -265,15 +238,7 @@ function iniciarTemporizador(raiz) {
     aplicarConfig(config());
     iniciarMotor();
 
-    const guardado = estadoGuardado();
-
-    if (guardado && guardado.sesionId !== sesionActivaServidor) {
-        // La sesión guardada ya no está en curso en el servidor (se borró o se cerró): se descarta.
-        descartar();
-    } else if (!guardado && sesionActivaServidor) {
-        // Quedó una sesión abierta sin estado local (otro navegador o datos borrados): se cierra.
-        finalizarEnServidor(sesionActivaServidor);
-    }
+    conciliarSesion(sesionActivaServidor);
 
     if (!estadoGuardado()) {
         const preset = new URLSearchParams(window.location.search).get('preset');
@@ -288,8 +253,6 @@ function iniciarTemporizador(raiz) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    resumenEnHoy();
-
     const raiz = document.getElementById('pomodoro');
 
     if (raiz) iniciarTemporizador(raiz);

@@ -41,7 +41,7 @@
     <div class="mb-4">
         <label for="color" class="form-label">Color <span class="text-secondary fw-normal">(opcional)</span></label>
         <div class="d-flex align-items-center gap-3">
-            <input type="color" id="color" name="color" value="{{ $colorActual ?: '#2f6f5e' }}" @disabled($sinColor)
+            <input type="color" id="color" name="color" value="{{ $colorActual ?: '#c67139' }}" @disabled($sinColor)
                    class="form-control form-control-color @error('color') is-invalid @enderror">
             <div class="form-check mb-0">
                 <input type="checkbox" class="form-check-input" id="sin_color" name="sin_color" value="1" @checked($sinColor)

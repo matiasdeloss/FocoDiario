@@ -51,6 +51,11 @@ export const encabezados = () => ({
     'X-CSRF-TOKEN': csrf(),
 });
 
+export const CONFIG_INICIAL = { foco: 25, descanso: 5, largo: 15, ciclos: 4, estilo: 'clasico', tarea_id: '', contexto_id: '', tema: '' };
+
+/** Última configuración guardada (tiempos, estilo, tarea, contexto, tema), completada con los valores por defecto. */
+export const configGuardada = () => ({ ...CONFIG_INICIAL, ...leer(CLAVE_CONFIG, {}) });
+
 /** URL base de las sesiones: la publica el widget (o la tarjeta de Estudio) en data-url-sesiones. */
 export const urlSesiones = () => document.querySelector('[data-url-sesiones]')?.dataset.urlSesiones ?? '/estudio/sesiones';
 
@@ -186,6 +191,29 @@ function encolar(sesionId, eventos) {
     vaciarPendientes();
 }
 
+/**
+ * Crea la sesión en el servidor con la configuración `c` (la de configGuardada o la del formulario de Estudio).
+ * Devuelve { ok: true, id } o { ok: false, errores: [texto] }. Si no hay red lanza el error de fetch.
+ */
+export async function crearSesionEnServidor(c) {
+    const respuesta = await fetch(urlSesiones(), {
+        method: 'POST',
+        headers: encabezados(),
+        body: JSON.stringify({
+            tarea_id: c.tarea_id || null, contexto_id: c.contexto_id || null, tema: c.tema || null,
+            estilo: c.estilo, foco_min: c.foco, descanso_min: c.descanso,
+            descanso_largo_min: c.largo, pomodoros_antes_largo: c.ciclos,
+        }),
+    });
+    const datos = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+        return { ok: false, errores: datos.errors ? Object.values(datos.errors).flat() : ['No se pudo iniciar la sesión. Probá de nuevo.'] };
+    }
+
+    return { ok: true, id: datos.id };
+}
+
 export async function finalizarEnServidor(sesionId) {
     await vaciarPendientes({ forzar: true });
 
@@ -241,8 +269,8 @@ function descartarEstado() {
 
 export { descartarEstado as descartar };
 
-export function iniciarEstado(sesionId, config) {
-    estado = crearEstado(sesionId, config, Date.now());
+export function iniciarEstado(sesionId, config, desde = 'foco') {
+    estado = crearEstado(sesionId, config, Date.now(), desde);
     guardar();
     notificar();
 }
@@ -322,6 +350,21 @@ function tic() {
     }
 
     notificar(ahora);
+}
+
+/**
+ * Concilia el estado guardado con lo que el servidor dice al abrir una pantalla:
+ *  - si el estado local es de una sesión que ya no está en curso, se descarta;
+ *  - si el servidor tiene una sesión abierta sin estado local (otro navegador o datos borrados), se cierra.
+ */
+export function conciliarSesion(sesionActivaServidor) {
+    const guardado = estadoGuardado();
+
+    if (guardado && guardado.sesionId !== sesionActivaServidor) {
+        descartarEstado();
+    } else if (!guardado && sesionActivaServidor) {
+        finalizarEnServidor(sesionActivaServidor);
+    }
 }
 
 /** Arranca el motor una sola vez, sin importar cuántos módulos lo pidan. */

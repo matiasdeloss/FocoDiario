@@ -2,89 +2,35 @@
 
 @section('titulo', 'Hoy · FocoDiario')
 
+@push('head')
+    @vite(['resources/css/hoy.css', 'resources/js/hoy.js'])
+@endpush
+
 @section('contenido')
-    <div class="mb-4">
-        <h1 class="pagina-titulo">Hoy</h1>
-        <p class="text-secondary mb-0">{{ now()->translatedFormat('l j \d\e F \d\e Y') }}</p>
-    </div>
-
-    @include('hoy._semana')
-
-    @include('hoy._nota-rapida')
-
-    <div class="row g-3 mb-3">
-        <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
-                <div class="metrica-etiqueta">Tareas abiertas</div>
-                <div class="metrica-valor">{{ $tareasAbiertas }}</div>
+    <div class="hoy">
+        <header class="hoy-encabezado">
+            <div class="hoy-saludo">
+                <span class="hoy-kicker">{{ $diaSemana }}</span>
+                <h1 class="hoy-titulo">{{ $saludo }}</h1>
             </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
-                <div class="metrica-etiqueta">Horas aprovechadas hoy</div>
-                <div class="metrica-valor">{{ $horasAprovechadas }}</div>
+            <div class="hoy-fecha">
+                <span class="hoy-fecha-larga">{{ $fechaLarga }}</span>
+                <span class="hoy-horas">{{ number_format($horasAprovechadas, 1, ',', '.') }} h aprovechadas hoy</span>
             </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
-                <div class="metrica-etiqueta">Recordatorios pendientes</div>
-                <div class="metrica-valor">{{ $recordatorios->count() }}</div>
+        </header>
+
+        <div class="hoy-cuerpo">
+            <div class="hoy-col hoy-col-principal">
+                @include('hoy._nota-rapida')
+                @include('hoy._semana')
+                @include('hoy._recomendaciones')
             </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="tarjeta p-3 p-md-4 h-100">
-                <div class="metrica-etiqueta">Pomodoros hoy</div>
-                <div class="metrica-valor">0</div>
+
+            <div class="hoy-col hoy-col-lateral">
+                @include('hoy._recordatorios')
+                @include('hoy._tareas')
+                @include('hoy._pomodoro')
             </div>
         </div>
     </div>
-
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="tarjeta p-4 h-100 text-center">
-                <h2 class="tarjeta-titulo">Pomodoro</h2>
-                <div class="pomodoro-tiempo mb-2" data-pomodoro-resumen>25:00</div>
-                <p class="small text-secondary mb-4" data-pomodoro-resumen-detalle>Foco 25 min, descanso 5 min</p>
-                <a href="{{ route('estudio.index') }}" class="btn btn-foco">
-                    <i class="bi bi-play-fill"></i> Ir a Estudio
-                </a>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="tarjeta p-4 h-100">
-                <h2 class="tarjeta-titulo d-flex justify-content-between">Próximas tareas <a href="{{ route('tareas.index') }}" class="text-decoration-none text-lowercase fw-normal">ver todas</a></h2>
-                @forelse ($proximasTareas as $tarea)
-                    <div class="lista-fila">
-                        <span>{{ $tarea->titulo }}</span>
-                        <span class="lista-fila-meta">{{ $tarea->fecha_limite?->format('d/m') }}</span>
-                    </div>
-                @empty
-                    <p class="estado-vacio">No tenés tareas abiertas. Cuando cargues una, aparece acá.</p>
-                @endforelse
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="tarjeta p-4 h-100">
-                <h2 class="tarjeta-titulo d-flex justify-content-between">Recordatorios <a href="{{ route('recordatorios.index') }}" class="text-decoration-none text-lowercase fw-normal">ver todos</a></h2>
-                @forelse ($recordatorios as $recordatorio)
-                    <div class="lista-fila">
-                        <span>{{ $recordatorio->mensaje }}</span>
-                        <span class="lista-fila-meta">{{ $recordatorio->recordar_en->format('d/m H:i') }}</span>
-                    </div>
-                @empty
-                    <p class="estado-vacio">Sin recordatorios pendientes con fecha.</p>
-                @endforelse
-                @if ($recordatoriosSinFecha > 0)
-                    <p class="small text-secondary mt-2 mb-0">
-                        {{ $recordatoriosSinFecha }} {{ $recordatoriosSinFecha === 1 ? 'recordatorio sin fecha' : 'recordatorios sin fecha' }}:
-                        <a href="{{ route('calendario.index') }}">ubicarlos en el calendario</a>
-                    </p>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    @include('hoy._recomendaciones')
 @endsection

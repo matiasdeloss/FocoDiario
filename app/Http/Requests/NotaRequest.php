@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ColorNota;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class NotaRequest extends FormRequest
 {
@@ -21,6 +23,7 @@ class NotaRequest extends FormRequest
             'contexto_id' => ['nullable', 'integer', 'exists:contextos,id'],
             'fecha' => ['nullable', 'date'],
             'fijada' => ['nullable', 'boolean'],
+            'color' => ['nullable', Rule::enum(ColorNota::class)],
             'origen' => ['nullable', 'in:hoy'],
         ];
     }
@@ -36,6 +39,7 @@ class NotaRequest extends FormRequest
             'contexto_id.integer' => 'El destino elegido no es válido.',
             'fecha.date' => 'La fecha no es una fecha válida.',
             'fijada.boolean' => 'El valor de "fijada" no es válido.',
+            'color.enum' => 'El color elegido no es válido.',
         ];
     }
 
@@ -64,7 +68,7 @@ class NotaRequest extends FormRequest
         if ($this->header('HX-Request') && $this->input('origen') === 'hoy') {
             throw new HttpResponseException(
                 response(
-                    view('hoy._nota-rapida', ['valores' => $this->only('contenido', 'contexto_id', 'fecha')])
+                    view('hoy._nota-rapida', ['valores' => $this->only('contenido', 'contexto_id', 'fecha', 'color')])
                         ->withErrors($validator)
                         ->render(),
                 ),

@@ -1,27 +1,44 @@
-{{-- Tira de la semana actual (lunes a domingo). Requiere: $semana (ver EventosCalendario::semanaActual). --}}
+{{-- Esta semana: siete casilleros seleccionables. Requiere: $semana (ver App\Services\Hoy\SemanaHoy). Los datos viajan en data-semana y el JS cambia de día sin recargar. --}}
 @php
-    $nombres = ['tarea' => ['tarea', 'tareas'], 'recordatorio' => ['recordatorio', 'recordatorios'], 'nota' => ['nota', 'notas'], 'sesion' => ['sesión', 'sesiones']];
+    $hoy = collect($semana)->firstWhere('hoy', true) ?? $semana[0];
+    $tiposEvento = ['tarea' => 'Tarea', 'recordatorio' => 'Recordatorio', 'nota' => 'Nota', 'sesion' => 'Estudio'];
 @endphp
-<section class="tarjeta p-3 mb-3" aria-labelledby="semana-titulo">
-    <h2 class="tarjeta-titulo d-flex justify-content-between" id="semana-titulo">Esta semana <a href="{{ route('calendario.index') }}" class="text-decoration-none text-lowercase fw-normal">ver calendario</a></h2>
-    <div class="semana-tira">
+<section id="hoy-semana" class="hoy-tarjeta hoy-semana" aria-labelledby="hoy-semana-titulo"
+         data-semana="{{ json_encode($semana, JSON_UNESCAPED_UNICODE) }}" data-url-calendario="{{ route('calendario.index') }}">
+    <div class="hoy-tarjeta-cab">
+        <h2 class="hoy-tarjeta-titulo" id="hoy-semana-titulo">Esta semana</h2>
+        <span class="hoy-meta-grupo">
+            <span class="hoy-meta">{{ ucfirst(\Illuminate\Support\Carbon::parse($hoy['fecha'])->translatedFormat('F Y')) }}</span>
+            <a href="{{ route('calendario.index') }}" class="hoy-enlace">ver calendario</a>
+        </span>
+    </div>
+
+    <div class="hoy-dias" role="group" aria-label="Días de esta semana">
         @foreach ($semana as $dia)
-            @php
-                $partes = collect($nombres)->filter(fn ($n, $tipo) => ($dia['conteos'][$tipo] ?? 0) > 0)
-                    ->map(fn ($n, $tipo) => $dia['conteos'][$tipo].' '.$n[$dia['conteos'][$tipo] === 1 ? 0 : 1]);
-            @endphp
-            <a href="{{ route('calendario.index', ['fecha' => $dia['fecha']->toDateString()]) }}"
-               class="semana-dia {{ $dia['hoy'] ? 'semana-dia-hoy' : '' }}"
-               @if ($dia['hoy']) aria-current="date" @endif
-               aria-label="{{ $dia['fecha']->translatedFormat('l j') }}{{ $partes->isEmpty() ? ': sin actividad' : ': '.$partes->implode(', ') }}">
-                <span class="semana-dia-nombre">{{ $dia['fecha']->translatedFormat('D') }}</span>
-                <span class="semana-dia-numero">{{ $dia['fecha']->format('j') }}</span>
-                <span class="semana-dia-puntos" aria-hidden="true">
-                    @foreach ($dia['conteos'] as $tipo => $cantidad)
-                        <span class="semana-punto tipo-{{ $tipo }}"><i></i>{{ $cantidad }}</span>
-                    @endforeach
+            @php $cantidad = count($dia['eventos']); @endphp
+            <button type="button" class="hoy-dia" data-fecha="{{ $dia['fecha'] }}" @if ($dia['hoy']) data-hoy @endif aria-pressed="{{ $dia['hoy'] ? 'true' : 'false' }}"
+                    aria-label="{{ $dia['largo'] }}{{ $dia['hoy'] ? ', hoy' : '' }}: {{ $cantidad === 0 ? 'sin eventos' : $cantidad.($cantidad === 1 ? ' evento' : ' eventos') }}">
+                <span class="hoy-dia-nombre" aria-hidden="true">{{ $dia['nombre'] }}</span>
+                <span class="hoy-dia-celda" aria-hidden="true">
+                    <span class="hoy-dia-numero">{{ $dia['numero'] }}</span>
+                    <span @class(["hoy-dia-punto", "es-oculto" => $cantidad === 0])></span>
                 </span>
-            </a>
+            </button>
         @endforeach
+    </div>
+
+    <div class="hoy-eventos" data-eventos aria-live="polite">
+        @forelse ($hoy['eventos'] as $evento)
+            <a class="hoy-evento" href="{{ route('calendario.index', ['fecha' => $evento['fecha']]) }}">
+                <span class="hoy-evento-titulo">
+                    <span class="hoy-punto hoy-punto-{{ $evento['tipo'] }}" aria-hidden="true"></span>
+                    <span class="hoy-solo-lector">{{ $tiposEvento[$evento['tipo']] ?? '' }}: </span>
+                    <span @class(['hoy-tachado' => $evento['hecho']])>{{ $evento['titulo'] }}</span>
+                </span>
+                <span class="hoy-evento-hora">{{ $evento['hora'] ?? $evento['detalle'] }}</span>
+            </a>
+        @empty
+            <p class="hoy-vacio">Nada agendado este día.</p>
+        @endforelse
     </div>
 </section>

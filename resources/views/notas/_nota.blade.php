@@ -8,6 +8,13 @@
         @if ($nota->fijada)
             <span class="badge-foco badge-estado-pendiente"><i class="bi bi-pin-angle-fill"></i> Fijada</span>
         @endif
+        @if ($nota->color)
+            {{-- Marca de color de la nota (paleta Organic). El estilo va en línea para no depender de app.css. --}}
+            <span class="text-secondary small text-nowrap" title="Color: {{ mb_strtolower($nota->color->etiqueta()) }}">
+                <span aria-hidden="true" style="display:inline-block;width:.7em;height:.7em;border-radius:50%;background:{{ $nota->color->marca() }};box-shadow:0 0 0 3px {{ $nota->color->fondo() }}"></span>
+                {{ $nota->color->etiqueta() }}
+            </span>
+        @endif
         <span class="text-secondary small">
             @if ($nota->contexto)
                 <i class="bi bi-folder2"></i> {{ $nota->contexto->rutaCompleta() }}

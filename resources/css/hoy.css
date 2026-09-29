@@ -1,0 +1,598 @@
+/*
+ * Pantalla Hoy (diseño "Hoy v2", sistema Organic).
+ * Solo usa los tokens de organic.css (--color-*, --font-*, --space-*, --radius-*, --shadow-*): sin hex sueltos.
+ * Reglas de contraste: texto chico en neutral-700 (no 600), texto de acento en la rampa 700, y los botones
+ * rellenos con la mezcla 600/700 de terracota, que da 5:1 con texto claro.
+ * Los colores de las notas salen de las rampas de la paleta (ver App\Enums\ColorNota).
+ */
+
+.hoy {
+    --hoy-boton: color-mix(in srgb, var(--color-accent-600) 70%, var(--color-accent-700));
+    --hoy-control: var(--color-neutral-600); /* borde de campos: 3:1 sobre las tarjetas */
+    --hoy-radio-tarjeta: calc(var(--radius-lg) * 0.8);
+    --hoy-suave: cubic-bezier(0.23, 1, 0.32, 1);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    font-family: var(--font-body);
+    color: var(--color-text);
+}
+
+.hoy [hidden] { display: none; }
+
+.hoy :is(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--color-accent-700);
+    outline-offset: 2px;
+}
+
+.hoy-solo-lector {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------- Encabezado ---------- */
+.hoy-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-2) var(--space-6);
+}
+
+.hoy-saludo { display: flex; flex-direction: column; gap: 6px; }
+
+.hoy-kicker {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--color-neutral-700);
+}
+
+.hoy-titulo {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+}
+
+.hoy-fecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hoy-fecha-larga { font-size: 14px; color: var(--color-neutral-700); }
+.hoy-horas { font-size: 12px; color: var(--color-neutral-700); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 575.98px) {
+    .hoy-titulo { font-size: 28px; }
+    .hoy-fecha { align-items: flex-start; }
+}
+
+/* ---------- Composición en dos columnas ---------- */
+.hoy-cuerpo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-6);
+}
+
+.hoy-col { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.hoy-col-principal { flex: 2 1 520px; }
+.hoy-col-lateral { flex: 1 1 300px; max-width: 420px; }
+
+@media (max-width: 991.98px) {
+    .hoy-col-lateral { flex-basis: 100%; max-width: none; }
+}
+
+/* ---------- Tarjeta ---------- */
+.hoy-tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--color-neutral-100);
+    border-radius: var(--hoy-radio-tarjeta);
+}
+
+.hoy-tarjeta-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.hoy-tarjeta-titulo {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 19px;
+    letter-spacing: 0;
+}
+
+.hoy-lateral .hoy-tarjeta-titulo { font-size: 17px; }
+
+.hoy-meta { font-size: 12px; color: var(--color-neutral-700); font-variant-numeric: tabular-nums; }
+.hoy-meta-grupo { display: flex; align-items: center; gap: var(--space-3); }
+
+.hoy-enlace {
+    position: relative;
+    font-size: 12px;
+    color: var(--color-accent-700);
+    text-decoration: none;
+    text-underline-offset: 3px;
+}
+
+/* Área de clic de 40 px sin agrandar el texto. */
+.hoy-enlace::after { content: ""; position: absolute; inset: -14px -8px; }
+.hoy-enlace:hover { color: var(--color-accent-800); text-decoration: underline; }
+.hoy-enlace-pie { align-self: flex-start; }
+
+.hoy-vacio { margin: 0; font-size: 13px; color: var(--color-neutral-700); }
+
+.hoy-mensaje { margin: 0; font-size: 12px; color: var(--color-accent-800); }
+.hoy-mensaje:empty { display: none; }
+
+.hoy-error { margin: 4px 0 0; font-size: 12px; color: var(--color-accent-800); font-weight: 600; }
+
+.hoy-aviso {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-accent-2-200);
+    color: var(--color-accent-2-800);
+    font-size: 13px;
+}
+
+.hoy-aviso-suave { margin: 0; font-size: 13px; color: var(--color-neutral-700); }
+.hoy-aviso-suave a { color: var(--color-accent-700); }
+
+/* ---------- Botones y campos ---------- */
+.hoy-boton,
+.hoy-boton-redondo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--hoy-boton);
+    color: var(--color-neutral-100);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.hoy-boton { padding: 0 var(--space-6); }
+.hoy-boton-redondo { flex: none; width: 40px; padding: 0; font-size: 16px; }
+.hoy-boton:hover, .hoy-boton-redondo:hover { background: var(--color-accent-700); }
+.hoy-boton:active, .hoy-boton-redondo:active { background: var(--color-accent-800); }
+.hoy-boton:disabled, .hoy-boton-redondo:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.hoy-boton-suave { background: var(--color-bg); color: var(--color-neutral-700); }
+.hoy-boton-suave:hover { background: var(--color-neutral-200); color: var(--color-text); }
+.hoy-boton-suave:active { background: var(--color-neutral-300); }
+
+.hoy-boton-texto {
+    min-height: 40px;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--color-neutral-700);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.hoy-boton-texto:hover { color: var(--color-accent-700); background: var(--color-neutral-200); }
+
+.hoy-entrada {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-bg);
+    box-shadow: inset 0 0 0 1px var(--hoy-control);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    caret-color: var(--color-accent-700);
+}
+
+.hoy-entrada::placeholder { color: var(--color-neutral-700); opacity: 1; }
+.hoy-entrada.es-invalido, .hoy-nota-texto.es-invalido { box-shadow: inset 0 0 0 2px var(--color-accent-700); }
+
+.hoy-campo > label { display: block; margin-bottom: 4px; padding-left: var(--space-3); font-size: 12px; color: var(--color-neutral-700); }
+
+/* ---------- Nota rápida ---------- */
+.hoy-nota { gap: var(--space-4); }
+.hoy-nota-form { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.hoy-nota-texto {
+    display: block;
+    width: 100%;
+    min-height: 150px;
+    padding: var(--space-3) var(--space-4);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hoy-control);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    resize: vertical;
+    caret-color: var(--color-accent-700);
+}
+
+.hoy-nota-texto::placeholder { color: var(--color-neutral-700); opacity: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .hoy-nota-texto { transition: background-color 160ms var(--hoy-suave); }
+}
+
+/* El color elegido tiñe el fondo de la nota. */
+.hoy-nota-texto[data-color="durazno"] { background: var(--color-accent-200); }
+.hoy-nota-texto[data-color="salvia"] { background: var(--color-accent-2-200); }
+.hoy-nota-texto[data-color="arena"] { background: var(--color-neutral-200); }
+.hoy-nota-texto[data-color="terracota"] { background: var(--color-accent-300); }
+.hoy-nota-texto[data-color="oliva"] { background: var(--color-accent-2-300); }
+
+.hoy-nota-campos { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.hoy-campo-destino { flex: 2 1 220px; min-width: 0; }
+.hoy-campo-fecha { flex: 1 1 160px; min-width: 0; }
+
+.hoy-nota-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-2) var(--space-4); }
+.hoy-nota-acciones { display: flex; align-items: center; gap: var(--space-2); }
+
+/* Selector de color: círculo de 20 px con área de clic de 40 px. */
+.hoy-colores { display: flex; }
+
+.hoy-color {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.hoy-color::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border-radius: 999px;
+    background: var(--hoy-muestra);
+}
+
+.hoy-color[aria-pressed="true"]::before {
+    box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 4px var(--color-neutral-700);
+}
+
+.hoy-color:hover::before { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 4px var(--color-neutral-400); }
+.hoy-color[aria-pressed="true"]:hover::before { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 4px var(--color-neutral-700); }
+
+.hoy-color-durazno { --hoy-muestra: var(--color-accent-400); }
+.hoy-color-salvia { --hoy-muestra: var(--color-accent-2-400); }
+.hoy-color-arena { --hoy-muestra: var(--color-neutral-500); }
+.hoy-color-terracota { --hoy-muestra: var(--color-accent-600); }
+.hoy-color-oliva { --hoy-muestra: var(--color-accent-2-600); }
+
+/* ---------- Esta semana ---------- */
+.hoy-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
+
+.hoy-dia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    cursor: pointer;
+}
+
+.hoy-dia-nombre { font-size: 12px; color: var(--color-neutral-700); }
+
+.hoy-dia-celda {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    max-height: 110px;
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.hoy-dia-numero { font-variant-numeric: tabular-nums; }
+.hoy-dia:hover .hoy-dia-celda { background: var(--color-neutral-200); }
+.hoy-dia[data-hoy] .hoy-dia-celda { box-shadow: inset 0 0 0 1.5px var(--color-accent-600); }
+
+.hoy-dia[aria-pressed="true"] .hoy-dia-celda {
+    background: var(--hoy-boton);
+    color: var(--color-neutral-100);
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.hoy-dia-punto { width: 5px; height: 5px; border-radius: 999px; background: var(--color-accent-600); }
+.hoy-dia-punto.es-oculto { visibility: hidden; }
+.hoy-dia[aria-pressed="true"] .hoy-dia-punto { background: var(--color-neutral-100); }
+
+@media (max-width: 575.98px) {
+    .hoy-dia-celda { font-size: 16px; }
+}
+
+.hoy-eventos { display: flex; flex-direction: column; gap: 0; font-size: 14px; }
+
+.hoy-evento {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 40px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.hoy-evento:hover { background: var(--color-neutral-200); }
+.hoy-evento-titulo { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.hoy-evento-hora { flex: none; font-size: 13px; color: var(--color-neutral-700); font-variant-numeric: tabular-nums; }
+.hoy-tachado { text-decoration: line-through; color: var(--color-neutral-700); }
+
+.hoy-punto { flex: none; width: 6px; height: 6px; border-radius: 999px; background: var(--color-accent-600); }
+.hoy-punto-recordatorio { background: var(--color-accent-400); }
+.hoy-punto-nota { background: var(--color-neutral-500); }
+.hoy-punto-sesion { background: var(--color-accent-2-600); }
+
+/* ---------- Recomendaciones (acordeón) ---------- */
+.hoy-recs { gap: var(--space-2); }
+.hoy-recs > .hoy-tarjeta-cab { margin-bottom: var(--space-2); }
+.hoy-acordeon { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.hoy-tono-sugerencia { --tono-fondo: var(--color-accent-200); --tono-texto: var(--color-accent-800); }
+.hoy-tono-info { --tono-fondo: var(--color-accent-2-200); --tono-texto: var(--color-accent-2-800); }
+.hoy-tono-alerta { --tono-fondo: var(--color-accent-700); --tono-texto: var(--color-accent-100); }
+.hoy-tono-logro { --tono-fondo: var(--color-accent-2-700); --tono-texto: var(--color-accent-2-100); }
+
+.hoy-rec { border-radius: var(--radius-md); }
+.hoy-rec:hover { background: var(--color-neutral-200); }
+.hoy-rec.es-abierta, .hoy-rec.es-abierta:hover { background: var(--color-bg); }
+
+.hoy-rec-cabecera { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3); }
+
+.hoy-rec-icono {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--tono-fondo);
+    color: var(--tono-texto);
+    font-size: 15px;
+}
+
+.hoy-rec-contenido { flex: 1; min-width: 0; }
+.hoy-rec-titulo { margin: 0; font-size: 16px; letter-spacing: 0; line-height: 1.3; }
+
+.hoy-rec-boton {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* El botón cubre toda la cabecera: el área de clic es la fila entera, como en el diseño. */
+.hoy-rec-boton::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-md); }
+.hoy-rec-boton:focus-visible { outline: none; }
+.hoy-rec-boton:focus-visible::after { outline: 2px solid var(--color-accent-700); outline-offset: -2px; }
+
+.hoy-etiqueta {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--tono-fondo);
+    color: var(--tono-texto);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+}
+
+.hoy-rec-flecha { margin-left: auto; font-size: 12px; color: var(--color-neutral-700); }
+.hoy-rec-boton[aria-expanded="true"] .hoy-rec-flecha { transform: rotate(180deg); }
+
+@media (prefers-reduced-motion: no-preference) {
+    .hoy-rec-flecha { transition: transform 200ms var(--hoy-suave); }
+    .hoy-rec { transition: background-color 160ms var(--hoy-suave); }
+}
+
+.hoy-rec-texto { margin: var(--space-1) 0 0; font-size: 14px; line-height: 1.55; color: var(--color-neutral-700); text-wrap: pretty; }
+
+.hoy-rec-detalle {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: 0 var(--space-3) var(--space-4) calc(var(--space-3) + 32px + var(--space-3));
+    font-size: 13px;
+}
+
+.hoy-rec-detalle[hidden] { display: none; }
+.hoy-dato { display: flex; justify-content: space-between; gap: var(--space-3); }
+.hoy-dato-etiqueta { color: var(--color-neutral-700); }
+.hoy-dato-valor { font-variant-numeric: tabular-nums; text-align: right; }
+.hoy-rec-fuente { margin: var(--space-1) 0 0; font-size: 12px; color: var(--color-neutral-700); }
+.hoy-rec-fuente a { color: var(--color-accent-700); }
+
+/* ---------- Listas de la columna derecha (recordatorios y tareas) ---------- */
+.hoy-lateral { gap: var(--space-4); }
+.hoy-lista { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+
+.hoy-fila {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: 40px;
+    padding: var(--space-1) var(--space-2);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.hoy-fila:hover { background: var(--color-neutral-200); }
+.hoy-fila[aria-disabled="true"] { cursor: default; }
+.hoy-fila[aria-busy="true"] { opacity: 0.6; }
+
+.hoy-check {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--color-neutral-600);
+    border-radius: 999px;
+    color: transparent;
+    font-size: 11px;
+}
+
+.hoy-fila[aria-checked="true"] .hoy-check {
+    border-color: var(--color-accent-2-700);
+    background: var(--color-accent-2-700);
+    color: var(--color-neutral-100);
+}
+
+.hoy-fila-texto { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.hoy-fila-titulo { overflow-wrap: anywhere; }
+.hoy-fila-cuando { font-size: 12px; color: var(--color-neutral-700); }
+.hoy-fila-cuando.es-atrasado { color: var(--color-accent-700); font-weight: 600; }
+
+.hoy-fila[aria-checked="true"] .hoy-fila-titulo { text-decoration: line-through; color: var(--color-neutral-700); }
+
+.hoy-prio { flex: none; width: 6px; height: 6px; border-radius: 999px; }
+.hoy-prio-alta { background: var(--color-accent); }
+.hoy-prio-media { background: var(--color-accent-400); }
+.hoy-prio-baja { background: var(--color-accent-2); }
+.hoy-item.es-hecha .hoy-prio { background: transparent; }
+
+.hoy-nueva { display: flex; gap: var(--space-2); }
+
+/* ---------- Pomodoro ---------- */
+.hoy-pomodoro { gap: var(--space-4); }
+.hoy-puntos { display: flex; gap: var(--space-1); }
+.hoy-punto-ronda { width: 8px; height: 8px; border-radius: 999px; background: var(--color-neutral-400); }
+.hoy-punto-ronda.es-lleno { background: var(--color-accent); }
+
+.hoy-modos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--color-bg);
+}
+
+.hoy-modo {
+    min-height: 40px;
+    padding: 0 var(--space-1);
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-neutral-700);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.hoy-modo:hover { background: var(--color-neutral-200); }
+.hoy-modo[aria-pressed="true"] { background: var(--color-neutral-100); color: var(--color-accent-700); font-weight: 600; }
+.hoy-modo:disabled { cursor: default; }
+.hoy-modo:disabled:hover { background: transparent; }
+.hoy-modo:disabled:not([aria-pressed="true"]) { opacity: 0.45; }
+.hoy-modo[aria-pressed="true"]:disabled:hover { background: var(--color-neutral-100); }
+
+.hoy-anillo { position: relative; width: 112px; height: 112px; margin: var(--space-2) auto; }
+.hoy-anillo svg { display: block; transform: rotate(-90deg); }
+.hoy-anillo circle { fill: none; stroke-width: 3; }
+.hoy-anillo-fondo { stroke: var(--color-neutral-300); }
+
+.hoy-anillo-progreso {
+    stroke: var(--color-accent);
+    stroke-linecap: round;
+    stroke-dasharray: 270.18;
+    stroke-dashoffset: var(--hoy-anillo, 0);
+}
+
+.hoy-pomodoro[data-fase="descanso"] .hoy-anillo-progreso,
+.hoy-pomodoro[data-fase="libre"] .hoy-anillo-progreso { stroke: var(--color-accent-2); }
+.hoy-pomodoro[data-pausado="true"] .hoy-anillo-progreso { opacity: 0.55; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .hoy-anillo-progreso { transition: stroke-dashoffset 300ms linear; }
+}
+
+.hoy-anillo-centro {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.hoy-reloj { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.hoy-fase { font-size: 10px; letter-spacing: 0.14em; color: var(--color-neutral-700); }
+
+.hoy-pomodoro-botones { display: flex; justify-content: center; gap: var(--space-2); }
+.hoy-boton-principal { min-width: 120px; }
+.hoy-pomodoro-extra { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+.hoy-pomodoro .hoy-mensaje { text-align: center; }
+.hoy-pomodoro .hoy-enlace-pie { align-self: center; }
+
+/* ---------- Pulido de movimiento (solo sin "menos movimiento") ---------- */
+@media (prefers-reduced-motion: no-preference) {
+    .hoy-boton, .hoy-boton-redondo, .hoy-modo, .hoy-dia-celda, .hoy-fila, .hoy-evento {
+        transition-property: background-color, color, transform;
+        transition-duration: 150ms;
+        transition-timing-function: var(--hoy-suave);
+    }
+    .hoy-boton:active, .hoy-boton-redondo:active { transform: scale(0.96); }
+}

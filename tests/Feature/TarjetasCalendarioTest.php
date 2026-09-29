@@ -234,7 +234,7 @@ class TarjetasCalendarioTest extends TestCase
         // Hoy: solo lista los que tienen fecha, y avisa de los otros
         $this->get(route('hoy'))->assertOk()
             ->assertSee('Con fecha')->assertDontSee('Recordatorio suelto')
-            ->assertSee('1 recordatorio sin fecha');
+            ->assertSee('1 sin fecha:')->assertSee('ubicarlos en el calendario');
 
         // Marcar como avisado no falla sin fecha
         $this->patch(route('recordatorios.avisar', $suelto), [], ['HX-Request' => 'true'])->assertOk()->assertSee('Avisado');

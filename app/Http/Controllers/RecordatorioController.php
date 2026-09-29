@@ -6,6 +6,7 @@ use App\Http\Requests\RecordatorioRequest;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -78,9 +79,13 @@ class RecordatorioController extends Controller
     }
 
     /** Marca el recordatorio como avisado. Con HTMX devuelve solo la fila actualizada. */
-    public function avisar(Request $request, Recordatorio $recordatorio): View|RedirectResponse
+    public function avisar(Request $request, Recordatorio $recordatorio): View|RedirectResponse|JsonResponse
     {
         $recordatorio->update(['avisado_en' => now()]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['id' => $recordatorio->id, 'avisado' => true]);
+        }
 
         if ($request->header('HX-Request')) {
             return view('recordatorios._fila', ['recordatorio' => $recordatorio->load('tarea')]);

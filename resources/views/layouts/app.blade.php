@@ -7,8 +7,9 @@
     <title>@yield('titulo', 'FocoDiario')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caprasimo:wght@400&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 <body>
     <nav class="navbar navbar-expand-md navbar-foco">
@@ -20,35 +21,35 @@
                     aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            {{-- En /estudio la tarjeta principal ya es el temporizador: no se duplica. --}}
-            @unless (request()->routeIs('estudio.index'))
+            {{-- En /estudio y en Hoy hay una tarjeta propia del temporizador: el mini-temporizador no se duplica. --}}
+            @unless (request()->routeIs('estudio.index', 'hoy'))
                 @include('layouts._pomodoro-widget')
             @endunless
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('hoy') ? 'active' : '' }}" href="{{ route('hoy') }}">Hoy</a>
+                        <a class="nav-link {{ request()->routeIs('hoy') ? 'active' : '' }}" href="{{ route('hoy') }}" @if (request()->routeIs('hoy')) aria-current="page" @endif>Hoy</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('tareas.*') ? 'active' : '' }}" href="{{ route('tareas.index') }}">Tareas</a>
+                        <a class="nav-link {{ request()->routeIs('tareas.*') ? 'active' : '' }}" href="{{ route('tareas.index') }}" @if (request()->routeIs('tareas.*')) aria-current="page" @endif>Tareas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('recordatorios.*') ? 'active' : '' }}" href="{{ route('recordatorios.index') }}">Recordatorios</a>
+                        <a class="nav-link {{ request()->routeIs('recordatorios.*') ? 'active' : '' }}" href="{{ route('recordatorios.index') }}" @if (request()->routeIs('recordatorios.*')) aria-current="page" @endif>Recordatorios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('registro.*') ? 'active' : '' }}" href="{{ route('registro.index') }}">Registro</a>
+                        <a class="nav-link {{ request()->routeIs('registro.*') ? 'active' : '' }}" href="{{ route('registro.index') }}" @if (request()->routeIs('registro.*')) aria-current="page" @endif>Registro</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('notas.*', 'contextos.*') ? 'active' : '' }}" href="{{ route('notas.index') }}">Notas</a>
+                        <a class="nav-link {{ request()->routeIs('notas.*', 'contextos.*') ? 'active' : '' }}" href="{{ route('notas.index') }}" @if (request()->routeIs('notas.*', 'contextos.*')) aria-current="page" @endif>Notas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('recomendaciones.*') ? 'active' : '' }}" href="{{ route('recomendaciones.index') }}">Recomendaciones</a>
+                        <a class="nav-link {{ request()->routeIs('recomendaciones.*') ? 'active' : '' }}" href="{{ route('recomendaciones.index') }}" @if (request()->routeIs('recomendaciones.*')) aria-current="page" @endif>Recomendaciones</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('estudio.*') ? 'active' : '' }}" href="{{ route('estudio.index') }}">Estudio</a>
+                        <a class="nav-link {{ request()->routeIs('estudio.*') ? 'active' : '' }}" href="{{ route('estudio.index') }}" @if (request()->routeIs('estudio.*')) aria-current="page" @endif>Estudio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}">Calendario</a>
+                        <a class="nav-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}" @if (request()->routeIs('calendario.*')) aria-current="page" @endif>Calendario</a>
                     </li>
                 </ul>
             </div>

@@ -14,6 +14,20 @@ class TareaRequest extends FormRequest
         return true;
     }
 
+    /**
+     * El alta rápida de Hoy (JSON) solo manda el título: prioridad media y estado pendiente por defecto.
+     * El formulario completo sigue exigiendo ambos.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->expectsJson()) {
+            $this->mergeIfMissing([
+                'prioridad' => PrioridadTarea::Media->value,
+                'estado' => EstadoTarea::Pendiente->value,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
