@@ -1,7 +1,7 @@
 // Verificación de la lógica de fases del temporizador. Se ejecuta con: node tests/js/pomodoro-logica.test.mjs
 import assert from 'node:assert/strict';
 import {
-    avanzar, CONFIG_POR_DEFECTO, crearEstado, DESCANSO, dividirSegundos, FOCO, formatearDuracion, formatearTiempo, formatearTranscurrido,
+    avanzar, CONFIG_POR_DEFECTO, crearEstado, desplazamientoAnillo, DESCANSO, fraccionAnillo, dividirSegundos, FOCO, formatearDuracion, formatearTiempo, formatearTranscurrido,
     iniciarSiguienteFoco, interpretarTiempo, LIBRE, migrarConfig, migrarEstado, migrarEvento, pausar, reanudar, reiniciar, restanteMs, saltar, terminar,
     transcurridoMs, validarDuracion,
 } from '../../resources/js/pomodoro-logica.js';
@@ -321,6 +321,40 @@ prueba('interpretarTiempo: rechaza entradas inválidas con un mensaje claro', ()
     assert.match(interpretarTiempo('1:30:75').error, /00 a 59/);
     assert.match(interpretarTiempo('2m75s').error, /00 a 59/);
     assert.equal(interpretarTiempo('9999999').ok, false);
+});
+
+prueba('el anillo de progreso: completo al inicio, se vacía con el tiempo y se congela en pausa', () => {
+    let e = crearEstado(1, config, t0);
+    assert.equal(fraccionAnillo(e, t0), 1);
+    assert.equal(fraccionAnillo(e, t0 + 10 * MIN), 0.6);
+    assert.equal(fraccionAnillo(e, t0 + 25 * MIN), 0);
+    assert.equal(fraccionAnillo(e, t0 + 90 * MIN), 0);
+    e = pausar(e, t0 + 5 * MIN);
+    assert.equal(fraccionAnillo(e, t0 + 60 * MIN), 0.8);
+    e = reanudar(e, t0 + 30 * MIN);
+    assert.equal(fraccionAnillo(e, t0 + 35 * MIN), 0.6);
+});
+
+prueba('el anillo queda completo sin sesión, en tiempo libre y con la fase reiniciada', () => {
+    assert.equal(fraccionAnillo(null, t0), 1);
+    let e = crearEstado(1, config, t0);
+    e = avanzar(e, t0 + 27 * MIN).estado; // foco terminado, descanso en curso
+    assert.equal(e.fase, DESCANSO);
+    assert.equal(fraccionAnillo(e, t0 + 27 * MIN), 0.6);
+    e = avanzar(e, t0 + 40 * MIN).estado;
+    assert.equal(e.fase, LIBRE);
+    assert.equal(fraccionAnillo(e, t0 + 50 * MIN), 1);
+    const r = reiniciar(crearEstado(1, config, t0), t0 + 10 * MIN);
+    assert.equal(fraccionAnillo(r, t0 + 10 * MIN), 1);
+});
+
+prueba('el desplazamiento del anillo es proporcional y se acota a 0..1', () => {
+    assert.equal(desplazamientoAnillo(1, 100), 0);
+    assert.equal(desplazamientoAnillo(0.25, 100), 75);
+    assert.equal(desplazamientoAnillo(0, 100), 100);
+    assert.equal(desplazamientoAnillo(2, 100), 0);
+    assert.equal(desplazamientoAnillo(-1, 100), 100);
+    assert.equal(desplazamientoAnillo(Number.NaN, 100), 0);
 });
 
 console.log(`\n${pruebas} pruebas correctas`);

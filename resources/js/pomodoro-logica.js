@@ -362,6 +362,27 @@ export function describir(estado, ahora) {
     };
 }
 
+/**
+ * Fracción 0..1 del anillo de progreso: lo que queda de la fase actual (1 = anillo completo, 0 = vacío).
+ * Sin sesión o en tiempo libre (no tiene fin) el anillo queda completo. Una fase en pausa se queda donde estaba.
+ */
+export function fraccionAnillo(estado, ahora) {
+    if (!estado || estado.fase === LIBRE) return 1;
+
+    const total = estado.planificadoSeg * MS;
+
+    if (!(total > 0)) return 1;
+
+    return Math.min(1, Math.max(0, 1 - transcurridoMs(estado, ahora) / total));
+}
+
+/** stroke-dashoffset de un anillo de circunferencia `circunferencia` que muestra `fraccion` (0..1) del arco. */
+export function desplazamientoAnillo(fraccion, circunferencia) {
+    const f = Number.isFinite(fraccion) ? Math.min(1, Math.max(0, fraccion)) : 1;
+
+    return circunferencia * (1 - f);
+}
+
 const FORMATOS_TIEMPO = 'Probá con 25, 25:00, 1:30, 90s o 1:05:00.';
 
 /**

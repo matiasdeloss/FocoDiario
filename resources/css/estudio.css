@@ -24,17 +24,83 @@
         grid-template-areas: "config timer lateral";
         align-items: stretch;
     }
-    .estudio-timer { display: flex; flex-direction: column; justify-content: center; }
 }
 
 .estudio-fila .tarjeta,
 .estudio-historial { border: 0; border-radius: 18px; padding: 28px; }
 .estudio-fila .tarjeta-relleno { padding: 24px; }
+.estudio-config .tarjeta-titulo { margin-bottom: 14px; }
 
-/* Temporizador protagonista */
-.estudio-timer { padding-block: 32px; }
-.estudio-timer .pomodoro-tiempo-grande { font-size: clamp(4rem, 7vw, 6.5rem); }
-@media (min-width: 1200px) { .estudio-timer { padding-block: 44px; } }
+/* Temporizador protagonista: estado arriba, anillo con el reloj, ayuda y controles */
+.estudio-timer { display: flex; flex-direction: column; gap: 16px; padding-block: 24px; }
+.estudio-timer-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; min-height: 28px; }
+.estudio-timer-centro { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-width: 0; }
+.estudio-timer-ayuda { max-width: 34ch; text-align: center; font-size: var(--foco-texto-sm); min-height: 2.6em; }
+.estudio-timer-controles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+/* Anillo de progreso: pista tenue y arco que se vacia con el tiempo restante de la fase */
+.pomodoro-anillo { --anillo-color: var(--color-accent); position: relative; width: min(100%, 320px); aspect-ratio: 1; flex: none; }
+.pomodoro-anillo-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pomodoro-anillo-pista, .pomodoro-anillo-arco { stroke-width: 12; }
+.pomodoro-anillo-pista { stroke: color-mix(in srgb, var(--anillo-color) 18%, transparent); }
+.pomodoro-anillo-arco { stroke: var(--anillo-color); stroke-linecap: round; stroke-dasharray: 1 1; stroke-dashoffset: 0; transition: stroke-dashoffset 300ms linear, stroke 200ms, opacity 200ms; }
+.pomodoro-anillo-contenido { position: absolute; inset: 14%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-width: 0; }
+.pomodoro-anillo-contenido .pomodoro-puntos { min-height: 0.75rem; }
+.estudio-timer .pomodoro-tiempo-grande { font-size: clamp(2.75rem, 5.5vw, 4.5rem); max-width: 100%; }
+.estudio-timer .pomodoro-tiempo[data-tamano="medio"] { font-size: clamp(2.25rem, 4.5vw, 3.6rem); }
+.estudio-timer .pomodoro-tiempo[data-tamano="chico"] { font-size: clamp(1.75rem, 3.6vw, 2.8rem); }
+.estudio-timer .pomodoro-tiempo.reloj-input { width: 7.5ch; }
+#pomodoro[data-fase="descanso"] .pomodoro-anillo { --anillo-color: var(--color-accent-2-600); }
+#pomodoro[data-fase="libre"] .pomodoro-anillo { --anillo-color: var(--color-neutral-500); }
+#pomodoro[data-fase="descanso"] .estudio-timer .pomodoro-tiempo { color: var(--foco-salvia-texto); }
+#pomodoro[data-fase="libre"] .estudio-timer .pomodoro-tiempo { color: var(--foco-texto-suave); }
+#pomodoro[data-fase="descanso"] .pomodoro-fase { background: var(--foco-verde-fondo); color: var(--foco-verde-texto); }
+#pomodoro[data-fase="libre"] .pomodoro-fase { background: var(--foco-gris-fondo); color: var(--foco-gris-texto); }
+#pomodoro[data-fase="inactivo"] .pomodoro-anillo-arco { opacity: 0.35; }
+#pomodoro[data-pausado="true"] .pomodoro-anillo-arco { opacity: 0.55; }
+
+/* Configuracion: campos compactos con etiqueta pegada, tiempos en una fila cada uno */
+.config-campos { display: flex; flex-direction: column; gap: 12px; }
+.config-campo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.config-etiqueta { float: none; width: auto; margin: 0; padding: 0; font-size: var(--foco-texto-xs); font-weight: 600; color: var(--foco-texto-suave); line-height: 1.3; }
+.config-tiempos { display: flex; flex-direction: column; gap: 6px; padding-block: 4px; }
+.config-ayuda { margin: 2px 0 0; font-size: 11px; line-height: 1.4; color: var(--foco-texto-meta); }
+
+.estudio-config :is(.form-control, .form-select) {
+    height: 38px; padding: 0 12px; font-size: var(--foco-texto-sm);
+    background-color: color-mix(in srgb, #fff 55%, var(--color-neutral-100));
+    border: 1px solid var(--color-neutral-300); border-radius: 10px; min-width: 0;
+}
+.estudio-config .form-select { padding-right: 2.25rem; text-overflow: ellipsis; }
+.estudio-config :is(.form-control, .form-select):hover:not(:disabled) { border-color: var(--color-neutral-500); }
+.estudio-config :is(.form-control, .form-select):focus { border-color: var(--color-accent); outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+.estudio-config .pomodoro-duracion, .config-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.estudio-config .pomodoro-duracion > .config-etiqueta { grid-column: 1; grid-row: 1; }
+.estudio-config .pomodoro-duracion-campos {
+    grid-column: 2; grid-row: 1; display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 10px;
+    background: color-mix(in srgb, #fff 55%, var(--color-neutral-100)); border: 1px solid var(--color-neutral-300); border-radius: 10px;
+}
+.estudio-config .pomodoro-duracion-campos:hover { border-color: var(--color-neutral-500); }
+.estudio-config .pomodoro-duracion-campos:focus-within { border-color: var(--color-accent); outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.estudio-config .pomodoro-duracion-campos .form-control {
+    width: 3ch; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: right; box-sizing: content-box;
+}
+.estudio-config .pomodoro-duracion-campos .form-control:focus { outline: 0; }
+.estudio-config .pomodoro-duracion [aria-invalid="true"] { outline: 0; color: var(--foco-rojo-texto); }
+.estudio-config .pomodoro-duracion:has([aria-invalid="true"]) .pomodoro-duracion-campos { border-color: var(--foco-rojo-texto); }
+.mmss-unidad { font-size: 11px; color: var(--foco-texto-meta); }
+.mmss-sep { color: var(--foco-texto-meta); margin-inline: 2px; }
+
+.config-stepper { display: inline-flex; align-items: center; height: 38px; background: color-mix(in srgb, #fff 55%, var(--color-neutral-100)); border: 1px solid var(--color-neutral-300); border-radius: 10px; overflow: hidden; }
+.config-stepper:focus-within { border-color: var(--color-accent); }
+.estudio-config .config-stepper .form-control { width: 3ch; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: center; box-sizing: content-box; -moz-appearance: textfield; appearance: textfield; }
+.config-stepper .form-control::-webkit-inner-spin-button, .config-stepper .form-control::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.estudio-config .config-stepper .form-control:focus { outline: 0; }
+.stepper-boton { width: 36px; height: 100%; border: 0; background: transparent; color: var(--foco-texto-suave); display: inline-flex; align-items: center; justify-content: center; }
+.stepper-boton:hover:not(:disabled) { background: var(--color-neutral-200); color: var(--foco-texto); }
+.stepper-boton:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.stepper-boton:disabled { opacity: 0.5; }
 
 /* Historial */
 .estudio-historial :is(a, button, input, select):focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
@@ -115,5 +181,6 @@
     .hs-acciones { grid-column: 3; grid-row: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
+    .pomodoro-anillo-arco { transition: none; }
     .historial-barra-col > span, .hs-acciones .btn-icono { transition: none; }
 }

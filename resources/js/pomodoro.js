@@ -12,7 +12,7 @@ import {
 } from './pomodoro-motor.js';
 import { hacerEditable } from './reloj-editable.js';
 import {
-    DESCANSO, describir, dividirSegundos, estaPausado, FOCO, formatearDuracion, formatearTiempo, LIBRE, transcurridoMs, validarDuracion,
+    DESCANSO, describir, desplazamientoAnillo, dividirSegundos, estaPausado, FOCO, formatearDuracion, fraccionAnillo, formatearTiempo, LIBRE, transcurridoMs, validarDuracion,
 } from './pomodoro-logica.js';
 import { tamanoReloj } from './hoy-pomodoro-logica.js';
 
@@ -90,6 +90,13 @@ function iniciarTemporizador(raiz) {
 
         escribir(CLAVE_CONFIG, leerFormulario());
     });
+    // Stepper de pomodoros por ciclo: mueve el valor dentro de sus limites y avisa como si se hubiera escrito.
+    raiz.querySelectorAll('[data-paso]').forEach((boton) => boton.addEventListener('click', () => {
+        const nuevo = (Number(campos.ciclos.value) || 0) + Number(boton.dataset.paso);
+
+        campos.ciclos.value = Math.min(Number(campos.ciclos.max), Math.max(Number(campos.ciclos.min), nuevo));
+        campos.ciclos.dispatchEvent(new Event('input', { bubbles: true }));
+    }));
     [...camposTiempo, campos.ciclos].forEach((c) => c.addEventListener('input', detectarEstilo));
     [campos.tarea, campos.contexto, campos.tema].forEach((c) => c.addEventListener('change', () => escribir(CLAVE_CONFIG, leerFormulario())));
 
@@ -171,6 +178,17 @@ function iniciarTemporizador(raiz) {
         q('[data-p="tiempo"]').textContent = texto;
         q('[data-p="tiempo"]').dataset.tamano = tamanoReloj(texto);
         relojEditable.actualizar();
+
+        // Anillo de progreso (opcional: solo existe en la pantalla de Estudio). Se vacía con el tiempo restante de la fase.
+        const arco = q('[data-p="anillo-arco"]');
+
+        if (arco) {
+            const fraccion = fraccionAnillo(estado, ahora);
+
+            arco.style.strokeDashoffset = desplazamientoAnillo(fraccion, 1);
+            arco.style.opacity = fraccion <= 0 ? 0 : '';
+        }
+
         q('[data-p="fase"]').textContent = etiqueta;
         q('[data-p="ayuda"]').textContent = ayuda;
 

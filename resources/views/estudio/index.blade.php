@@ -21,19 +21,28 @@
          data-presets='@json($presets)'>
 
         <section class="tarjeta estudio-timer pomodoro-principal" aria-label="Temporizador">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="estudio-timer-cabecera">
                     <span class="badge-foco pomodoro-fase" data-p="fase">Listo para empezar</span>
                     <span class="lista-fila-meta" data-p="ciclo"></span>
                 </div>
 
-                <div class="text-center py-3">
-                    <button type="button" class="pomodoro-tiempo pomodoro-tiempo-grande" data-p="tiempo" data-tamano="normal" aria-label="Editar tiempo, 25:00">25:00</button>
+                <div class="estudio-timer-centro">
+                    <div class="pomodoro-anillo">
+                        <svg class="pomodoro-anillo-svg" viewBox="0 0 320 320" aria-hidden="true" focusable="false">
+                            <circle class="pomodoro-anillo-pista" cx="160" cy="160" r="148" fill="none" pathLength="1"></circle>
+                            <circle class="pomodoro-anillo-arco" data-p="anillo-arco" cx="160" cy="160" r="148" fill="none" pathLength="1"
+                                    transform="rotate(-90 160 160)"></circle>
+                        </svg>
+                        <div class="pomodoro-anillo-contenido">
+                            <button type="button" class="pomodoro-tiempo pomodoro-tiempo-grande" data-p="tiempo" data-tamano="normal" aria-label="Editar tiempo, 25:00">25:00</button>
+                            <div class="pomodoro-puntos" data-p="puntos" aria-hidden="true"></div>
+                        </div>
+                    </div>
                     <span class="visually-hidden" role="status" aria-live="polite" data-p="anuncio"></span>
-                    <div class="pomodoro-puntos mt-3" data-p="puntos" aria-hidden="true"></div>
-                    <p class="text-secondary mt-3 mb-0" data-p="ayuda" aria-live="polite"></p>
+                    <p class="text-secondary mb-0 estudio-timer-ayuda" data-p="ayuda" aria-live="polite"></p>
                 </div>
 
-                <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
+                <div class="estudio-timer-controles">
                     <button type="button" class="btn btn-foco btn-lg-foco" data-p-accion="iniciar" data-visible="inactivo">
                         <i class="bi bi-play-fill"></i> Iniciar foco
                     </button>
@@ -67,9 +76,9 @@
                 <fieldset id="p-formulario" class="pomodoro-formulario">
                     <legend id="estudio-config-titulo" class="tarjeta-titulo">Configuración</legend>
 
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label for="p-preset" class="form-label">Estilo</label>
+                    <div class="config-campos">
+                        <div class="config-campo">
+                            <label for="p-preset" class="config-etiqueta">Estilo</label>
                             <select id="p-preset" class="form-select">
                                 @foreach ($estilos as $estilo)
                                     <option value="{{ $estilo->value }}">
@@ -78,40 +87,41 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="config-tiempos">
                         @foreach ([
                             ['clave' => 'foco', 'titulo' => 'Foco', 'nombre' => 'Foco', 'defecto' => 1500],
                             ['clave' => 'descanso', 'titulo' => 'Descanso corto', 'nombre' => 'Descanso corto', 'defecto' => 300],
                             ['clave' => 'largo', 'titulo' => 'Descanso largo', 'nombre' => 'Descanso largo', 'defecto' => 900],
                         ] as $campo)
-                            <div class="col-12">
-                                <fieldset class="pomodoro-duracion" data-duracion="{{ $campo['clave'] }}" data-nombre="{{ $campo['nombre'] }}">
-                                    <legend class="form-label">{{ $campo['titulo'] }}</legend>
-                                    <div class="pomodoro-duracion-campos">
-                                        <div class="input-group">
-                                            <input id="p-{{ $campo['clave'] }}-min" type="number" class="form-control" aria-label="{{ $campo['titulo'] }}, minutos"
-                                                   value="{{ intdiv($campo['defecto'], 60) }}" min="0" max="{{ intdiv($limites[$campo['clave']][1], 60) }}" step="1" inputmode="numeric" required>
-                                            <span class="input-group-text">min</span>
-                                        </div>
-                                        <div class="input-group">
-                                            <input id="p-{{ $campo['clave'] }}-seg" type="number" class="form-control" aria-label="{{ $campo['titulo'] }}, segundos"
-                                                   value="{{ $campo['defecto'] % 60 }}" min="0" max="59" step="1" inputmode="numeric" required>
-                                            <span class="input-group-text">seg</span>
-                                        </div>
-                                    </div>
-                                </fieldset>
+                            <div class="pomodoro-duracion" role="group" aria-labelledby="p-{{ $campo['clave'] }}-etq" data-duracion="{{ $campo['clave'] }}" data-nombre="{{ $campo['nombre'] }}">
+                                <span id="p-{{ $campo['clave'] }}-etq" class="config-etiqueta">{{ $campo['titulo'] }}</span>
+                                <div class="pomodoro-duracion-campos">
+                                    <input id="p-{{ $campo['clave'] }}-min" type="number" class="form-control" aria-label="{{ $campo['titulo'] }}, minutos"
+                                           value="{{ intdiv($campo['defecto'], 60) }}" min="0" max="{{ intdiv($limites[$campo['clave']][1], 60) }}" step="1" inputmode="numeric" required>
+                                    <span class="mmss-unidad" aria-hidden="true">min</span>
+                                    <span class="mmss-sep" aria-hidden="true">:</span>
+                                    <input id="p-{{ $campo['clave'] }}-seg" type="number" class="form-control" aria-label="{{ $campo['titulo'] }}, segundos"
+                                           value="{{ $campo['defecto'] % 60 }}" min="0" max="59" step="1" inputmode="numeric" required>
+                                    <span class="mmss-unidad" aria-hidden="true">seg</span>
+                                </div>
                             </div>
                         @endforeach
-                        <div class="col-12">
-                            <label for="p-ciclos" class="form-label">Pomodoros por ciclo</label>
-                            <input id="p-ciclos" type="number" class="form-control" value="4" data-nombre="Pomodoros por ciclo"
-                                   min="{{ $limites['ciclos'][0] }}" max="{{ $limites['ciclos'][1] }}" step="1" inputmode="numeric" required>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-text mt-0 pomodoro-ayuda-tiempos">Cada tiempo va de 00:05 a 180:00 (minutos y segundos), por ejemplo 0 min y 5 seg para probar. Los tiempos se guardan en este navegador.</div>
+
+                            <div class="config-fila">
+                                <label for="p-ciclos" class="config-etiqueta">Pomodoros por ciclo</label>
+                                <div class="config-stepper">
+                                    <button type="button" class="stepper-boton" data-paso="-1" aria-label="Un pomodoro menos por ciclo"><i class="bi bi-dash-lg"></i></button>
+                                    <input id="p-ciclos" type="number" class="form-control" value="4" data-nombre="Pomodoros por ciclo"
+                                           min="{{ $limites['ciclos'][0] }}" max="{{ $limites['ciclos'][1] }}" step="1" inputmode="numeric" required>
+                                    <button type="button" class="stepper-boton" data-paso="1" aria-label="Un pomodoro más por ciclo"><i class="bi bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <p class="config-ayuda pomodoro-ayuda-tiempos">Cada tiempo va de 00:05 a 180:00. Se guardan en este navegador.</p>
                         </div>
 
-                        <div class="col-12">
-                            <label for="p-tarea" class="form-label">Tarea</label>
+                        <div class="config-campo">
+                            <label for="p-tarea" class="config-etiqueta">Tarea</label>
                             <select id="p-tarea" class="form-select">
                                 <option value="">Sin tarea</option>
                                 @foreach ($tareas as $tarea)
@@ -119,8 +129,8 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12">
-                            <label for="p-contexto" class="form-label">Materia o tema</label>
+                        <div class="config-campo">
+                            <label for="p-contexto" class="config-etiqueta">Materia o tema</label>
                             <select id="p-contexto" class="form-select">
                                 <option value="">Sin materia</option>
                                 @foreach ($contextos as $id => $ruta)
@@ -128,8 +138,8 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12">
-                            <label for="p-tema" class="form-label">En qué voy a trabajar</label>
+                        <div class="config-campo">
+                            <label for="p-tema" class="config-etiqueta">En qué voy a trabajar</label>
                             <input id="p-tema" type="text" class="form-control" maxlength="255" placeholder="Por ejemplo: ejercicios 4 al 8 de punteros" autocomplete="off">
                         </div>
                     </div>
