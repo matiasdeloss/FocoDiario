@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 
 /** Pasa una tarea a otra columna del tablero (arrastrar y soltar o botones), con el orden de la columna de destino. */
@@ -15,7 +16,7 @@ class MoverTareaColumnaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'columna_id' => ['required', 'integer', 'exists:columnas_tablero,id'],
+            'columna_id' => ['required', 'integer', ReglasDeUsuario::existe('columnas_tablero')],
             // Ids de las tarjetas de la columna, de arriba abajo, tal como quedaron al soltar.
             'orden' => ['nullable', 'array', 'max:500'],
             'orden.*' => ['integer', 'distinct'],

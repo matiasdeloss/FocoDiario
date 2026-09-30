@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('titulo', 'Tablero · FocoDiario')
+@section('titulo', 'Tablero Kanban · FocoDiario')
 
 @push('head')
     @vite(['resources/css/tablero.css', 'resources/js/tablero.js'])
@@ -10,7 +10,7 @@
     <div class="kanban">
         <header class="k-cab">
             <div class="k-cab-titulo">
-                <h1 class="pagina-titulo">Tablero</h1>
+                <h1 class="pagina-titulo">Tablero Kanban</h1>
                 <p class="k-resumen" data-resumen>
                     <span data-total>{{ $total }}</span> {{ $total === 1 ? 'tarjeta' : 'tarjetas' }} en {{ $columnas->count() }} {{ $columnas->count() === 1 ? 'columna' : 'columnas' }}
                 </p>

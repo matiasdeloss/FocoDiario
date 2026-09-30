@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\EstiloEstudio;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,8 +19,8 @@ class SesionEstudioRequest extends FormRequest
         $limites = config('estudio.limites');
 
         return [
-            'tarea_id' => ['nullable', 'integer', Rule::exists('tareas', 'id')],
-            'contexto_id' => ['nullable', 'integer', Rule::exists('contextos', 'id')],
+            'tarea_id' => ['nullable', 'integer', ReglasDeUsuario::existe('tareas')],
+            'contexto_id' => ['nullable', 'integer', ReglasDeUsuario::existe('contextos')],
             'tema' => ['nullable', 'string', 'max:255'],
             'estilo' => ['required', Rule::enum(EstiloEstudio::class)],
             'foco_seg' => ['required', 'integer', 'between:'.implode(',', $limites['foco'])],

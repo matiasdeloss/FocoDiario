@@ -6,6 +6,7 @@ import './pomodoro-widget.js';
 import './entrada-scroll.js';
 import { mostrarAviso, prepararAvisosFlash } from './avisos.js';
 import { activarFormulariosConConfirmacion, confirmar } from './confirmar.js';
+import { activarCuenta } from './cuenta.js';
 import { activarDeshacer } from './deshacer.js';
 import { activarAvisosDeRecordatorios } from './recordatorios-avisos.js';
 import { irAEntrar, renovarToken } from './red.js';
@@ -19,6 +20,7 @@ prepararAvisosFlash();
 activarFormulariosConConfirmacion();
 activarDeshacer();
 activarAvisosDeRecordatorios();
+activarCuenta();
 
 // Selects y fechas que filtran: se envían al cambiar (reemplaza a los onchange="this.form.submit()").
 document.addEventListener('change', (evento) => {

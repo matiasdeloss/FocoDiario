@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\TipoCaja;
 use App\Enums\ZonaSemana;
+use App\Models\Concerns\PerteneceAUsuario;
 use Carbon\CarbonInterface;
 use Database\Factories\CajaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 class Caja extends Model
 {
     /** @use HasFactory<CajaFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     public const COLUMNAS = 12;
 

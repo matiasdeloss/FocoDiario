@@ -78,8 +78,9 @@
     width: var(--ancho-columna);
     min-width: 0;
     padding: 8px;
-    background: var(--color-neutral-200);
+    background: #fff;
     border-radius: var(--radius-card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 6%, transparent);
     min-height: 6rem;
     transition: background-color 150ms, outline-color 150ms;
 }
@@ -121,16 +122,32 @@
 
 /* ---------- Tarjeta ---------- */
 .tarea-tarjeta {
+    --tarjeta-fondo: #fbf6ec;
     position: relative;
     padding: 10px 12px;
-    background: var(--color-neutral-100);
+    background: var(--tarjeta-fondo);
     border-radius: 12px;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 7%, transparent);
     font-size: 13px;
-    cursor: grab;
+    cursor: pointer;
     transition: opacity 150ms, box-shadow 200ms;
 }
 .tarea-tarjeta[hidden] { display: none; }
-.tarea-tarjeta:hover { box-shadow: var(--shadow-sm); }
+.tarea-tarjeta:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 12%, transparent), var(--shadow-sm); }
+.tarea-tarjeta:active { cursor: grabbing; }
+.tarea-tarjeta.con-color { box-shadow: inset 4px 0 0 var(--tarjeta-marca), 0 0 0 1px color-mix(in srgb, var(--tarjeta-marca) 25%, transparent); }
+.tarea-tarjeta.con-color:hover { box-shadow: inset 4px 0 0 var(--tarjeta-marca), 0 0 0 1px color-mix(in srgb, var(--tarjeta-marca) 40%, transparent), var(--shadow-sm); }
+/* Adelanto del comentario: dos renglones como mucho. */
+.tarea-comentario {
+    display: flex;
+    gap: 6px;
+    margin: 6px 0 0;
+    color: var(--color-neutral-700);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+.tarea-comentario .bi { flex: none; margin-top: 2px; font-size: 11px; opacity: 0.7; }
+.tarea-comentario span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; white-space: pre-line; }
 .tarea-tarjeta.arrastrando { opacity: 0.4; cursor: grabbing; }
 .tarea-tarjeta.guardando { opacity: 0.6; }
 .tarea-titulo { font-size: 14px; overflow-wrap: anywhere; }
@@ -173,7 +190,7 @@
     display: flex;
     align-items: center;
     padding: 1px;
-    background: var(--color-neutral-100);
+    background: var(--tarjeta-fondo);
     border-radius: var(--radius-control);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 10%, transparent);
     opacity: 0;

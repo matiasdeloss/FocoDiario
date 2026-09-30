@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
+use App\Models\Contexto;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
@@ -266,5 +267,63 @@ class TarjetasCalendarioTest extends TestCase
         $this->get(route('hoy'))->assertOk();
         $conteos = collect(app(EventosCalendario::class)->semanaActual())->pluck('conteos')->flatten()->sum();
         $this->assertSame(0, $conteos);
+    }
+
+    public function test_editar_completo_en_el_lugar_guarda_los_campos_de_cada_tipo(): void
+    {
+        $tarea = Tarea::factory()->create(['proyecto' => null, 'estado' => EstadoTarea::Pendiente, 'fecha_limite' => null]);
+        $vinculada = Tarea::factory()->create(['titulo' => 'Tarea vinculada']);
+        $recordatorio = Recordatorio::factory()->create(['tarea_id' => null, 'recordar_en' => null]);
+        $contexto = Contexto::factory()->create(['nombre' => 'Redes']);
+        $nota = Nota::factory()->create(['contexto_id' => null, 'fijada' => false, 'color' => 'salvia']);
+
+        // Tarea: proyecto y estado (el proyecto vacío se guarda como "sin proyecto").
+        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['proyecto' => ' Tesis ', 'estado' => 'en_progreso'])
+            ->assertOk()->assertJsonPath('detalle.proyecto', 'Tesis')->assertJsonPath('detalle.estado', 'en_progreso');
+        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['proyecto' => ''])->assertOk();
+        $this->assertNull($tarea->fresh()->proyecto);
+        $this->assertSame(EstadoTarea::EnProgreso, $tarea->fresh()->estado);
+
+        // Nota: materia, fijada y sin color.
+        $this->patchJson(route('calendario.tarjetas.update', ['nota', $nota->id]), ['contexto_id' => $contexto->id, 'fijada' => true, 'color' => null])
+            ->assertOk()->assertJsonPath('detalle.contexto_id', $contexto->id)->assertJsonPath('detalle.fijada', true);
+        $this->assertNull($nota->fresh()->color);
+
+        // Recordatorio: tarea vinculada.
+        $this->patchJson(route('calendario.tarjetas.update', ['recordatorio', $recordatorio->id]), ['tarea_id' => $vinculada->id])
+            ->assertOk()->assertJsonPath('detalle.tarea_id', $vinculada->id);
+
+        // Los campos de otro tipo se ignoran.
+        $this->patchJson(route('calendario.tarjetas.update', ['nota', $nota->id]), ['estado' => 'completada', 'proyecto' => 'X'])->assertOk();
+    }
+
+    public function test_el_detalle_trae_las_opciones_para_editar_en_el_lugar(): void
+    {
+        Tarea::factory()->create(['proyecto' => 'Tesis']);
+        $tarea = Tarea::factory()->create(['proyecto' => 'Portfolio']);
+        Contexto::factory()->create(['nombre' => 'Redes']);
+        $nota = Nota::factory()->create();
+        $recordatorio = Recordatorio::factory()->create(['tarea_id' => $tarea->id]);
+
+        $this->getJson(route('calendario.detalle', ['tipo' => 'tarea', 'id' => $tarea->id]))
+            ->assertJsonPath('detalle.proyecto', 'Portfolio')
+            ->assertJsonPath('detalle.proyectos', ['Portfolio', 'Tesis'])
+            ->assertJsonPath('detalle.estados.0', ['valor' => 'pendiente', 'etiqueta' => 'Pendiente']);
+        $this->getJson(route('calendario.detalle', ['tipo' => 'nota', 'id' => $nota->id]))
+            ->assertJsonPath('detalle.destinos.0.etiqueta', 'Redes')
+            ->assertJsonStructure(['detalle' => ['contexto_id', 'fijada', 'colores']]);
+        $this->getJson(route('calendario.detalle', ['tipo' => 'recordatorio', 'id' => $recordatorio->id]))
+            ->assertJsonStructure(['detalle' => ['tarea_id', 'tareas' => [['valor', 'etiqueta']]]]);
+    }
+
+    public function test_editar_en_el_lugar_valida_los_valores(): void
+    {
+        $tarea = Tarea::factory()->create();
+        $nota = Nota::factory()->create();
+
+        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['estado' => 'archivada'])
+            ->assertJsonValidationErrors(['estado' => 'El estado elegido no es válido.']);
+        $this->patchJson(route('calendario.tarjetas.update', ['nota', $nota->id]), ['contexto_id' => 999])
+            ->assertJsonValidationErrors(['contexto_id' => 'La materia elegida ya no existe.']);
     }
 }

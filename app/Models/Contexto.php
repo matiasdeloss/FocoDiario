@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ColorActividad;
 use App\Enums\TipoContexto;
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\ContextoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -18,7 +19,7 @@ use Illuminate\Support\Collection;
 class Contexto extends Model
 {
     /** @use HasFactory<ContextoFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     public const SEPARADOR = ' › ';
 

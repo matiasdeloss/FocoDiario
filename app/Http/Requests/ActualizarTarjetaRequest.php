@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\ColorNota;
+use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,10 +22,15 @@ class ActualizarTarjetaRequest extends FormRequest
         return [
             'titulo' => ['sometimes', 'nullable', 'string', 'max:255'],
             'comentario' => ['sometimes', 'nullable', 'string', 'max:5000'],
-            // Solo aplican a su tipo: prioridad y completada a tareas, color a notas.
+            // Solo aplican a su tipo (lo demás se ignora): tareas, notas y recordatorios.
             'prioridad' => ['sometimes', Rule::enum(PrioridadTarea::class)],
             'completada' => ['sometimes', 'boolean'],
-            'color' => ['sometimes', Rule::enum(ColorNota::class)],
+            'estado' => ['sometimes', Rule::enum(EstadoTarea::class)],
+            'proyecto' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'color' => ['sometimes', 'nullable', Rule::enum(ColorNota::class)],
+            'contexto_id' => ['sometimes', 'nullable', 'integer', ReglasDeUsuario::existe('contextos')],
+            'fijada' => ['sometimes', 'boolean'],
+            'tarea_id' => ['sometimes', 'nullable', 'integer', ReglasDeUsuario::existe('tareas')],
         ];
     }
 
@@ -37,6 +44,11 @@ class ActualizarTarjetaRequest extends FormRequest
             'prioridad.enum' => 'La prioridad no es válida.',
             'completada.boolean' => 'El estado de la tarea no es válido.',
             'color.enum' => 'El color no es válido.',
+            'estado.enum' => 'El estado elegido no es válido.',
+            'proyecto.max' => 'El proyecto no puede superar los 255 caracteres.',
+            'contexto_id.exists' => 'La materia elegida ya no existe.',
+            'fijada.boolean' => 'El valor de "fijada" no es válido.',
+            'tarea_id.exists' => 'La tarea elegida ya no existe.',
         ];
     }
 }

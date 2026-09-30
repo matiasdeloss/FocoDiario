@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RecordatorioRequest extends FormRequest
@@ -18,7 +19,7 @@ class RecordatorioRequest extends FormRequest
             'descripcion' => ['nullable', 'string', 'max:5000'],
             // Lo que manda un datetime-local (con o sin segundos) o la misma fecha con espacio.
             'recordar_en' => ['nullable', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i,Y-m-d H:i:s'],
-            'tarea_id' => ['nullable', 'integer', 'exists:tareas,id'],
+            'tarea_id' => ['nullable', 'integer', ReglasDeUsuario::existe('tareas')],
         ];
     }
 

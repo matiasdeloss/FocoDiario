@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MoverNotaRequest extends FormRequest
@@ -14,7 +15,7 @@ class MoverNotaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'contexto_id' => ['nullable', 'integer', 'exists:contextos,id'],
+            'contexto_id' => ['nullable', 'integer', ReglasDeUsuario::existe('contextos')],
         ];
     }
 

@@ -24,12 +24,20 @@ class PomodoroWidgetTest extends TestCase
         }
     }
 
-    public function test_hoy_no_duplica_el_widget_porque_tiene_su_propia_tarjeta(): void
+    public function test_el_widget_tambien_se_ve_en_hoy_y_en_estudio(): void
     {
-        $this->get(route('hoy'))
-            ->assertOk()
-            ->assertDontSee('id="pomodoro-widget"', false)
-            ->assertSee('id="hoy-pomodoro"', false);
+        // Con una sesión en curso, el mini-temporizador acompaña en todas las pantallas (también junto a las tarjetas propias).
+        $this->get(route('hoy'))->assertOk()->assertSee('id="pomodoro-widget"', false)->assertSee('id="hoy-pomodoro"', false);
+        $this->get(route('estudio.index'))->assertOk()->assertSee('id="pomodoro-widget"', false)->assertSee('id="pomodoro"', false);
+    }
+
+    public function test_en_escritorio_el_widget_queda_entre_las_secciones_y_la_cuenta(): void
+    {
+        $html = $this->get(route('tareas.index'))->getContent();
+
+        // Orden en el HTML: marca, widget, menú (secciones y cuenta); el CSS lo acomoda con order en escritorio.
+        $this->assertLessThan(strpos($html, 'class="collapse navbar-collapse"'), strpos($html, 'id="pomodoro-widget"'));
+        $this->assertStringContainsString('nav-cuenta', $html);
     }
 
     public function test_el_widget_nace_oculto_y_publica_la_url_de_sesiones(): void
@@ -37,13 +45,5 @@ class PomodoroWidgetTest extends TestCase
         $html = $this->get(route('tareas.index'))->getContent();
 
         $this->assertMatchesRegularExpression('/id="pomodoro-widget"[^>]*data-url-sesiones="[^"]*estudio\/sesiones"[^>]*\shidden>/s', $html);
-    }
-
-    public function test_en_estudio_no_se_duplica_la_tarjeta_con_el_widget(): void
-    {
-        $this->get(route('estudio.index'))
-            ->assertOk()
-            ->assertDontSee('id="pomodoro-widget"', false)
-            ->assertSee('id="pomodoro"', false);
     }
 }

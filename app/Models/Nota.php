@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ColorNota;
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\NotaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
 class Nota extends Model
 {
     /** @use HasFactory<NotaFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     protected $table = 'notas';
 

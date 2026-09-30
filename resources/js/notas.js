@@ -215,3 +215,85 @@ if (dialogo) {
         }
     });
 }
+
+// ---------- Ver la nota completa ----------
+// Clic en el título o el contenido (o en una zona libre de la tarjeta): modal de lectura con la nota sin recortar.
+// Sin JS, el enlace lleva a la página de la nota. "Editar" pasa al modal de edición de siempre.
+const dialogoVer = document.getElementById('dialogo-ver-nota');
+
+if (dialogoVer) {
+    const campo = (nombre) => dialogoVer.querySelector(`[data-ver="${nombre}"]`);
+    const mostrarFila = (nombre, visible) => { dialogoVer.querySelector(`[data-fila="${nombre}"]`).hidden = !visible; };
+    let tarjeta = null;
+    let origen = null;
+    let pulsoEnFondo = false;
+
+    const ver = (enlace) => {
+        const datos = JSON.parse(enlace.dataset.verNota);
+        const contenido = (datos.contenido ?? '').trim();
+
+        tarjeta = enlace.closest('.nota-item');
+        origen = enlace;
+
+        campo('titulo').textContent = datos.titulo || 'Nota';
+        campo('contenido').textContent = contenido || 'Nota sin contenido';
+        campo('contenido').classList.toggle('es-vacia', contenido === '');
+        campo('destino').textContent = datos.destino ?? 'Bandeja de entrada';
+        ['fecha', 'creada', 'editada'].forEach((nombre) => {
+            campo(nombre).textContent = datos[nombre] ?? '';
+            mostrarFila(nombre, Boolean(datos[nombre]));
+        });
+        mostrarFila('fijada', Boolean(datos.fijada));
+
+        dialogoVer.classList.toggle('con-color', Boolean(datos.fondo));
+        dialogoVer.style.setProperty('--nota-fondo', datos.fondo ?? '');
+        dialogoVer.style.setProperty('--nota-marca', datos.marca ?? '');
+
+        dialogoVer.showModal();
+        campo('contenido').scrollTop = 0;
+        dialogoVer.querySelector('[data-cerrar-ver]').focus();
+    };
+
+    document.addEventListener('click', (evento) => {
+        // Ctrl/Cmd/Mayús+clic o botón central: se deja el enlace normal.
+        if (evento.button !== 0 || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) return;
+
+        const enlace = evento.target.closest('[data-ver-nota]');
+
+        if (enlace) {
+            evento.preventDefault();
+            ver(enlace);
+
+            return;
+        }
+
+        // Zona libre de la tarjeta: no sus botones, el selector de destino ni texto que se esté seleccionando.
+        const libre = evento.target.closest('.nota-item');
+
+        if (libre && !evento.target.closest('a, button, select, input, label, form') && !window.getSelection()?.toString()) {
+            const enlaceDeLaTarjeta = libre.querySelector('[data-ver-nota]');
+
+            if (enlaceDeLaTarjeta) ver(enlaceDeLaTarjeta);
+        }
+    });
+
+    dialogoVer.addEventListener('mousedown', (evento) => { pulsoEnFondo = evento.target === dialogoVer; });
+    dialogoVer.addEventListener('click', (evento) => {
+        if (evento.target.closest('[data-cerrar-ver]') || (evento.target === dialogoVer && pulsoEnFondo)) {
+            dialogoVer.close();
+        }
+    });
+
+    dialogoVer.querySelector('[data-editar-desde-ver]').addEventListener('click', () => {
+        const editar = tarjeta?.querySelector('[data-abrir-nota="editar"]');
+
+        // El foco lo toma el modal de edición (y al cerrarlo vuelve al lápiz de la tarjeta).
+        origen = null;
+        dialogoVer.close();
+        editar?.click();
+    });
+
+    dialogoVer.addEventListener('close', () => {
+        if (origen?.isConnected) origen.focus();
+    });
+}

@@ -21,10 +21,9 @@
                     aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            {{-- En /estudio y en Hoy hay una tarjeta propia del temporizador: el mini-temporizador no se duplica. --}}
-            @unless (request()->routeIs('estudio.index', 'hoy'))
-                @include('layouts._pomodoro-widget')
-            @endunless
+            {{-- Mini-temporizador: con una sesión en curso se ve en todas las pantallas. En escritorio queda
+                 a la izquierda de la cuenta; en celular, en su propia fila debajo de la marca. --}}
+            @include('layouts._pomodoro-widget')
             <div class="collapse navbar-collapse" id="menu">
                 @include('layouts._nav')
             </div>
@@ -60,5 +59,9 @@
             </p>
         </div>
     </footer>
+
+    @if (auth()->user()?->es_invitado)
+        @include('layouts._dialogo-cuenta')
+    @endif
 </body>
 </html>

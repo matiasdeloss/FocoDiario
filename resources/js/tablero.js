@@ -371,6 +371,17 @@ if (tablero) {
         tablero.querySelectorAll('details.tablero-menu[open]').forEach((menu) => { if (!menu.contains(evento.target)) menu.open = false; });
     });
 
+    // Clic en la tarjeta (fuera de sus botones): se abre para editarla (comentario, color…). Usa el mismo
+    // enlace "Editar" de la tarjeta, así el modal recibe sus datos. Arrastrar no dispara el clic.
+    tablero.addEventListener('click', (evento) => {
+        const tarjeta = evento.target.closest('.tarea-tarjeta');
+
+        if (!tarjeta || evento.target.closest('a, button, form, input, select, textarea, label, summary')) return;
+        if (window.getSelection()?.toString()) return;
+
+        tarjeta.querySelector('[data-abrir-tarea="editar"]')?.click();
+    });
+
     tablero.addEventListener('keydown', (evento) => {
         const abierto = evento.key === 'Escape' && evento.target.closest?.('details[open]');
 

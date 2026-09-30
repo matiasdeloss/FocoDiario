@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TipoIntervalo;
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\IntervaloEstudioFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class IntervaloEstudio extends Model
 {
     /** @use HasFactory<IntervaloEstudioFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     protected $table = 'intervalos_estudio';
 

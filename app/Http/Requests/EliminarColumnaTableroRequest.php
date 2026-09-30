@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\ColumnaTablero;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 /** Eliminar una columna: sus tareas se reasignan a otra columna. */
 class EliminarColumnaTableroRequest extends FormRequest
@@ -24,7 +24,7 @@ class EliminarColumnaTableroRequest extends FormRequest
             'reasignar_a' => [
                 $columna->tareas()->exists() ? 'required' : 'nullable',
                 'integer',
-                Rule::exists('columnas_tablero', 'id')->whereNot('id', $columna->id),
+                ReglasDeUsuario::existe('columnas_tablero')->whereNot('id', $columna->id),
             ],
         ];
     }

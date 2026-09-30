@@ -7,10 +7,10 @@ use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\CapturaRapidaController;
 use App\Http\Controllers\ColumnaTableroController;
 use App\Http\Controllers\ContextoController;
+use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DetalleCalendarioController;
 use App\Http\Controllers\EstudioController;
 use App\Http\Controllers\HoyController;
-use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\RecomendacionController;
 use App\Http\Controllers\RecordatorioController;
@@ -19,17 +19,17 @@ use App\Http\Controllers\SesionEstudioController;
 use App\Http\Controllers\TableroController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\TarjetaCalendarioController;
+use App\Http\Middleware\IdentificarInvitado;
 use Illuminate\Support\Facades\Route;
 
-// ---- Entrada (una sola cuenta; se crea con php artisan foco:usuario) ----
-Route::middleware('guest')->group(function () {
-    Route::get('entrar', [LoginController::class, 'create'])->name('login');
-    Route::post('entrar', [LoginController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::post('salir', [LoginController::class, 'destroy'])->name('logout');
-    Route::get('csrf', [LoginController::class, 'token'])->name('csrf');
+// ---- Cuenta. No hay pantalla de entrada: se usa como invitado y la cuenta se maneja en un modal. ----
+// IdentificarInvitado va antes que auth: quien llega sin sesión entra como invitado.
+Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
+    Route::get('entrar', [CuentaController::class, 'create'])->name('login');
+    Route::post('entrar', [CuentaController::class, 'entrar'])->middleware('throttle:10,1')->name('login.store');
+    Route::post('cuenta', [CuentaController::class, 'registrar'])->middleware('throttle:10,1')->name('cuenta.store');
+    Route::post('salir', [CuentaController::class, 'salir'])->name('logout');
+    Route::get('csrf', [CuentaController::class, 'token'])->name('csrf');
 
     Route::get('/', HoyController::class)->name('hoy');
 

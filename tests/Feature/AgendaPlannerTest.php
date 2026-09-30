@@ -145,8 +145,8 @@ class AgendaPlannerTest extends TestCase
     public function test_el_menu_tiene_el_item_agenda_activo_en_la_agenda(): void
     {
         $this->get(route('agenda.index'))
-            ->assertSee('class="nav-link dropdown-toggle active" id="menu-planificar"', false)
-            ->assertSee('class="dropdown-item active" href="'.route('agenda.index').'"', false);
+            ->assertSee('class="nav-link active" href="'.route('agenda.index').'"', false)
+            ->assertDontSee('menu-planificar', false);
         $this->get(route('hoy'))->assertSee('ver agenda');
     }
 

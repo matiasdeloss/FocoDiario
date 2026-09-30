@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ColorNota;
 use App\Models\Contexto;
 use App\Services\Calendario\TarjetasCalendario;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -28,7 +29,7 @@ class CapturaRapidaRequest extends FormRequest
             // La hora solo aplica al recordatorio y necesita un día.
             'hora' => ['exclude_unless:tipo,recordatorio', 'nullable', 'date_format:H:i'],
             // El destino y el color solo aplican a la nota.
-            'contexto_id' => ['exclude_unless:tipo,nota', 'nullable', 'integer', 'exists:contextos,id'],
+            'contexto_id' => ['exclude_unless:tipo,nota', 'nullable', 'integer', ReglasDeUsuario::existe('contextos')],
             'color' => ['exclude_unless:tipo,nota', 'nullable', Rule::enum(ColorNota::class)],
         ];
     }

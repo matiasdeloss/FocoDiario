@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EstadoSesion;
 use App\Enums\EstiloEstudio;
 use App\Enums\TipoIntervalo;
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\SesionEstudioFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SesionEstudio extends Model
 {
     /** @use HasFactory<SesionEstudioFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     protected $table = 'sesiones_estudio';
 

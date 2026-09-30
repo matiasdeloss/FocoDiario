@@ -333,6 +333,6 @@ class HoyTest extends TestCase
             ->assertSee('data-reloj', false)
             ->assertSee('aria-label="Editar tiempo, 25:00"', false)
             ->assertSee('0 pomodoros completados hoy')
-            ->assertDontSee('id="pomodoro-widget"', false);
+            ->assertSee('id="pomodoro-widget"', false); // el mini-temporizador acompaña también en Hoy
     }
 }

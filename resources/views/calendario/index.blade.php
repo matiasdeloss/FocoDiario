@@ -126,11 +126,13 @@
                 <p class="detalle-ayuda" id="detalle-fecha-ayuda" hidden></p>
             </div>
 
+            {{-- El resto de los campos (proyecto, estado, materia, tarea vinculada…) se editan acá mismo (calendario-campos.js). --}}
+            <div class="detalle-mas" id="detalle-mas"></div>
+
             <dl class="detalle-filas" id="detalle-filas"></dl>
 
             <div class="detalle-acciones">
                 <button type="button" class="btn btn-sm btn-foco-suave detalle-boton" id="detalle-completar" data-tipos="tarea" aria-pressed="false"></button>
-                <a href="#" class="detalle-boton detalle-enlace-boton" id="detalle-editar" data-tipos="tarea recordatorio nota"><i class="bi bi-sliders2" aria-hidden="true"></i> Editar completo</a>
                 <a href="#" class="detalle-boton detalle-enlace-boton" id="detalle-historial" data-tipos="sesion"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver el historial de Estudio</a>
             </div>
         </div>

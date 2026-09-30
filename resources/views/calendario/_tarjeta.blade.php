@@ -25,11 +25,14 @@
                    data-fecha-tarjeta title="{{ $meta['fecha'] }}: al elegirla pasa al calendario">
         </div>
         <span class="tarj-guardado" data-guardado role="status" aria-live="polite"></span>
-        <a href="{{ $t['editar'] }}" class="btn-icono tarj-accion" aria-label="Más opciones de {{ $meta['articulo'] }}" title="Más opciones">
+        {{-- Con JS despliega los demás campos dentro de la tarjeta; sin JS, lleva al formulario completo. --}}
+        <a href="{{ $t['editar'] }}" class="btn-icono tarj-accion" data-editar-tarjeta aria-expanded="false"
+           aria-controls="tarj-extra-{{ $t['tipo'] }}-{{ $t['id'] }}" aria-label="Editar todo de {{ $meta['articulo'] }}" title="Editar todo">
             <i class="bi bi-sliders2" aria-hidden="true"></i>
         </a>
         <button type="button" class="btn-icono tarj-borrar" data-borrar aria-label="Eliminar {{ $meta['articulo'] }}" title="Eliminar">
             <i class="bi bi-trash" aria-hidden="true"></i>
         </button>
     </div>
+    <div class="tarj-extra" id="tarj-extra-{{ $t['tipo'] }}-{{ $t['id'] }}" data-extra hidden></div>
 </li>

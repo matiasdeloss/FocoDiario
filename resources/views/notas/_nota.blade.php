@@ -9,6 +9,18 @@
         'color' => $nota->color?->value,
         'fijada' => $nota->fijada,
     ];
+    // Lo que muestra el modal de lectura (notas.js): la nota completa, sin recortar.
+    $datosLectura = [
+        'titulo' => $nota->titulo,
+        'contenido' => $nota->contenido,
+        'destino' => $nota->contexto_id ? ($destinos[$nota->contexto_id] ?? $nota->contexto?->nombre) : null,
+        'fecha' => $nota->fecha?->translatedFormat('j \d\e F \d\e Y'),
+        'creada' => $nota->created_at?->translatedFormat('j \d\e F \d\e Y, H:i'),
+        'editada' => $nota->updated_at && $nota->updated_at->ne($nota->created_at) ? $nota->updated_at->translatedFormat('j \d\e F \d\e Y, H:i') : null,
+        'fijada' => $nota->fijada,
+        'fondo' => $nota->color?->fondo(),
+        'marca' => $nota->color?->marca(),
+    ];
 @endphp
 <article id="nota-{{ $nota->id }}" class="nota-item {{ $nota->fijada ? 'nota-fijada' : '' }} {{ $nota->color ? 'nota-con-color' : '' }}"
          @if ($nota->color) style="--nota-fondo: {{ $nota->color->fondo() }}; --nota-marca: {{ $nota->color->marca() }}" @endif>
@@ -34,14 +46,18 @@
         </form>
     </div>
 
-    @if ($nota->titulo)
-        <h2 class="nota-titulo">{{ $nota->titulo }}</h2>
-    @endif
-    @if (trim((string) $nota->contenido) !== '')
-        <div class="nota-contenido">{{ $nota->contenido }}</div>
-    @elseif (! $nota->titulo)
-        <p class="nota-vacia">Nota sin contenido</p>
-    @endif
+    {{-- Título y contenido abren la nota completa (modal de lectura); sin JS, la página de la nota. --}}
+    <a href="{{ route('notas.show', $nota) }}" class="nota-abrir" data-ver-nota="{{ json_encode($datosLectura, JSON_UNESCAPED_UNICODE) }}"
+       aria-label="Ver nota: {{ $nota->tituloVisible() ?: 'sin contenido' }}">
+        @if ($nota->titulo)
+            <h2 class="nota-titulo">{{ $nota->titulo }}</h2>
+        @endif
+        @if (trim((string) $nota->contenido) !== '')
+            <div class="nota-contenido">{{ $nota->contenido }}</div>
+        @elseif (! $nota->titulo)
+            <p class="nota-vacia">Nota sin contenido</p>
+        @endif
+    </a>
 
     <div class="nota-pie">
         {{-- La materia es una pastilla y a la vez el selector para mover la nota de destino. --}}

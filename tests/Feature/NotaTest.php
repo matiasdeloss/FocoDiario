@@ -11,6 +11,51 @@ class NotaTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_cada_tarjeta_abre_la_nota_completa_en_un_modal_de_lectura(): void
+    {
+        $contexto = Contexto::factory()->create(['nombre' => 'Bases de Datos', 'contexto_padre_id' => null]);
+        $largo = str_repeat('Normalizar hasta 3FN. ', 40).'FINAL DEL TEXTO';
+        $nota = Nota::factory()->create([
+            'titulo' => 'Apuntes de normalización',
+            'contenido' => $largo,
+            'contexto_id' => $contexto->id,
+            'fecha' => '2026-10-02',
+            'fijada' => true,
+        ]);
+
+        $respuesta = $this->get(route('notas.index'))->assertOk();
+
+        // El modal de lectura está en la página.
+        $respuesta->assertSee('id="dialogo-ver-nota"', false)->assertSee('data-editar-desde-ver', false);
+
+        // El enlace lleva a la nota (sin JS) y trae la nota completa, sin recortar, para el modal.
+        $html = $respuesta->getContent();
+        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('notas.show', $nota), '#').'" class="nota-abrir" data-ver-nota="([^"]+)"#', $html);
+        preg_match('#class="nota-abrir" data-ver-nota="([^"]+)"#', $html, $coincidencia);
+        $datos = json_decode(html_entity_decode($coincidencia[1]), true);
+
+        $this->assertSame('Apuntes de normalización', $datos['titulo']);
+        $this->assertSame($largo, $datos['contenido']);
+        $this->assertStringEndsWith('FINAL DEL TEXTO', $datos['contenido']);
+        $this->assertSame('Bases de Datos', $datos['destino']);
+        $this->assertSame('2 de octubre de 2026', $datos['fecha']);
+        $this->assertTrue($datos['fijada']);
+        $respuesta->assertSee('aria-label="Ver nota: Apuntes de normalización"', false);
+    }
+
+    public function test_la_nota_sin_destino_ni_titulo_tambien_se_puede_abrir(): void
+    {
+        Nota::factory()->create(['titulo' => null, 'contenido' => "Línea uno\nLínea dos", 'contexto_id' => null, 'fecha' => null]);
+
+        preg_match('#data-ver-nota="([^"]+)"#', $this->get(route('notas.index'))->getContent(), $coincidencia);
+        $datos = json_decode(html_entity_decode($coincidencia[1]), true);
+
+        $this->assertNull($datos['titulo']);
+        $this->assertNull($datos['destino']);
+        $this->assertNull($datos['fecha']);
+        $this->assertSame("Línea uno\nLínea dos", $datos['contenido']);
+    }
+
     public function test_la_pantalla_hoy_muestra_la_nota_rapida(): void
     {
         $carrera = Contexto::factory()->entorno()->create(['nombre' => 'Carrera']);

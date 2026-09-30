@@ -196,3 +196,26 @@
 .nota-item:not(.nota-con-color) .nota-mover { background: var(--color-neutral-200); }
 .nota-item:not(.nota-con-color) .nota-mover:hover { background: var(--color-neutral-300); }
 .nota-vacia { margin: 0; font-size: 14px; font-style: italic; color: var(--color-neutral-700); }
+
+/* ---------- Abrir la nota completa ---------- */
+.nota-item { cursor: pointer; }
+.nota-item :is(select, button, .nota-boton) { cursor: pointer; }
+.nota-abrir { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: -4px; padding: 4px; border-radius: 10px; color: inherit; text-decoration: none; }
+.nota-abrir:hover { color: inherit; }
+.nota-abrir:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* Modal de lectura */
+.dialogo-ver-nota { width: min(680px, calc(100vw - 24px)); }
+.dialogo-ver-nota .dialogo-titulo { overflow-wrap: anywhere; }
+.ver-nota-contenido {
+    max-height: min(55dvh, 520px); overflow-y: auto; padding: 16px 18px; border-radius: 14px;
+    background: var(--color-bg); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15.5px; line-height: 1.6;
+}
+.ver-nota-contenido:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.dialogo-ver-nota.con-color .ver-nota-contenido { background: var(--nota-fondo); box-shadow: inset 4px 0 0 var(--nota-marca); }
+.ver-nota-contenido.es-vacia { font-style: italic; color: var(--color-neutral-700); }
+.ver-nota-datos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 16px; margin: 0; font-size: 13px; }
+.ver-nota-datos > div[hidden] { display: none; }
+.ver-nota-datos dt { font-weight: 600; color: var(--color-neutral-700); }
+.ver-nota-datos dt .bi { color: var(--color-accent-600); }
+.ver-nota-datos dd { margin: 2px 0 0; color: var(--color-neutral-900); overflow-wrap: anywhere; }

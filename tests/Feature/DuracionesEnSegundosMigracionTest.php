@@ -23,7 +23,7 @@ class DuracionesEnSegundosMigracionTest extends TestCase
     private function insertarSesionEnMinutos(): int
     {
         return DB::table('sesiones_estudio')->insertGetId([
-            'estilo' => 'clasico', 'foco_min' => 25, 'descanso_min' => 5, 'descanso_largo_min' => 15,
+            'user_id' => auth()->id(), 'estilo' => 'clasico', 'foco_min' => 25, 'descanso_min' => 5, 'descanso_largo_min' => 15,
             'pomodoros_antes_largo' => 4, 'estado' => 'finalizada', 'iniciada_en' => '2026-09-28 20:00:00',
             'created_at' => now(), 'updated_at' => now(),
         ]);
@@ -39,7 +39,7 @@ class DuracionesEnSegundosMigracionTest extends TestCase
         $sesion = $this->insertarSesionEnMinutos();
         foreach ([['foco', 25, 1500], ['libre', null, 0], ['descanso', 1, 45]] as $i => [$tipo, $plan, $dur]) {
             DB::table('intervalos_estudio')->insert([
-                'sesion_id' => $sesion, 'tipo' => $tipo, 'clave' => "c-{$i}", 'inicio' => '2026-09-28 20:00:00',
+                'user_id' => auth()->id(), 'sesion_id' => $sesion, 'tipo' => $tipo, 'clave' => "c-{$i}", 'inicio' => '2026-09-28 20:00:00',
                 'fin' => '2026-09-28 20:10:00', 'planificado_min' => $plan, 'pausado_seg' => 0, 'duracion_seg' => $dur,
                 'completado' => true, 'created_at' => now(), 'updated_at' => now(),
             ]);
@@ -63,7 +63,7 @@ class DuracionesEnSegundosMigracionTest extends TestCase
     public function test_al_bajar_vuelve_a_minutos_sin_perder_los_tiempos_cortos(): void
     {
         DB::table('sesiones_estudio')->insert([
-            'estilo' => 'personalizado', 'foco_seg' => 5, 'descanso_seg' => 90, 'descanso_largo_seg' => 10800,
+            'user_id' => auth()->id(), 'estilo' => 'personalizado', 'foco_seg' => 5, 'descanso_seg' => 90, 'descanso_largo_seg' => 10800,
             'pomodoros_antes_largo' => 4, 'estado' => 'finalizada', 'iniciada_en' => '2026-09-28 20:00:00',
             'created_at' => now(), 'updated_at' => now(),
         ]);

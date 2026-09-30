@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ReglasDeUsuario;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -19,7 +20,7 @@ class BloqueTiempoRequest extends FormRequest
             'categoria_id' => ['required', 'integer', 'exists:categorias,id'],
             'inicio' => ['required', 'date_format:H:i'],
             'fin' => ['required', 'date_format:H:i', 'after:inicio'],
-            'tarea_id' => ['nullable', 'integer', 'exists:tareas,id'],
+            'tarea_id' => ['nullable', 'integer', ReglasDeUsuario::existe('tareas')],
             'concentracion' => ['nullable', 'integer', 'between:1,5'],
         ];
     }

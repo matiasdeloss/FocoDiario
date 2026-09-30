@@ -31,7 +31,9 @@ class DetalleCalendarioTest extends TestCase
             ->assertJsonPath('detalle.prioridad', 'alta')
             ->assertJsonPath('detalle.fecha', '2026-10-10')
             ->assertJsonPath('detalle.completada', false)
-            ->assertJsonPath('detalle.filas.0', ['etiqueta' => 'Proyecto', 'valor' => 'Tesis'])
+            // Proyecto y estado se editan en el panel (no se repiten en el resumen de solo lectura).
+            ->assertJsonPath('detalle.proyecto', 'Tesis')
+            ->assertJsonPath('detalle.filas', [])
             ->assertJsonCount(3, 'detalle.prioridades');
     }
 
@@ -50,7 +52,8 @@ class DetalleCalendarioTest extends TestCase
             ->assertOk()
             ->assertJsonPath('detalle.color', 'salvia')
             ->assertJsonPath('detalle.comentario', 'Vectores')
-            ->assertJsonPath('detalle.filas.0', ['etiqueta' => 'Materia', 'valor' => 'Álgebra']);
+            ->assertJsonPath('detalle.contexto_id', $materia->id)
+            ->assertJsonPath('detalle.filas', []);
 
         $sesion = SesionEstudio::factory()->create(['tema' => 'Cálculo', 'contexto_id' => $materia->id, 'iniciada_en' => '2026-10-07 10:00:00', 'finalizada_en' => '2026-10-07 11:00:00']);
         IntervaloEstudio::factory()->count(2)->create(['sesion_id' => $sesion->id]);

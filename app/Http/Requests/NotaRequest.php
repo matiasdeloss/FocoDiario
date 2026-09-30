@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\ColorNota;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -20,7 +21,7 @@ class NotaRequest extends FormRequest
         return [
             'titulo' => ['nullable', 'string', 'max:255'],
             'contenido' => ['required_without:titulo', 'nullable', 'string', 'max:5000'],
-            'contexto_id' => ['nullable', 'integer', 'exists:contextos,id'],
+            'contexto_id' => ['nullable', 'integer', ReglasDeUsuario::existe('contextos')],
             'fecha' => ['nullable', 'date_format:Y-m-d'],
             'fijada' => ['nullable', 'boolean'],
             'color' => ['nullable', Rule::enum(ColorNota::class)],

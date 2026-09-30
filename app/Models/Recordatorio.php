@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\RecordatorioFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Recordatorio extends Model
 {
     /** @use HasFactory<RecordatorioFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     protected function casts(): array
     {

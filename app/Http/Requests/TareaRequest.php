@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ColorNota;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -42,8 +44,10 @@ class TareaRequest extends FormRequest
             'fecha_limite' => ['nullable', 'date_format:Y-m-d'],
             'prioridad' => ['required', Rule::enum(PrioridadTarea::class)],
             // El modal manda la columna del tablero (su tipo fija el estado); el formulario clásico manda el estado.
-            'columna_id' => ['nullable', 'integer', Rule::exists('columnas_tablero', 'id')],
+            'columna_id' => ['nullable', 'integer', ReglasDeUsuario::existe('columnas_tablero')],
             'estado' => ['required_without:columna_id', 'nullable', Rule::enum(EstadoTarea::class)],
+            // Color de la tarjeta en el tablero; vacío = sin color (crema).
+            'color' => ['nullable', Rule::enum(ColorNota::class)],
         ];
     }
 
@@ -61,6 +65,7 @@ class TareaRequest extends FormRequest
             'columna_id.exists' => 'La columna elegida no existe.',
             'columna_id.integer' => 'La columna elegida no es válida.',
             'estado.enum' => 'El estado elegido no es válido.',
+            'color.enum' => 'El color elegido no es válido.',
         ];
     }
 }

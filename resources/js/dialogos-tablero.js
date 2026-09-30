@@ -196,7 +196,7 @@ if (dialogos.length > 0) {
         const formulario = dialogoTarea.querySelector('form');
         const titulo = dialogoTarea.querySelector('[data-titulo-dialogo]');
         const enviarBtn = dialogoTarea.querySelector('[data-enviar]');
-        const campos = ['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'columna_id'];
+        const campos = ['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'columna_id', 'color'];
 
         const abrirTarea = (opener) => {
             const editar = opener.dataset.abrirTarea === 'editar';

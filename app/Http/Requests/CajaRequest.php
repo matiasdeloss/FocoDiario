@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ColorActividad;
 use App\Http\Requests\Concerns\ReglasDeContenidoDeCaja;
 use App\Models\Caja;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ class CajaRequest extends FormRequest
 
         return [
             'fecha' => [$alCrear ? 'required' : 'prohibited', 'date_format:Y-m-d'],
-            'contexto_id' => ['sometimes', 'nullable', 'integer', 'exists:contextos,id'],
+            'contexto_id' => ['sometimes', 'nullable', 'integer', ReglasDeUsuario::existe('contextos')],
             'titulo' => ['sometimes', 'nullable', 'string', 'max:255'],
             'hora_inicio' => ['sometimes', 'nullable', 'date_format:H:i'],
             'hora_fin' => ['sometimes', 'nullable', 'date_format:H:i'],

@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Caja;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 /** Posición y tamaño de varias cajas de una hoja, enviados juntos cuando se mueve o redimensiona una. */
 class LayoutCajasRequest extends FormRequest
@@ -24,7 +24,7 @@ class LayoutCajasRequest extends FormRequest
             'cajas.*.id' => [
                 'required', 'integer', 'distinct',
                 // Solo se aceptan cajas de esta hoja.
-                Rule::exists('cajas', 'id')->where(fn ($consulta) => $consulta->whereDate('fecha', $fecha)),
+                ReglasDeUsuario::existe('cajas')->where(fn ($consulta) => $consulta->whereDate('fecha', $fecha)),
             ],
             'cajas.*.x' => ['required', 'integer', 'min:0', 'max:'.(Caja::COLUMNAS - 1)],
             'cajas.*.y' => ['required', 'integer', 'min:0', 'max:'.Caja::MAX_FILA],

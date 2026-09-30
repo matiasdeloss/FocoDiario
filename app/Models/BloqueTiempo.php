@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrigenBloque;
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\BloqueTiempoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BloqueTiempo extends Model
 {
     /** @use HasFactory<BloqueTiempoFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     protected function casts(): array
     {

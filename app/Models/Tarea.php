@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ColorNota;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\TareaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -14,11 +16,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
-#[Fillable(['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'estado', 'columna_id', 'orden'])]
+#[Fillable(['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'color', 'estado', 'columna_id', 'orden'])]
 class Tarea extends Model
 {
     /** @use HasFactory<TareaFactory> */
-    use HasFactory;
+    use HasFactory, PerteneceAUsuario;
 
     protected function casts(): array
     {
@@ -26,6 +28,7 @@ class Tarea extends Model
             'fecha_limite' => 'date',
             'prioridad' => PrioridadTarea::class,
             'estado' => EstadoTarea::class,
+            'color' => ColorNota::class,
         ];
     }
 
@@ -72,6 +75,7 @@ class Tarea extends Model
             'fecha_limite' => $this->fecha_limite?->format('Y-m-d'),
             'prioridad' => $this->prioridad->value,
             'columna_id' => $this->columna_id,
+            'color' => $this->color?->value,
         ];
     }
 

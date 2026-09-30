@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class FiltroEstudioRequest extends FormRequest
 {
@@ -17,7 +17,7 @@ class FiltroEstudioRequest extends FormRequest
         return [
             'desde' => ['nullable', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
-            'contexto_id' => ['nullable', 'integer', Rule::exists('contextos', 'id')],
+            'contexto_id' => ['nullable', 'integer', ReglasDeUsuario::existe('contextos')],
         ];
     }
 

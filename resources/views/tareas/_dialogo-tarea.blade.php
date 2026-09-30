@@ -21,7 +21,7 @@
 
         <div>
             <label for="tarea-descripcion" class="dialogo-etiqueta">Comentario <span class="dialogo-opcional">(opcional)</span></label>
-            <textarea id="tarea-descripcion" name="descripcion" rows="3" maxlength="5000" class="form-control" aria-describedby="tarea-error-descripcion"></textarea>
+            <textarea id="tarea-descripcion" name="descripcion" rows="3" maxlength="5000" class="form-control" placeholder="Agregá un comentario: detalles, links, próximos pasos…" aria-describedby="tarea-error-descripcion"></textarea>
             <div class="dialogo-error" id="tarea-error-descripcion" data-error="descripcion"></div>
         </div>
 
@@ -42,6 +42,25 @@
                 <div class="dialogo-error" id="tarea-error-fecha_limite" data-error="fecha_limite"></div>
             </div>
         </div>
+
+        <fieldset class="dialogo-grupo">
+            <legend>Color de la tarjeta <span class="dialogo-opcional">(opcional)</span></legend>
+            <div class="paleta-tarjeta">
+                <label class="color-opcion" title="Sin color">
+                    <input type="radio" name="color" value="" checked>
+                    <span class="color-opcion-punto color-opcion-ninguno" aria-hidden="true"></span>
+                    <span class="visually-hidden">Sin color</span>
+                </label>
+                @foreach (\App\Enums\ColorNota::cases() as $color)
+                    <label class="color-opcion" title="{{ $color->etiqueta() }}" style="--opcion-fondo: {{ $color->fondo() }}; --opcion-marca: {{ $color->marca() }}">
+                        <input type="radio" name="color" value="{{ $color->value }}">
+                        <span class="color-opcion-punto" aria-hidden="true"></span>
+                        <span class="visually-hidden">{{ $color->etiqueta() }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <div class="dialogo-error" data-error="color"></div>
+        </fieldset>
 
         <div class="dialogo-fila">
             <div class="dialogo-campo">

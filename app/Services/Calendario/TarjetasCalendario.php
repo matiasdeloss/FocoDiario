@@ -55,9 +55,10 @@ class TarjetasCalendario
     }
 
     /**
-     * Guarda solo los campos enviados: título y comentario en todas; prioridad y completada en tareas; color en notas.
+     * Guarda solo los campos enviados: título y comentario en todas; prioridad, estado y proyecto en tareas;
+     * color, materia y fijada en notas; la tarea vinculada en recordatorios.
      *
-     * @param  array{titulo?: ?string, comentario?: ?string, prioridad?: string, completada?: bool, color?: string}  $datos
+     * @param  array<string, mixed>  $datos
      */
     public function actualizar(Model $tarjeta, array $datos): void
     {
@@ -89,10 +90,27 @@ class TarjetasCalendario
             if (array_key_exists('completada', $datos)) {
                 $campos['estado'] = $datos['completada'] ? EstadoTarea::Completada : EstadoTarea::Pendiente;
             }
+
+            if (array_key_exists('estado', $datos)) {
+                $campos['estado'] = $datos['estado'];
+            }
+
+            if (array_key_exists('proyecto', $datos)) {
+                $proyecto = trim((string) $datos['proyecto']);
+                $campos['proyecto'] = $proyecto === '' ? null : $proyecto;
+            }
         }
 
-        if ($tarjeta instanceof Nota && array_key_exists('color', $datos)) {
-            $campos['color'] = $datos['color'];
+        if ($tarjeta instanceof Nota) {
+            foreach (['color', 'contexto_id', 'fijada'] as $campo) {
+                if (array_key_exists($campo, $datos)) {
+                    $campos[$campo] = $datos[$campo];
+                }
+            }
+        }
+
+        if ($tarjeta instanceof Recordatorio && array_key_exists('tarea_id', $datos)) {
+            $campos['tarea_id'] = $datos['tarea_id'];
         }
 
         $tarjeta->update($campos);

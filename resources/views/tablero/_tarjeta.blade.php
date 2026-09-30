@@ -19,12 +19,17 @@
         default => rtrim($tarea->fecha_limite->locale('es')->isoFormat($tarea->fecha_limite->year === $hoyTarjeta->year ? 'D MMM' : 'D MMM YYYY'), '.'),
     };
 @endphp
-<article class="tarea-tarjeta prioridad-{{ $tarea->prioridad->value }}" id="tarea-{{ $tarea->id }}" draggable="true"
+{{-- Un clic en la tarjeta (fuera de sus botones) abre el modal para editarla: comentario, color, etc. (tablero.js). --}}
+<article class="tarea-tarjeta prioridad-{{ $tarea->prioridad->value }} @if ($tarea->color) con-color @endif" id="tarea-{{ $tarea->id }}" draggable="true"
+         @if ($tarea->color) style="--tarjeta-fondo: {{ $tarea->color->fondo() }}; --tarjeta-marca: {{ $tarea->color->marca() }}" @endif
          data-id="{{ $tarea->id }}" data-estado="{{ $tarea->estado->value }}" data-titulo="{{ $tarea->titulo }}"
          data-prioridad="{{ $tarea->prioridad->value }}" data-proyecto="{{ $tarea->proyecto }}"
          data-buscar="{{ mb_strtolower($tarea->titulo.' '.$tarea->proyecto) }}"
          @if ($estadoFecha === 'vencida') data-pasada="1" @endif>
     <div class="tarea-titulo {{ $completada ? 'texto-tachado' : 'fw-medium' }}" data-titulo-texto>{{ $tarea->titulo }}</div>
+    @if (filled($tarea->descripcion))
+        <p class="tarea-comentario" title="Comentario"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>{{ $tarea->descripcion }}</span></p>
+    @endif
     <div class="tarea-meta">
         <span class="k-chip badge-prioridad-{{ $tarea->prioridad->value }}" title="Prioridad {{ mb_strtolower($tarea->prioridad->etiqueta()) }}"><span class="k-chip-punto" aria-hidden="true"></span>{{ $tarea->prioridad->etiqueta() }}</span>
         @if ($tarea->proyecto)

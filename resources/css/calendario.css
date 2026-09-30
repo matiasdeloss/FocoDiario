@@ -311,7 +311,8 @@
 .panel-sin-fecha-lista {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    align-content: start;
+    gap: 8px;
     flex: 1 1 auto;
     min-height: 0;
     margin: 0 -8px !important;
@@ -327,9 +328,9 @@
 .tarj {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 2px;
+    gap: 0;
     min-width: 0;
-    padding: 12px 14px 10px;
+    padding: 8px 12px 6px;
     background: color-mix(in srgb, var(--tipo-fondo) 60%, var(--color-neutral-100));
     border-radius: 18px;
     transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1);
@@ -341,7 +342,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    min-height: 26px;
+    min-height: 22px;
     cursor: grab;
     touch-action: none;
     user-select: none;
@@ -376,11 +377,11 @@
 .tarj-campo::placeholder { color: var(--foco-texto-suave); opacity: 1; }
 .tarj-campo:hover { background: color-mix(in srgb, var(--color-neutral-100) 70%, transparent); }
 .tarj-campo:focus { outline: 2px solid var(--foco-acento); outline-offset: 1px; background: var(--color-bg); }
-.tarj-titulo { text-overflow: ellipsis; font-family: var(--foco-fuente-titulo); font-size: 17px; font-weight: 500; line-height: 1.3; }
+.tarj-titulo { text-overflow: ellipsis; font-family: var(--foco-fuente-titulo); font-size: 16px; font-weight: 500; line-height: 1.25; }
 .tarj-comentario { font-size: var(--foco-texto-sm); color: var(--color-neutral-700); }
 
 .tarj-pie { display: flex; align-items: center; gap: 4px; }
-.tarj-pie { margin-top: 4px; }
+.tarj-pie { margin-top: 2px; }
 .tarj-fecha { flex: 0 1 auto; min-width: 0; }
 .tarj-fecha-campo {
     max-width: 100%;
@@ -517,7 +518,19 @@
 }
 .detalle-titulo { margin: 0 -6px; width: calc(100% + 12px); }
 .detalle-titulo-fijo { margin: 0; }
-.detalle-texto { min-height: 4.5rem; overflow-wrap: anywhere; }
+.detalle-texto {
+    min-height: 6.5rem;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--tipo-fondo) 35%, var(--color-neutral-100));
+    border-radius: 12px;
+    color: var(--foco-texto);
+    font-size: 14.5px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+.detalle-texto:hover { background: color-mix(in srgb, var(--tipo-fondo) 55%, var(--color-neutral-100)); }
+.detalle-texto:focus { background: var(--color-bg); }
 .detalle-aviso { margin: 0; color: var(--foco-rojo-texto); font-size: var(--foco-texto-xs); font-weight: 600; }
 .detalle-campo { display: grid; gap: 6px; min-width: 0; }
 .detalle-etiqueta { font-size: var(--foco-texto-xs); font-weight: 600; color: var(--foco-texto-meta); }
@@ -613,3 +626,37 @@
 
 /* Los chips de filtro toman el color de su tipo (igual que eventos y tarjetas) */
 .filtro-chip[class*="tipo-"]:has(input:checked) { background: var(--tipo-fondo); color: var(--tipo-texto); }
+
+/* ---------- Campos editables en el lugar (calendario-campos.js) ---------- */
+/* Grilla de dos columnas: proyecto y estado van de a pares; lo demás (prioridad, color, materia —rutas largas—, fijada, tarea vinculada) a lo ancho. */
+.detalle-mas, .tarj-extra { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; align-items: end; }
+.detalle-mas > [data-campo-extra="prioridad"],
+.detalle-mas > [data-campo-extra="color"],
+.detalle-mas > [data-campo-extra="tarea"],
+.detalle-mas > [data-campo-extra="materia"],
+.detalle-mas > [data-campo-extra="fijada"],
+.tarj-extra > [data-campo-extra="materia"],
+.tarj-extra > [data-campo-extra="fijada"],
+.tarj-extra > [data-campo-extra="prioridad"],
+.tarj-extra > [data-campo-extra="color"],
+.tarj-extra > [data-campo-extra="tarea"] { grid-column: 1 / -1; }
+.detalle-mas:empty { display: none; }
+:is(.detalle-mas, .tarj-extra) .form-control,
+:is(.detalle-mas, .tarj-extra) .form-select { background-color: #fff; border: 1px solid var(--color-neutral-300); }
+.extra-casilla { display: inline-flex; align-items: center; gap: 8px; min-height: 31px; font-size: var(--foco-texto-sm); cursor: pointer; }
+.extra-casilla .form-check-input { margin: 0; }
+
+/* Fecha (y hora) del ancho que necesitan, no de todo el panel. */
+.detalle-fecha-fila .form-control { flex: 0 0 auto; width: 10.5rem; }
+.detalle-fecha-fila .form-control[type="datetime-local"] { width: 13.5rem; }
+
+/* Dentro de una tarjeta de "Por ubicar". */
+.tarj-extra { gap: 10px 10px; margin-top: 6px; padding: 10px; background: color-mix(in srgb, var(--color-neutral-100) 75%, transparent); border-radius: 12px; }
+.tarj-extra[hidden] { display: none; }
+.tarj-extra[aria-busy="true"] { min-height: 3rem; opacity: 0.6; }
+.tarj-extra .detalle-campo { gap: 4px; }
+.tarj-extra :is(.form-control, .form-select) { font-size: 13px; }
+.tarj-extra .detalle-opcion { padding: 4px 11px; font-size: 12px; }
+.tarj.es-completa { background: var(--tipo-fondo); }
+.tarj.es-completa .tarj-pie .btn-icono { opacity: 0.9; }
+.tarj-accion[aria-expanded="true"] { background: color-mix(in srgb, var(--color-neutral-100) 80%, transparent); opacity: 1; }

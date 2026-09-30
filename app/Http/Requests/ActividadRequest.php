@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ColorActividad;
 use App\Models\Contexto;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +26,7 @@ class ActividadRequest extends FormRequest
             'nombre' => [
                 'required', 'string', 'max:80',
                 // Mismo criterio que los contextos de Notas: el nombre es único dentro de su padre.
-                Rule::unique('contextos', 'nombre')
+                ReglasDeUsuario::unico('contextos', 'nombre')
                     ->where(fn ($consulta) => $padreId === null
                         ? $consulta->whereNull('contexto_padre_id')
                         : $consulta->where('contexto_padre_id', $padreId))

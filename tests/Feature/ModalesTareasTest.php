@@ -214,4 +214,48 @@ class ModalesTareasTest extends TestCase
 
         $this->assertNull(session('estado'));
     }
+
+    public function test_desde_el_modal_se_agrega_un_comentario_y_se_cambia_el_color_de_la_tarjeta(): void
+    {
+        $tarea = Tarea::factory()->create(['titulo' => 'Preparar parcial', 'descripcion' => null, 'color' => null]);
+
+        $this->patchJson(route('tareas.update', $tarea), [
+            'titulo' => 'Preparar parcial', 'prioridad' => 'media', 'columna_id' => $tarea->columna_id,
+            'descripcion' => "Repasar grafos\nHacer el TP 3", 'color' => 'salvia',
+        ], $this->modal())->assertOk();
+
+        $tarea->refresh();
+        $this->assertSame("Repasar grafos\nHacer el TP 3", $tarea->descripcion);
+        $this->assertSame('salvia', $tarea->color->value);
+        $this->assertSame('salvia', $tarea->datosModal()['color']);
+
+        // La tarjeta del tablero muestra el color y el comentario.
+        $this->get(route('tablero.index'))
+            ->assertSee('tarea-tarjeta prioridad-media  con-color', false)
+            ->assertSee('--tarjeta-fondo: '.$tarea->color->fondo(), false)
+            ->assertSee('Repasar grafos');
+
+        // Sin color vuelve a la tarjeta crema.
+        $this->patchJson(route('tareas.update', $tarea), [
+            'titulo' => 'Preparar parcial', 'prioridad' => 'media', 'columna_id' => $tarea->columna_id, 'color' => '',
+        ], $this->modal())->assertOk();
+        $this->assertNull($tarea->fresh()->color);
+    }
+
+    public function test_el_color_de_la_tarjeta_se_valida(): void
+    {
+        $tarea = Tarea::factory()->create();
+
+        $this->patchJson(route('tareas.update', $tarea), [
+            'titulo' => 'x', 'prioridad' => 'media', 'columna_id' => $tarea->columna_id, 'color' => 'fucsia',
+        ], $this->modal())->assertJsonValidationErrors(['color' => 'El color elegido no es válido.']);
+    }
+
+    public function test_el_modal_trae_la_paleta_de_colores(): void
+    {
+        $this->get(route('tablero.index'))
+            ->assertSee('name="color" value="" checked', false)
+            ->assertSee('name="color" value="salvia"', false)
+            ->assertSee('Agregá un comentario', false);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Services\Calendario;
 use App\Enums\ColorNota;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\Contexto;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\SesionEstudio;
@@ -43,15 +44,13 @@ class DetalleCalendario
     {
         $tarea->loadMissing('columna');
         $completada = $tarea->estado === EstadoTarea::Completada;
+        // Proyecto y estado se editan en el panel: el resumen solo agrega la columna del tablero si tiene otro nombre.
         $filas = [];
-
-        if (filled($tarea->proyecto)) {
-            $filas[] = ['etiqueta' => 'Proyecto', 'valor' => $tarea->proyecto];
-        }
-
-        $estado = $tarea->estado->etiqueta();
         $columna = $tarea->columna?->nombre;
-        $filas[] = ['etiqueta' => 'Estado', 'valor' => $columna && $columna !== $estado ? "{$estado} · {$columna}" : $estado];
+
+        if ($columna && $columna !== $tarea->estado->etiqueta()) {
+            $filas[] = ['etiqueta' => 'Columna', 'valor' => $columna];
+        }
 
         return [
             ...$this->tarjetas->datos($tarea),
@@ -60,6 +59,11 @@ class DetalleCalendario
             'prioridades' => collect(PrioridadTarea::cases())
                 ->map(fn (PrioridadTarea $p) => ['valor' => $p->value, 'etiqueta' => $p->etiqueta()])->all(),
             'completada' => $completada,
+            'estado' => $tarea->estado->value,
+            'estados' => collect(EstadoTarea::cases())
+                ->map(fn (EstadoTarea $e) => ['valor' => $e->value, 'etiqueta' => $e->etiqueta()])->all(),
+            'proyecto' => $tarea->proyecto,
+            'proyectos' => Tarea::proyectos()->all(),
             'vencida' => $tarea->estaVencida(),
             'etiqueta_fecha' => 'Fecha límite',
             'ayuda_fecha' => $completada ? 'Las tareas completadas no se pueden reubicar.' : null,
@@ -76,6 +80,12 @@ class DetalleCalendario
             'etiqueta_comentario' => 'Descripción',
             'etiqueta_fecha' => 'Fecha y hora del aviso',
             'ayuda_fecha' => $avisado ? 'Los recordatorios ya avisados no se pueden reubicar.' : null,
+            'tarea_id' => $recordatorio->tarea_id,
+            // Tareas abiertas, más la ya vinculada aunque esté completada.
+            'tareas' => Tarea::abiertas()
+                ->when($recordatorio->tarea_id, fn ($consulta, $id) => $consulta->orWhere('id', $id))
+                ->orderBy('titulo')->get(['id', 'titulo'])
+                ->map(fn (Tarea $t) => ['valor' => $t->id, 'etiqueta' => $t->titulo !== '' ? $t->titulo : 'Sin título'])->all(),
             'filas' => [[
                 'etiqueta' => 'Aviso',
                 'valor' => $avisado ? 'Ya avisó el '.$avisado->format('d/m/Y').' a las '.$avisado->format('H:i') : 'Todavía no avisó',
@@ -92,10 +102,13 @@ class DetalleCalendario
             'etiqueta_comentario' => 'Contenido',
             'etiqueta_fecha' => 'Fecha',
             'color' => $nota->color?->value,
+            'contexto_id' => $nota->contexto_id,
+            'destinos' => Contexto::opciones()->map(fn (string $ruta, int $id) => ['valor' => $id, 'etiqueta' => $ruta])->values()->all(),
+            'fijada' => $nota->fijada,
             'colores' => collect(ColorNota::cases())->map(fn (ColorNota $c) => [
                 'valor' => $c->value, 'etiqueta' => $c->etiqueta(), 'fondo' => $c->fondo(), 'marca' => $c->marca(),
             ])->all(),
-            'filas' => $nota->contexto ? [['etiqueta' => 'Materia', 'valor' => $nota->contexto->nombre]] : [],
+            'filas' => [], // la materia se elige en el panel
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EstadoTarea;
+use App\Models\Concerns\PerteneceAUsuario;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['nombre', 'categoria', 'posicion'])]
 class ColumnaTablero extends Model
 {
+    use PerteneceAUsuario;
+
     protected $table = 'columnas_tablero';
 
     protected function casts(): array

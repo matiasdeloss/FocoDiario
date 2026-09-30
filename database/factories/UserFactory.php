@@ -30,7 +30,21 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'es_invitado' => false,
+            'ultimo_uso_en' => now(),
         ];
+    }
+
+    /** Invitado: sin email ni contraseña. */
+    public function invitado(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Invitado',
+            'email' => null,
+            'email_verified_at' => null,
+            'password' => null,
+            'es_invitado' => true,
+        ]);
     }
 
     /**

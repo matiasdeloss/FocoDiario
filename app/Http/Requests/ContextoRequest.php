@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ColorActividad;
 use App\Enums\TipoContexto;
 use App\Models\Contexto;
+use App\Support\ReglasDeUsuario;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ class ContextoRequest extends FormRequest
         return [
             'nombre' => [
                 'required', 'string', 'max:255',
-                Rule::unique('contextos', 'nombre')
+                ReglasDeUsuario::unico('contextos', 'nombre')
                     ->where(fn ($consulta) => $padreId === null || $padreId === ''
                         ? $consulta->whereNull('contexto_padre_id')
                         : $consulta->where('contexto_padre_id', $padreId))
@@ -33,7 +34,7 @@ class ContextoRequest extends FormRequest
             ],
             'tipo' => ['required', Rule::enum(TipoContexto::class)],
             'contexto_padre_id' => [
-                'nullable', 'integer', 'exists:contextos,id',
+                'nullable', 'integer', ReglasDeUsuario::existe('contextos'),
                 function (string $atributo, mixed $valor, Closure $fallar) use ($actual) {
                     if ($actual === null || $valor === null) {
                         return;

@@ -6,6 +6,7 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import '../css/calendario.css';
 import { pedirSeguro, primerMensaje } from './red.js';
+import { pintarCamposExtra } from './calendario-campos.js';
 import { confirmar } from './confirmar.js';
 
 const CLAVE_FILTROS = 'focodiario.calendario.tipos';
@@ -279,7 +280,56 @@ function iniciar(raiz) {
         }, 0);
     });
 
+    /** "Editar todo" de una tarjeta: despliega adentro de la misma tarjeta proyecto o materia, prioridad, estado… */
+    async function alternarEdicionCompleta(boton) {
+        const li = boton.closest('[data-tarjeta]');
+        const extra = li.querySelector('[data-extra]');
+        const abrir = extra.hidden;
+        const indicador = li.querySelector('[data-guardado]');
+        const { tipo, id } = li.dataset;
+
+        boton.setAttribute('aria-expanded', String(abrir));
+        li.classList.toggle('es-completa', abrir);
+        extra.hidden = !abrir;
+        if (!abrir) return;
+
+        const pintar = (detalle) => pintarCamposExtra(extra, detalle, async (cambio) => {
+            indicar(indicador, 'Guardando…');
+            try {
+                const respuesta = await enviar(urlTarjeta(tipo, id), cambio);
+                indicar(indicador, 'Guardado');
+                if (respuesta.detalle) pintar(respuesta.detalle);
+            } catch (error) {
+                indicar(indicador, 'No se guardó', true);
+                mostrarAviso(error.message);
+                pintar(await pedir(urlDe(datos.urlDetalle, tipo, id), 'GET').then((r) => r.detalle));
+            }
+        }, { conPrioridadYColor: true });
+
+        extra.setAttribute('aria-busy', 'true');
+        try {
+            pintar((await pedir(urlDe(datos.urlDetalle, tipo, id), 'GET')).detalle);
+            extra.querySelector('input, select, button')?.focus();
+        } catch (error) {
+            extra.hidden = true;
+            boton.setAttribute('aria-expanded', 'false');
+            li.classList.remove('es-completa');
+            mostrarAviso(error.message);
+        } finally {
+            extra.removeAttribute('aria-busy');
+        }
+    }
+
     lista.addEventListener('click', async (evento) => {
+        const editar = evento.target.closest('[data-editar-tarjeta]');
+        if (editar) {
+            // Ctrl/Cmd+clic: el enlace de siempre (formulario completo en otra pestaña).
+            if (evento.ctrlKey || evento.metaKey || evento.shiftKey) return;
+            evento.preventDefault();
+            alternarEdicionCompleta(editar);
+            return;
+        }
+
         const borrar = evento.target.closest('[data-borrar]');
         if (!borrar) return;
         const li = borrar.closest('[data-tarjeta]');
@@ -448,7 +498,7 @@ function iniciar(raiz) {
     const dQuitarFecha = porId('quitar-fecha');
     const dFilas = porId('filas');
     const dCompletar = porId('completar');
-    const dEditar = porId('editar');
+    const dMas = porId('mas');
     const dHistorial = porId('historial');
     const dGuardado = porId('guardado');
     const dBorrar = porId('borrar');
@@ -536,6 +586,14 @@ function iniciar(raiz) {
                 (valor) => guardarCambio({ color: valor }));
         }
 
+        if (d.solo_lectura) {
+            dMas.replaceChildren();
+        } else {
+            pintarCamposExtra(dMas, d, (cambio) => guardarCambio(cambio));
+        }
+        dMas.hidden = Boolean(d.solo_lectura);
+        dFilas.hidden = dFilas.childElementCount === 0;
+
         dFecha.disabled = bloqueada;
         dQuitarFecha.hidden = bloqueada || !d.fecha;
         dFechaAyuda.hidden = !d.ayuda_fecha;
@@ -555,8 +613,6 @@ function iniciar(raiz) {
         dFecha.type = d.tipo === 'recordatorio' ? 'datetime-local' : 'date';
         dFecha.value = solo ? '' : (d.fecha ?? '');
         dFechaEtiqueta.textContent = d.etiqueta_fecha ?? 'Fecha';
-        dEditar.href = d.editar ?? '#';
-        dEditar.setAttribute('aria-label', `Editar completo ${ARTICULOS[d.tipo] ?? ''}`.trim());
         dHistorial.href = d.historial ?? '#';
         dBorrar.setAttribute('aria-label', `Eliminar ${ARTICULOS[d.tipo] ?? ''}`.trim());
     }
@@ -598,6 +654,7 @@ function iniciar(raiz) {
         dGuardado.textContent = '';
         dPrioridad.replaceChildren();
         dColor.replaceChildren();
+        dMas.replaceChildren();
         cancelarConfirmacion();
         dCuerpo.setAttribute('aria-busy', 'true');
         det.hidden = false;
