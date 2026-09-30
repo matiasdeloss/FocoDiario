@@ -298,3 +298,6 @@ details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) {
     .t-fila, .t-check-caja, .t-check-caja svg, .t-acciones, .t-nuevo-flecha, .t-grupo-flecha { transition: none; }
 }
+
+/* Mientras una borrada espera su Deshacer, un grupo que queda sin filas visibles no se muestra vacío. */
+section.t-grupo:has(.t-fila.es-eliminando):not(:has(.t-fila:not(.es-eliminando))) { display: none; }

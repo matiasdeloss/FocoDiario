@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "matiasdeloss/focodiario",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Planificador personal de estudio: tareas, agenda, pomodoro, notas y calendario en un solo lugar.",
+    "keywords": ["laravel", "productividad", "estudio", "pomodoro"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

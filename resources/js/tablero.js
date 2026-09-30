@@ -8,6 +8,7 @@
  * rechaza uno, la tarjeta vuelve a donde estaba.
  */
 import { crearSerie } from './hoy-lista-logica.js';
+import { pedirSeguro } from './red.js';
 
 const tablero = document.getElementById('tablero');
 
@@ -16,7 +17,6 @@ if (tablero) {
     const etiquetas = JSON.parse(tablero.dataset.etiquetas);
     const categorias = JSON.parse(tablero.dataset.categorias);
     const aviso = document.getElementById('tablero-aviso');
-    const token = () => document.querySelector('meta[name="csrf-token"]')?.content;
     const serie = crearSerie();
     let temporizadorAviso;
 
@@ -26,13 +26,6 @@ if (tablero) {
         clearTimeout(temporizadorAviso);
         temporizadorAviso = setTimeout(() => { aviso.hidden = true; }, 6000);
     };
-
-    const cabeceras = () => ({
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-CSRF-TOKEN': token(),
-        'X-Requested-With': 'XMLHttpRequest',
-    });
 
     const columna = (id) => tablero.querySelector(`.tablero-columna[data-columna="${id}"]`);
     const columnaDe = (tarjeta) => tarjeta.closest('.tablero-columna')?.dataset.columna;
@@ -136,9 +129,8 @@ if (tablero) {
 
         return serie.agregar(async () => {
             try {
-                const respuesta = await fetch(tablero.dataset.urlColumna.replace('__ID__', tarjeta.dataset.id), {
+                const respuesta = await pedirSeguro(tablero.dataset.urlColumna.replace('__ID__', tarjeta.dataset.id), {
                     method: 'PATCH',
-                    headers: cabeceras(),
                     body: JSON.stringify(cuerpo),
                 });
 
@@ -330,9 +322,8 @@ if (tablero) {
             error.textContent = '';
 
             try {
-                const respuesta = await fetch(zona.dataset.url, {
+                const respuesta = await pedirSeguro(zona.dataset.url, {
                     method: 'POST',
-                    headers: cabeceras(),
                     body: JSON.stringify({ titulo }),
                 });
                 const datos = await respuesta.json().catch(() => ({}));

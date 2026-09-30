@@ -275,6 +275,22 @@ class EstudioTest extends TestCase
         $this->postJson(route('estudio.sesiones.intervalos.store', $sesion), $this->datosIntervalo(['planificado_seg' => 10800]))->assertCreated();
     }
 
+    public function test_las_fechas_del_intervalo_son_iso_y_no_abarcan_mas_de_un_dia(): void
+    {
+        $sesion = SesionEstudio::factory()->enCurso()->create();
+        $url = route('estudio.sesiones.intervalos.store', $sesion);
+
+        $this->postJson($url, $this->datosIntervalo(['inicio' => 'yesterday']))
+            ->assertJsonValidationErrors(['inicio' => 'La hora de inicio no es válida.']);
+        $this->postJson($url, $this->datosIntervalo(['inicio' => '2026-09-27T14:00:00Z', 'fin' => '2026-09-29T14:00:00Z']))
+            ->assertJsonValidationErrors(['fin' => 'Un intervalo no puede durar más de un día.']);
+        $this->postJson($url, $this->datosIntervalo(['inicio' => now()->addHour()->toIso8601ZuluString(), 'fin' => now()->addHours(2)->toIso8601ZuluString()]))
+            ->assertJsonValidationErrors(['fin' => 'La hora de fin no puede estar en el futuro.']);
+        // Como lo manda Date.toISOString(): con milisegundos.
+        $this->postJson($url, $this->datosIntervalo(['clave' => 'ms', 'inicio' => '2026-09-29T14:00:00.000Z', 'fin' => '2026-09-29T14:25:00.500Z']))
+            ->assertCreated();
+    }
+
     public function test_reenviar_el_mismo_intervalo_no_duplica_nada(): void
     {
         $sesion = SesionEstudio::factory()->enCurso()->create();

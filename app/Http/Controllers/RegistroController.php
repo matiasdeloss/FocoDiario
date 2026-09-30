@@ -31,22 +31,12 @@ class RegistroController extends Controller
         ]);
     }
 
-    public function create(): RedirectResponse
-    {
-        return redirect()->route('registro.index');
-    }
-
     public function store(BloqueTiempoRequest $request): RedirectResponse
     {
         BloqueTiempo::create($request->datosBloque());
 
         return redirect()->route('registro.index', ['fecha' => $request->validated('fecha')])
             ->with('estado', 'Bloque registrado.');
-    }
-
-    public function show(BloqueTiempo $registro): RedirectResponse
-    {
-        return redirect()->route('registro.edit', $registro);
     }
 
     public function edit(BloqueTiempo $registro): View

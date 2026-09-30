@@ -151,18 +151,13 @@ class TareaController extends Controller
         ];
     }
 
-    private function proyectos()
-    {
-        return Tarea::whereNotNull('proyecto')->distinct()->orderBy('proyecto')->pluck('proyecto');
-    }
-
     private function datosFormulario(Tarea $tarea): array
     {
         return [
             'tarea' => $tarea,
             'prioridades' => PrioridadTarea::cases(),
             'estados' => EstadoTarea::cases(),
-            'proyectos' => $this->proyectos(),
+            'proyectos' => Tarea::proyectos(),
         ];
     }
 }

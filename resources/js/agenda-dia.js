@@ -11,6 +11,7 @@ import { pedirJson } from './agenda-red.js';
 import {
     ajustarLayout, errorDeHoras, moverLayout, ordenarPorPosicion, redimensionarLayout, reordenar,
 } from './agenda-logica.js';
+import { confirmar } from './confirmar.js';
 
 const lienzo = document.querySelector('[data-lienzo]');
 
@@ -288,7 +289,7 @@ function iniciar(lienzo) {
         } else if (boton.dataset.eliminar !== undefined) {
             const titulo = actual.estado.titulo?.trim() || 'sin título';
 
-            if (window.confirm(`¿Eliminar la caja "${titulo}"? No se puede deshacer.`)) {
+            if (await confirmar(`¿Eliminar la caja "${titulo}"? No se puede deshacer.`)) {
                 await eliminarCaja(actual);
             }
         }

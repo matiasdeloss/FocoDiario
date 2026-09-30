@@ -17,6 +17,74 @@ class RecordatorioTest extends TestCase
         $this->get(route('recordatorios.index'))->assertRedirect(route('tareas.index', ['tipo' => 'recordatorio']));
     }
 
+    public function test_vencidos_devuelve_los_que_ya_llegaron_y_no_se_avisaron(): void
+    {
+        $this->travelTo('2026-09-30 15:00:00');
+
+        $llego = Recordatorio::factory()->create(['mensaje' => 'Llamar al tutor', 'recordar_en' => '2026-09-30 14:55:00']);
+        $justo = Recordatorio::factory()->create(['mensaje' => 'Justo ahora', 'recordar_en' => '2026-09-30 15:00:00']);
+        Recordatorio::factory()->create(['mensaje' => 'Más tarde', 'recordar_en' => '2026-09-30 15:01:00']);
+        Recordatorio::factory()->create(['mensaje' => 'Ya avisado', 'recordar_en' => '2026-09-30 14:00:00', 'avisado_en' => '2026-09-30 14:00:00']);
+        Recordatorio::factory()->create(['mensaje' => 'De hace dos días', 'recordar_en' => '2026-09-28 10:00:00']);
+        Recordatorio::factory()->create(['mensaje' => 'Sin fecha', 'recordar_en' => null]);
+
+        $this->getJson(route('recordatorios.vencidos'))
+            ->assertOk()
+            ->assertJsonCount(2, 'recordatorios')
+            ->assertJsonPath('recordatorios.0.id', $llego->id)
+            ->assertJsonPath('recordatorios.0.mensaje', 'Llamar al tutor')
+            ->assertJsonPath('recordatorios.0.hora', '14:55')
+            ->assertJsonPath('recordatorios.0.url_avisar', route('recordatorios.avisar', $llego))
+            ->assertJsonPath('recordatorios.0.url_posponer', route('recordatorios.posponer', $llego))
+            ->assertJsonPath('recordatorios.1.id', $justo->id);
+    }
+
+    public function test_vencidos_no_devuelve_mas_de_cinco(): void
+    {
+        $this->travelTo('2026-09-30 15:00:00');
+        Recordatorio::factory()->count(8)->create(['recordar_en' => '2026-09-30 14:00:00']);
+
+        $this->getJson(route('recordatorios.vencidos'))->assertJsonCount(5, 'recordatorios');
+    }
+
+    public function test_el_toast_puede_marcar_como_listo_o_posponer(): void
+    {
+        $this->travelTo('2026-09-30 15:00:00');
+        $recordatorio = Recordatorio::factory()->create(['recordar_en' => '2026-09-30 14:55:00']);
+
+        // "10 min más": se cuenta desde ahora (hora del servidor) y deja de estar vencido.
+        $this->patchJson(route('recordatorios.posponer', $recordatorio))
+            ->assertOk()
+            ->assertJson(['recordar_en' => '2026-09-30T15:10']);
+        $this->getJson(route('recordatorios.vencidos'))->assertJsonCount(0, 'recordatorios');
+
+        // Cuando vuelve a llegar la hora, "Listo" lo marca como avisado.
+        $this->travelTo('2026-09-30 15:10:00');
+        $this->getJson(route('recordatorios.vencidos'))->assertJsonCount(1, 'recordatorios');
+        $this->patchJson(route('recordatorios.avisar', $recordatorio))->assertOk()->assertJson(['avisado' => true]);
+        $this->getJson(route('recordatorios.vencidos'))->assertJsonCount(0, 'recordatorios');
+    }
+
+    public function test_posponer_valida_los_minutos_y_no_toca_los_ya_avisados(): void
+    {
+        $this->travelTo('2026-09-30 15:00:30');
+        $recordatorio = Recordatorio::factory()->create(['recordar_en' => '2026-09-30 14:55:00']);
+
+        $this->patchJson(route('recordatorios.posponer', $recordatorio), ['minutos' => 0])
+            ->assertJsonValidationErrors(['minutos' => 'Se puede posponer entre 1 minuto y 24 horas.']);
+        $this->patchJson(route('recordatorios.posponer', $recordatorio), ['minutos' => 30])
+            ->assertOk()->assertJson(['recordar_en' => '2026-09-30T15:30']);
+
+        $avisado = Recordatorio::factory()->create(['recordar_en' => '2026-09-30 14:00:00', 'avisado_en' => '2026-09-30 14:00:00']);
+        $this->patchJson(route('recordatorios.posponer', $avisado))->assertStatus(422);
+        $this->assertSame('2026-09-30 14:00', $avisado->fresh()->recordar_en->format('Y-m-d H:i'));
+    }
+
+    public function test_el_layout_publica_la_url_de_los_vencidos(): void
+    {
+        $this->get(route('tareas.index'))->assertSee('<meta name="url-recordatorios-vencidos" content="'.route('recordatorios.vencidos').'">', false);
+    }
+
     public function test_el_listado_muestra_primero_los_pendientes_ordenados_por_fecha(): void
     {
         Recordatorio::factory()->create(['tarea_id' => null, 'mensaje' => 'Avisado viejo', 'recordar_en' => now()->addDay(), 'avisado_en' => now()]);

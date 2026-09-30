@@ -99,7 +99,7 @@ class ListaTareas
 
     public function proyectos(): Collection
     {
-        return Tarea::whereNotNull('proyecto')->distinct()->orderBy('proyecto')->pluck('proyecto');
+        return Tarea::proyectos();
     }
 
     private function tareas(array $filtros): Builder

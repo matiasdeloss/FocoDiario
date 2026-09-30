@@ -34,8 +34,10 @@ class ColumnaTableroController extends Controller
     {
         $columna->update($request->validated());
 
-        // Si cambió el tipo, las tareas de la columna adoptan el estado nuevo.
-        $columna->tareas()->get()->each(fn (Tarea $tarea) => $tarea->update(['columna_id' => $columna->id, 'estado' => $columna->categoria]));
+        // Si cambió el tipo, las tareas de la columna adoptan el estado nuevo (una sola consulta).
+        if ($columna->wasChanged('categoria')) {
+            $columna->tareas()->update(['estado' => $columna->categoria]);
+        }
 
         return $this->respuesta($request, 'Columna actualizada.', ['columna' => $columna]);
     }
@@ -48,7 +50,7 @@ class ColumnaTableroController extends Controller
 
             if ($destino !== null) {
                 $categoria = ColumnaTablero::findOrFail($destino)->categoria;
-                $columna->tareas()->get()->each(fn (Tarea $tarea) => $tarea->update(['columna_id' => $destino, 'estado' => $categoria]));
+                $columna->tareas()->update(['columna_id' => $destino, 'estado' => $categoria]);
             }
 
             $columna->delete();

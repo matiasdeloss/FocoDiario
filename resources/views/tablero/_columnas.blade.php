@@ -72,7 +72,7 @@
                                         data-columna-datos="{{ json_encode($datosColumna, JSON_UNESCAPED_UNICODE) }}"><i class="bi bi-trash" aria-hidden="true"></i> Eliminar columna</button>
                                 <noscript>
                                 <form method="POST" action="{{ route('tablero.columnas.destroy', $columna) }}" class="tablero-form"
-                                      onsubmit="return confirm('¿Eliminar la columna &quot;{{ e($columna->nombre) }}&quot;? Sus tareas pasan a la columna elegida.')">
+                                      data-confirmar="¿Eliminar la columna &quot;{{ $columna->nombre }}&quot;? Sus tareas pasan a la columna elegida.">
                                     @csrf
                                     @method('DELETE')
                                     <label class="form-label" for="reasignar-{{ $columna->id }}">Al eliminar, pasar sus tareas a</label>

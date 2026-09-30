@@ -4,7 +4,7 @@
  * (hoy-pomodoro.js, que usa el motor único del temporizador).
  * Se carga solo en esta pantalla: es una entrada aparte de Vite (ver la vista hoy.blade.php).
  */
-import { encabezados } from './pomodoro-motor.js';
+import { pedirSeguro } from './red.js';
 import './hoy-pomodoro.js';
 import './captura-rapida.js';
 import { crearSerie, estadoFinal, estaMarcado, marcadoDeTarea, pendientesFinales, puedeAlternar, textoPendientes } from './hoy-lista-logica.js';
@@ -92,9 +92,8 @@ function iniciarAcordeon(raiz) {
 
 /* ---------- Peticiones JSON ---------- */
 async function pedir(url, metodo, cuerpo) {
-    const respuesta = await fetch(url, {
+    const respuesta = await pedirSeguro(url, {
         method: metodo,
-        headers: encabezados(),
         body: cuerpo ? JSON.stringify(cuerpo) : undefined,
     });
     const datos = await respuesta.json().catch(() => ({}));

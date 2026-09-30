@@ -6,6 +6,7 @@ use App\Enums\EstadoTarea;
 use App\Models\ColumnaTablero;
 use App\Models\Tarea;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ColumnasTableroTest extends TestCase
@@ -89,6 +90,28 @@ class ColumnasTableroTest extends TestCase
         $this->assertSame('Listo para publicar', $columna->fresh()->nombre);
         $this->assertSame(EstadoTarea::Completada, $tarea->fresh()->estado);
         $this->assertSame($columna->id, $tarea->fresh()->columna_id);
+    }
+
+    public function test_cambiar_categoria_o_eliminar_no_hace_una_consulta_por_tarea(): void
+    {
+        $consultas = function (int $tareas, callable $accion): int {
+            $columna = ColumnaTablero::create(['nombre' => "Col {$tareas}", 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]);
+            Tarea::factory()->count($tareas)->create(['columna_id' => $columna->id]);
+
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $accion($columna);
+            DB::disableQueryLog();
+
+            return count(DB::getQueryLog());
+        };
+
+        $cambiar = fn (ColumnaTablero $c) => $this->patchJson(route('tablero.columnas.update', $c), ['categoria' => 'pendiente'])->assertOk();
+        $this->assertSame($consultas(1, $cambiar), $consultas(15, $cambiar));
+
+        $eliminar = fn (ColumnaTablero $c) => $this->deleteJson(route('tablero.columnas.destroy', $c), ['reasignar_a' => $this->columna('completada')->id])->assertOk();
+        $this->assertSame($consultas(1, $eliminar), $consultas(15, $eliminar));
+        $this->assertSame(0, Tarea::where('estado', '!=', EstadoTarea::Completada)->where('columna_id', $this->columna('completada')->id)->count());
     }
 
     public function test_no_se_puede_cambiar_la_categoria_de_la_unica_columna_completada(): void

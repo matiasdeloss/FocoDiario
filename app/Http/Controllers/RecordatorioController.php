@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PosponerRecordatorioRequest;
 use App\Http\Requests\RecordatorioRequest;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
@@ -15,10 +16,42 @@ use Illuminate\Support\Carbon;
 
 class RecordatorioController extends Controller
 {
+    /** Tope de toasts de recordatorio que se piden de una vez. */
+    private const VENCIDOS_MAXIMO = 5;
+
     /** Recordatorios y Tareas comparten una sola pantalla: esta ruta lleva a la lista unificada, filtrada por recordatorios. */
     public function index(): RedirectResponse
     {
         return redirect()->route('tareas.index', ['tipo' => 'recordatorio']);
+    }
+
+    /**
+     * Recordatorios cuya hora ya llegó y todavía no se marcaron como avisados. Los consulta cada minuto
+     * resources/js/recordatorios-avisos.js para mostrarlos como toast. Solo los de las últimas 24 h:
+     * los más viejos ya están en Hoy y en Tareas como vencidos, y no deben aparecer todos de golpe.
+     */
+    public function vencidos(): JsonResponse
+    {
+        $ahora = now();
+
+        $recordatorios = Recordatorio::query()
+            ->pendientes()
+            ->whereBetween('recordar_en', [$ahora->copy()->subDay(), $ahora])
+            ->orderBy('recordar_en')
+            ->limit(self::VENCIDOS_MAXIMO)
+            ->get();
+
+        return response()->json([
+            'recordatorios' => $recordatorios->map(fn (Recordatorio $recordatorio) => [
+                'id' => $recordatorio->id,
+                'mensaje' => $recordatorio->mensaje !== '' ? $recordatorio->mensaje : 'Recordatorio sin título',
+                'descripcion' => $recordatorio->descripcion,
+                'hora' => $recordatorio->recordar_en->format('H:i'),
+                'recordar_en' => $recordatorio->recordar_en->format('Y-m-d\TH:i'),
+                'url_avisar' => route('recordatorios.avisar', $recordatorio),
+                'url_posponer' => route('recordatorios.posponer', $recordatorio),
+            ])->values(),
+        ]);
     }
 
     public function create(Request $request): View
@@ -93,6 +126,21 @@ class RecordatorioController extends Controller
         }
 
         return back()->with('estado', 'Recordatorio marcado como avisado.');
+    }
+
+    /** "Más tarde" desde el toast: el recordatorio vuelve a sonar dentro de unos minutos (se cuentan desde ahora, con la hora del servidor). */
+    public function posponer(PosponerRecordatorioRequest $request, Recordatorio $recordatorio): JsonResponse
+    {
+        if ($recordatorio->avisado_en !== null) {
+            return response()->json(['message' => 'Este recordatorio ya estaba marcado como avisado.'], 422);
+        }
+
+        $recordatorio->update(['recordar_en' => now()->addMinutes($request->minutos())->startOfMinute()]);
+
+        return response()->json([
+            'id' => $recordatorio->id,
+            'recordar_en' => $recordatorio->recordar_en->format('Y-m-d\TH:i'),
+        ]);
     }
 
     /** Deshace el aviso: el recordatorio vuelve a pendiente (conserva su fecha, así que recupera su lugar por fecha). */

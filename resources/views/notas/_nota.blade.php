@@ -27,7 +27,7 @@
            data-abrir-nota="editar" data-nota="{{ json_encode($datosEdicion, JSON_UNESCAPED_UNICODE) }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
         <form method="POST" action="{{ route('notas.destroy', $nota) }}"
               hx-delete="{{ route('notas.destroy', $nota) }}" hx-target="#nota-{{ $nota->id }}" hx-swap="outerHTML"
-              hx-confirm="¿Eliminar esta nota?">
+              data-deshacer="Nota eliminada.">
             @csrf
             @method('DELETE')
             <button type="submit" class="nota-boton nota-boton-peligro" title="Eliminar" aria-label="Eliminar nota"><i class="bi bi-trash" aria-hidden="true"></i></button>

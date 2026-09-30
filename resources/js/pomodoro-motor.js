@@ -12,10 +12,12 @@
  * La lógica de fases está en pomodoro-logica.js.
  */
 import { adquirirCandado, liberarCandado } from './pomodoro-candado.js';
+import { pedirSeguro } from './red.js';
 import {
     avanzar, CONFIG_POR_DEFECTO, crearEstado, DESCANSO, describir, FOCO, iniciarSiguienteFoco, migrarConfig, migrarEstado,
     migrarEvento, pausar, reanudar, reiniciar, saltar, terminar,
 } from './pomodoro-logica.js';
+import { confirmar } from './confirmar.js';
 
 export const CLAVE_CONFIG = 'focodiario.estudio.config.v2';
 /** Clave de las versiones anteriores, que guardaban los tiempos en minutos. Se lee una vez, se convierte y se borra. */
@@ -45,14 +47,6 @@ export function escribir(clave, valor) {
         // Sin almacenamiento: el temporizador sigue funcionando, solo que sin recordar.
     }
 }
-
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
-
-export const encabezados = () => ({
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-CSRF-TOKEN': csrf(),
-});
 
 export const CONFIG_INICIAL = CONFIG_POR_DEFECTO;
 
@@ -183,8 +177,8 @@ export function vaciarPendientes({ forzar = false } = {}) {
                     inicio: new Date(evento.inicio).toISOString(),
                     fin: new Date(evento.fin).toISOString(),
                 };
-                const respuesta = await fetch(`${urlSesiones()}/${sesionId}/intervalos`, {
-                    method: 'POST', headers: encabezados(), body: JSON.stringify(cuerpo),
+                const respuesta = await pedirSeguro(`${urlSesiones()}/${sesionId}/intervalos`, {
+                    method: 'POST', body: JSON.stringify(cuerpo),
                 });
 
                 // Errores del cliente (sesión borrada, datos inválidos) no se arreglan reintentando.
@@ -223,9 +217,8 @@ function encolar(sesionId, eventos) {
  * Devuelve { ok: true, id } o { ok: false, errores: [texto] }. Si no hay red lanza el error de fetch.
  */
 export async function crearSesionEnServidor(c) {
-    const respuesta = await fetch(urlSesiones(), {
+    const respuesta = await pedirSeguro(urlSesiones(), {
         method: 'POST',
-        headers: encabezados(),
         body: JSON.stringify({
             tarea_id: c.tarea_id || null, contexto_id: c.contexto_id || null, tema: c.tema || null,
             estilo: c.estilo, foco_seg: c.foco, descanso_seg: c.descanso,
@@ -245,7 +238,7 @@ export async function finalizarEnServidor(sesionId) {
     await vaciarPendientes({ forzar: true });
 
     try {
-        await fetch(`${urlSesiones()}/${sesionId}/finalizar`, { method: 'PATCH', headers: encabezados() });
+        await pedirSeguro(`${urlSesiones()}/${sesionId}/finalizar`, { method: 'PATCH' });
     } catch {
         // Si falla, la sesión queda "en curso" y se cierra sola al iniciar la próxima.
     }
@@ -340,7 +333,7 @@ export async function terminarSesion() {
 
     if (!estado) return false;
 
-    if (!window.confirm('¿Terminar la sesión? Lo que está en curso se registra tal como está.')) return false;
+    if (!await confirmar('¿Terminar la sesión? Lo que está en curso se registra tal como está.', { aceptar: 'Terminar' })) return false;
 
     const sesionId = estado.sesionId;
     const resultado = terminar(estado, Date.now());

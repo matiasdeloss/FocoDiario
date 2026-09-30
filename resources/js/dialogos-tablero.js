@@ -5,13 +5,13 @@
 // Cada modal es un <dialog data-modal> con un <form data-form-modal>. Se envía con fetch (JSON):
 //  - 422: los errores se pintan dentro del modal, junto a cada campo, sin perder lo escrito.
 //  - éxito: se recarga la página; el servidor deja el aviso "Tarea creada." en la sesión.
+import { pedirSeguro } from './red.js';
 
 const dialogos = document.querySelectorAll('dialog[data-modal]');
 
 if (dialogos.length > 0) {
     document.querySelectorAll('[data-requiere-js]').forEach((elemento) => { elemento.hidden = false; });
 
-    const token = () => document.querySelector('meta[name="csrf-token"]')?.content;
     const FOCALIZABLES = 'a[href], button:not(:disabled), input:not(:disabled):not([type="hidden"]), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
     const abierto = new WeakMap(); // dialogo -> { opener, retorno, url, metodo }
 
@@ -103,15 +103,9 @@ if (dialogos.length > 0) {
         boton.disabled = true;
 
         try {
-            const respuesta = await fetch(url, {
+            const respuesta = await pedirSeguro(url, {
                 method: metodo,
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': token(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-Modal': '1',
-                },
+                headers: { 'X-Modal': '1' },
                 body: JSON.stringify(Object.fromEntries(new FormData(formulario))),
             });
 

@@ -53,7 +53,7 @@
                data-tarea="{{ json_encode($modelo->datosModal(), JSON_UNESCAPED_UNICODE) }}" title="Editar" aria-label="Editar {{ $item->titulo }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
             <form method="POST" action="{{ route('tareas.destroy', $modelo) }}" class="d-inline"
                   hx-delete="{{ route('tareas.destroy', $modelo) }}" hx-target="closest li" hx-swap="outerHTML"
-                  hx-confirm="¿Eliminar la tarea &quot;{{ $item->titulo }}&quot;?">
+                  data-deshacer="Tarea eliminada.">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn-icono" title="Eliminar" aria-label="Eliminar {{ $item->titulo }}"><i class="bi bi-trash" aria-hidden="true"></i></button>
@@ -63,7 +63,7 @@
                data-recordatorio="{{ json_encode($modelo->datosModal(), JSON_UNESCAPED_UNICODE) }}" title="Editar" aria-label="Editar {{ $item->titulo }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
             <form method="POST" action="{{ route('recordatorios.destroy', $modelo) }}" class="d-inline"
                   hx-delete="{{ route('recordatorios.destroy', $modelo) }}" hx-target="closest li" hx-swap="outerHTML"
-                  hx-confirm="¿Eliminar este recordatorio?">
+                  data-deshacer="Recordatorio eliminado.">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn-icono" title="Eliminar" aria-label="Eliminar {{ $item->titulo }}"><i class="bi bi-trash" aria-hidden="true"></i></button>

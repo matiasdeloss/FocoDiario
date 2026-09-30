@@ -54,7 +54,7 @@
                             </div>
                         </form>
                         <form method="POST" id="actividad-borrar-{{ $actividad->id }}" action="{{ route('agenda.actividades.destroy', $actividad) }}" data-tras-guardar
-                              onsubmit="return confirm(@js('¿Eliminar "'.$actividad->nombre.'"? Sus cajas quedan sin actividad y las notas que la usaban pasan a la bandeja de entrada.'))">
+                              data-confirmar="¿Eliminar &quot;{{ $actividad->nombre }}&quot;? Sus cajas quedan sin actividad y las notas que la usaban pasan a la bandeja de entrada.">
                             @csrf
                             @method('DELETE')
                         </form>

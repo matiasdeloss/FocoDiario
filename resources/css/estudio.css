@@ -93,7 +93,7 @@
 .mmss-sep { color: var(--foco-texto-meta); margin-inline: 2px; }
 
 .config-stepper { display: inline-flex; align-items: center; height: 38px; background: color-mix(in srgb, #fff 55%, var(--color-neutral-100)); border: 1px solid var(--color-neutral-300); border-radius: 10px; overflow: hidden; }
-.config-stepper:focus-within { border-color: var(--color-accent); }
+.config-stepper:focus-within { border-color: var(--color-accent); outline: 2px solid var(--color-accent); outline-offset: 1px; }
 .estudio-config .config-stepper .form-control { width: 3ch; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: center; box-sizing: content-box; -moz-appearance: textfield; appearance: textfield; }
 .config-stepper .form-control::-webkit-inner-spin-button, .config-stepper .form-control::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .estudio-config .config-stepper .form-control:focus { outline: 0; }

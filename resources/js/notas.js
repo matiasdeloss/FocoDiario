@@ -1,17 +1,12 @@
 // Notas: modal (<dialog> nativo) de crear/editar, vista cuadrícula/lista y estado vacío al borrar.
 // Mejora progresiva: sin JS, los enlaces llevan a las páginas de crear/editar y los filtros son enlaces.
+import { pedirSeguro } from './red.js';
 
 const lista = document.getElementById('lista-notas');
 const contenedor = document.getElementById('notas');
 const dialogo = document.getElementById('dialogo-nota');
 
-const token = () => document.querySelector('meta[name="csrf-token"]')?.content;
 const FOCALIZABLES = 'a[href], button:not(:disabled), input:not(:disabled):not([type="hidden"]), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
-
-// ---------- Filtro de materia: se envía al cambiar ----------
-document.querySelectorAll('[data-envia-al-cambiar]').forEach((select) => {
-    select.addEventListener('change', () => select.form?.requestSubmit());
-});
 
 // ---------- Vista cuadrícula / lista (se recuerda en el navegador) ----------
 const vistas = document.querySelector('[data-vistas]');
@@ -173,14 +168,8 @@ if (dialogo) {
 
         try {
             const datos = Object.fromEntries(new FormData(formulario));
-            const respuesta = await fetch(estado.url, {
+            const respuesta = await pedirSeguro(estado.url, {
                 method: estado.metodo,
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': token(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
                 body: JSON.stringify(datos),
             });
 

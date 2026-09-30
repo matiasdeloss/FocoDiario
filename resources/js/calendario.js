@@ -5,6 +5,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import '../css/calendario.css';
+import { pedirSeguro, primerMensaje } from './red.js';
+import { confirmar } from './confirmar.js';
 
 const CLAVE_FILTROS = 'focodiario.calendario.tipos';
 const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
@@ -73,21 +75,15 @@ function iniciar(raiz) {
     checks.forEach((c) => { c.checked = inicial.includes(c.value); });
 
     /* ---------- Peticiones ---------- */
-    const token = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-
     async function pedir(url, metodo, cuerpo) {
-        const opciones = {
-            method: metodo,
-            headers: { Accept: 'application/json', 'X-CSRF-TOKEN': token() },
-        };
+        const opciones = { method: metodo };
         if (cuerpo !== undefined) {
-            opciones.headers['Content-Type'] = 'application/json';
             opciones.body = JSON.stringify(cuerpo);
         }
 
         let respuesta;
         try {
-            respuesta = await fetch(url, opciones);
+            respuesta = await pedirSeguro(url, opciones);
         } catch (e) {
             throw new Error('No hay conexión con el servidor. Probá de nuevo.');
         }
@@ -96,8 +92,7 @@ function iniciar(raiz) {
         try { json = await respuesta.json(); } catch (e) { /* respuesta sin contenido */ }
 
         if (!respuesta.ok) {
-            const primerError = json?.errors ? Object.values(json.errors)[0]?.[0] : null;
-            throw new Error(primerError || json?.message || 'No se pudo guardar el cambio. Probá de nuevo.');
+            throw new Error(primerMensaje(json) || 'No se pudo guardar el cambio. Probá de nuevo.');
         }
 
         return json;
@@ -288,7 +283,7 @@ function iniciar(raiz) {
         const borrar = evento.target.closest('[data-borrar]');
         if (!borrar) return;
         const li = borrar.closest('[data-tarjeta]');
-        if (!window.confirm(`¿Eliminar ${ARTICULOS[li.dataset.tipo]}? No se puede deshacer.`)) return;
+        if (!await confirmar(`¿Eliminar ${ARTICULOS[li.dataset.tipo]}? No se puede deshacer.`)) return;
         await descartarTarjeta(li);
     });
 
@@ -897,7 +892,7 @@ function iniciar(raiz) {
 
             try {
                 const consulta = new URLSearchParams({ start: info.startStr, end: info.endStr, tipos: tipos.join(',') });
-                const respuesta = await fetch(`${datos.urlEventos}?${consulta}`, { headers: { Accept: 'application/json' } });
+                const respuesta = await pedirSeguro(`${datos.urlEventos}?${consulta}`);
                 if (!respuesta.ok) throw new Error('No se pudieron cargar los eventos del calendario.');
                 exito(await respuesta.json());
             } catch (error) {

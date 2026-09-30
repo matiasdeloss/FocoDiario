@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 #[Fillable(['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'estado', 'columna_id', 'orden'])]
 class Tarea extends Model
@@ -77,6 +78,16 @@ class Tarea extends Model
     public function columna(): BelongsTo
     {
         return $this->belongsTo(ColumnaTablero::class, 'columna_id');
+    }
+
+    /**
+     * Nombres de proyecto en uso, sin repetir y en orden alfabético (para filtros y sugerencias).
+     *
+     * @return Collection<int, string>
+     */
+    public static function proyectos(): Collection
+    {
+        return static::query()->whereNotNull('proyecto')->distinct()->orderBy('proyecto')->pluck('proyecto');
     }
 
     #[Scope]

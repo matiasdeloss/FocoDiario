@@ -199,7 +199,8 @@ class CalendarioTest extends TestCase
     {
         $this->get(route('calendario.index'))
             ->assertOk()
-            ->assertSee('nav-link active" href="'.route('calendario.index').'"', false);
+            ->assertSee('class="nav-link dropdown-toggle active" id="menu-planificar"', false)
+            ->assertSee('class="dropdown-item active" href="'.route('calendario.index').'"', false);
     }
 
     public function test_los_formularios_de_creacion_precargan_la_fecha(): void

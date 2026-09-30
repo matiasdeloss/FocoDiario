@@ -39,7 +39,7 @@ class TareaRequest extends FormRequest
             'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:5000'],
             'proyecto' => ['nullable', 'string', 'max:255'],
-            'fecha_limite' => ['nullable', 'date'],
+            'fecha_limite' => ['nullable', 'date_format:Y-m-d'],
             'prioridad' => ['required', Rule::enum(PrioridadTarea::class)],
             // El modal manda la columna del tablero (su tipo fija el estado); el formulario clásico manda el estado.
             'columna_id' => ['nullable', 'integer', Rule::exists('columnas_tablero', 'id')],
@@ -54,7 +54,7 @@ class TareaRequest extends FormRequest
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
             'descripcion.max' => 'El comentario no puede superar los 5000 caracteres.',
             'proyecto.max' => 'El proyecto no puede superar los 255 caracteres.',
-            'fecha_limite.date' => 'La fecha límite no es una fecha válida.',
+            'fecha_limite.date_format' => 'La fecha límite no es una fecha válida.',
             'prioridad.required' => 'Elegí una prioridad.',
             'prioridad.enum' => 'La prioridad elegida no es válida.',
             'estado.required_without' => 'Elegí un estado.',

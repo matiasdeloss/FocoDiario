@@ -122,7 +122,8 @@ class TableroTareasTest extends TestCase
     {
         $html = $this->get(route('tablero.index'))->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('#class="nav-link active" href="'.preg_quote(route('tablero.index'), '#').'"\s+aria-current="page"\s*>Tablero#', $html);
+        $this->assertStringContainsString('class="nav-link dropdown-toggle active" id="menu-tareas"', $html);
+        $this->assertMatchesRegularExpression('#class="dropdown-item active" href="'.preg_quote(route('tablero.index'), '#').'"\s+aria-current="page"\s*>\s*<i class="bi bi-kanban" aria-hidden="true"></i> Tablero#', $html);
         $this->assertStringNotContainsString('>Recordatorios</a>', $html);
     }
 

@@ -30,7 +30,7 @@
                     <a href="{{ route('contextos.create', ['padre' => $contexto->id]) }}" class="btn-icono" title="Agregar subcontexto" aria-label="Agregar subcontexto a {{ $contexto->nombre }}"><i class="bi bi-node-plus"></i></a>
                     <a href="{{ route('contextos.edit', $contexto) }}" class="btn-icono" title="Editar" aria-label="Editar {{ $contexto->nombre }}"><i class="bi bi-pencil"></i></a>
                     <form method="POST" action="{{ route('contextos.destroy', $contexto) }}" class="d-inline"
-                          onsubmit="return confirm(@js('¿Eliminar "' . $contexto->nombre . '"? Sus notas pasan a la bandeja de entrada y sus subcontextos quedan sin padre.'))">
+                          data-confirmar="¿Eliminar &quot;{{ $contexto->nombre }}&quot;? Sus notas pasan a la bandeja de entrada y sus subcontextos quedan sin padre.@if ($contexto->color) También es una actividad de la Agenda: sus cajas quedan sin actividad.@endif">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn-icono" title="Eliminar" aria-label="Eliminar {{ $contexto->nombre }}"><i class="bi bi-trash"></i></button>

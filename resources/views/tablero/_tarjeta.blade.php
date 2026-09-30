@@ -51,7 +51,7 @@
         <a href="{{ route('tareas.edit', $tarea) }}" class="btn-icono" data-abrir-tarea="editar" data-tarea="{{ json_encode($tarea->datosModal(), JSON_UNESCAPED_UNICODE) }}" title="Editar" aria-label="Editar {{ $tarea->titulo }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
         <form method="POST" action="{{ route('tareas.destroy', $tarea) }}" class="d-inline"
               hx-delete="{{ route('tareas.destroy', $tarea) }}" hx-target="closest .tarea-tarjeta" hx-swap="outerHTML"
-              hx-confirm="¿Eliminar la tarea &quot;{{ $tarea->titulo }}&quot;?">
+              data-deshacer="Tarea eliminada.">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn-icono" title="Eliminar" aria-label="Eliminar {{ $tarea->titulo }}"><i class="bi bi-trash" aria-hidden="true"></i></button>

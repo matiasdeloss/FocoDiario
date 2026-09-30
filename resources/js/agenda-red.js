@@ -1,30 +1,15 @@
 /*
- * Pedidos JSON de la Agenda (fetch con el token CSRF). Los errores llevan "mensaje" (para mostrar)
+ * Pedidos JSON de la Agenda (sobre red.js: CSRF y renovación del token). Los errores llevan "mensaje" (para mostrar)
  * y "reintentable" (si tiene sentido volver a intentar: fallas de red y del servidor sí; validación y sesión vencida no).
  */
-
-function token() {
-    return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-}
-
-function primerMensaje(datos) {
-    const errores = datos?.errors ? Object.values(datos.errors).flat() : [];
-
-    return errores[0] ?? datos?.message ?? null;
-}
+import { pedirSeguro, primerMensaje } from './red.js';
 
 export async function pedirJson(metodo, url, cuerpo, opciones = {}) {
     let respuesta;
 
     try {
-        respuesta = await fetch(url, {
+        respuesta = await pedirSeguro(url, {
             method: metodo,
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-CSRF-TOKEN': token(),
-                'X-Requested-With': 'XMLHttpRequest',
-            },
             body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
             keepalive: Boolean(opciones.keepalive),
         });

@@ -21,7 +21,7 @@
             </div>
             <input type="hidden" name="rango" value="{{ $hRango }}">
             <label for="historial-materia" class="visually-hidden">Filtrar por materia</label>
-            <select id="historial-materia" name="materia" class="form-select" onchange="this.form.submit()">
+            <select id="historial-materia" name="materia" class="form-select" data-envia-al-cambiar>
                 <option value="">Todas las materias</option>
                 @foreach ($contextos as $id => $ruta)
                     <option value="{{ $id }}" @selected($hMateria === $id)>{{ $ruta }}</option>

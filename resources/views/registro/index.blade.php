@@ -22,7 +22,7 @@
             </a>
             <div>
                 <label for="fecha-selector" class="form-label">Fecha</label>
-                <input type="date" id="fecha-selector" name="fecha" value="{{ $fechaTexto }}" class="form-control" onchange="this.form.submit()">
+                <input type="date" id="fecha-selector" name="fecha" value="{{ $fechaTexto }}" class="form-control" data-envia-al-cambiar>
             </div>
             <a href="{{ route('registro.index', ['fecha' => $fecha->addDay()->format('Y-m-d')]) }}" class="btn-icono" title="Día siguiente" aria-label="Día siguiente">
                 <i class="bi bi-chevron-right"></i>
@@ -107,7 +107,7 @@
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <form method="POST" action="{{ route('registro.destroy', $bloque) }}" class="d-inline"
-                                                  onsubmit="return confirm('¿Eliminar este bloque?')">
+                                                  data-confirmar="¿Eliminar este bloque?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn-icono" title="Eliminar" aria-label="Eliminar bloque de las {{ $bloque->inicio->format('H:i') }}">

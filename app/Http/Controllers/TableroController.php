@@ -40,7 +40,7 @@ class TableroController extends Controller
             'columnas' => $columnas,
             'total' => $columnas->sum(fn ($c) => $c['tareas']->count() + $c['ocultas']),
             'columnasOrden' => $columnasTablero,
-            'proyectos' => Tarea::whereNotNull('proyecto')->distinct()->orderBy('proyecto')->pluck('proyecto'),
+            'proyectos' => Tarea::proyectos(),
             'proyectoInicial' => (string) $request->query('proyecto', ''),
         ]);
     }

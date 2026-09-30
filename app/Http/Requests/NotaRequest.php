@@ -21,7 +21,7 @@ class NotaRequest extends FormRequest
             'titulo' => ['nullable', 'string', 'max:255'],
             'contenido' => ['required_without:titulo', 'nullable', 'string', 'max:5000'],
             'contexto_id' => ['nullable', 'integer', 'exists:contextos,id'],
-            'fecha' => ['nullable', 'date'],
+            'fecha' => ['nullable', 'date_format:Y-m-d'],
             'fijada' => ['nullable', 'boolean'],
             'color' => ['nullable', Rule::enum(ColorNota::class)],
             'origen' => ['nullable', 'in:hoy'],
@@ -37,7 +37,7 @@ class NotaRequest extends FormRequest
             'contenido.max' => 'La nota no puede superar los 5000 caracteres.',
             'contexto_id.exists' => 'El destino elegido no existe.',
             'contexto_id.integer' => 'El destino elegido no es válido.',
-            'fecha.date' => 'La fecha no es una fecha válida.',
+            'fecha.date_format' => 'La fecha no es una fecha válida.',
             'fijada.boolean' => 'El valor de "fijada" no es válido.',
             'color.enum' => 'El color elegido no es válido.',
         ];

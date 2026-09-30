@@ -7,6 +7,7 @@
  * las peticiones salen de a una y la respuesta del servidor manda (si falla, la fila vuelve a lo que estaba).
  */
 import { crearSerie, estadoFinal, estaMarcado, marcadoDeTarea, puedeAlternar } from './hoy-lista-logica.js';
+import { pedirSeguro } from './red.js';
 
 const RETARDO_SALIDA = 300; // la fila hecha se queda un instante antes de pasar a Completadas
 const DESVANECER = 180;
@@ -28,7 +29,6 @@ function iniciar(raiz) {
     const modoHechas = raiz.dataset.estado === 'hechas';
     const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const serie = crearSerie();
-    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
 
     // Las completadas que el servidor no listó (solo se muestran las más recientes) siguen contando.
     const conteoCompletadas = completadas.querySelector('[data-cuenta]');
@@ -153,14 +153,8 @@ function iniciar(raiz) {
     }
 
     async function pedir(url, cuerpo) {
-        const respuesta = await fetch(url, {
+        const respuesta = await pedirSeguro(url, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-CSRF-TOKEN': csrf(),
-                'X-Requested-With': 'XMLHttpRequest',
-            },
             body: cuerpo ? JSON.stringify(cuerpo) : undefined,
         });
         const datos = await respuesta.json().catch(() => ({}));

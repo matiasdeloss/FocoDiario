@@ -1,5 +1,8 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
+/* Tipografías servidas desde la propia app (sin Google Fonts: privacidad, sin conexión y sin salto de fuente). */
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/figtree/wght.css';
 @import './organic.css';
 
 /*
@@ -188,6 +191,40 @@ a { text-underline-offset: 0.2em; }
 
 .navbar-foco .navbar-toggler { border: 1px solid var(--color-card-border); border-radius: var(--foco-radio-pastilla); }
 .navbar-foco .navbar-toggler:focus { box-shadow: none; }
+.navbar-foco :is(.navbar-toggler, .nav-link, .navbar-brand, .dropdown-item):focus-visible {
+    outline: 2px solid var(--foco-acento);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* Secciones que agrupan pantallas (layouts/_nav.blade.php) */
+.navbar-foco button.nav-link { border: 0; background: transparent; text-align: start; }
+.navbar-foco .dropdown-menu {
+    --bs-dropdown-bg: var(--foco-papel);
+    --bs-dropdown-border-color: var(--foco-borde);
+    --bs-dropdown-border-radius: var(--foco-radio-sm);
+    --bs-dropdown-link-color: var(--foco-texto);
+    --bs-dropdown-link-hover-bg: var(--color-neutral-200);
+    --bs-dropdown-link-hover-color: var(--foco-acento-texto);
+    --bs-dropdown-link-active-bg: var(--color-accent-200);
+    --bs-dropdown-link-active-color: var(--color-accent-800);
+    --bs-dropdown-item-padding-y: 8px;
+    font-size: 14px;
+    padding: 6px;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-neutral-900) 12%, transparent);
+}
+.navbar-foco .dropdown-item { display: flex; align-items: center; gap: 10px; border-radius: 6px; }
+.navbar-foco .dropdown-item.active { font-weight: 600; }
+.navbar-foco .dropdown-item .bi { color: var(--foco-acento); }
+.navbar-foco .dropdown-item.active .bi { color: inherit; }
+.navbar-foco .nav-salir .nav-link { color: var(--foco-texto-suave); }
+@media (min-width: 992px) {
+    .navbar-foco .nav-salir { margin-left: var(--foco-espacio-2); }
+}
+@media (max-width: 991.98px) {
+    /* En el menú plegado los desplegables se abren en el lugar, con sangría. */
+    .navbar-foco .dropdown-menu { border: 0; box-shadow: none; background: transparent; padding: 0 0 4px 12px; }
+}
 
 @media (max-width: 767.98px) {
     .navbar-foco .navbar-nav { padding-block: var(--foco-espacio-2); gap: 2px; }
@@ -479,6 +516,105 @@ kbd {
 }
 
 .aviso-foco.aviso-error { background: var(--foco-rojo-fondo); color: var(--foco-rojo-texto); }
+/* El flash del servidor lleva botón de cerrar (avisos.js) */
+.aviso-foco[data-aviso-flash] { display: flex; align-items: center; justify-content: space-between; gap: var(--foco-espacio-3); }
+
+/* Borrado pendiente con Deshacer (deshacer.js): el elemento se oculta hasta que sale el pedido. */
+.es-eliminando { display: none !important; }
+
+/* ---------- Avisos flotantes (avisos.js): errores de red y confirmaciones con Deshacer ---------- */
+.avisos-flotantes {
+    position: fixed;
+    inset: auto 16px 16px;
+    z-index: 1090;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--foco-espacio-2);
+    pointer-events: none;
+}
+.aviso-flotante {
+    display: flex;
+    align-items: center;
+    gap: var(--foco-espacio-3);
+    max-width: min(560px, 100%);
+    padding: 10px 10px 10px 16px;
+    border-radius: var(--foco-radio-sm);
+    background: var(--color-neutral-900);
+    color: var(--color-neutral-100);
+    font-size: var(--foco-texto-sm);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-neutral-900) 25%, transparent);
+    pointer-events: auto;
+    animation: foco-sube var(--foco-transicion-entrada) both;
+}
+.aviso-flotante.aviso-error { background: var(--foco-rojo-texto); }
+.aviso-icono { flex: none; color: var(--color-accent-300); font-size: 16px; }
+.aviso-cuerpo { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin-right: auto; }
+.aviso-texto { font-weight: 600; overflow-wrap: anywhere; }
+.aviso-detalle { color: var(--color-neutral-300); font-size: var(--foco-texto-xs); }
+@media (max-width: 575.98px) {
+    /* En pantallas angostas las acciones bajan a su propia fila. */
+    .aviso-flotante:has(.aviso-detalle) { flex-wrap: wrap; }
+    .aviso-flotante:has(.aviso-detalle) .aviso-cuerpo { flex: 1 1 calc(100% - 80px); }
+}
+@keyframes foco-sube {
+    from { opacity: 0; transform: translateY(var(--foco-desplaza)); }
+    to { opacity: 1; transform: none; }
+}
+.aviso-accion {
+    flex: none;
+    padding: 4px 8px;
+    white-space: nowrap;
+    border: 0;
+    border-radius: var(--foco-radio-sm);
+    background: transparent;
+    color: var(--color-accent-300);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.aviso-accion:hover { background: color-mix(in srgb, #fff 12%, transparent); }
+.aviso-cerrar {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.8;
+}
+.aviso-cerrar:hover { opacity: 1; background: color-mix(in srgb, currentColor 12%, transparent); }
+:is(.aviso-accion, .aviso-cerrar):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    .aviso-flotante { animation: none; }
+}
+
+/* ---------- Pantalla de entrada ---------- */
+.entrada {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 16px;
+    background: var(--foco-fondo);
+}
+.entrada-tarjeta {
+    width: min(400px, 100%);
+    padding: var(--foco-espacio-6);
+    border-radius: var(--foco-radio);
+    background: var(--foco-papel);
+}
+.entrada-marca { margin: 0 0 var(--foco-espacio-4); font-weight: 700; color: var(--foco-acento-texto); }
+.entrada-titulo { margin: 0; font-family: var(--foco-fuente-titulo); font-weight: 400; font-size: var(--foco-texto-xl); }
+.entrada-texto { margin: var(--foco-espacio-1) 0 var(--foco-espacio-5); color: var(--foco-texto-suave); }
+.entrada-form { display: flex; flex-direction: column; gap: var(--foco-espacio-4); }
+.entrada-form .form-check { display: flex; align-items: center; gap: 8px; padding-left: 0; }
+.entrada-form .form-check-input { float: none; margin: 0; }
 /* Entradas: opacidad + un desplazamiento corto (se elimina con menos movimiento) */
 @keyframes foco-entra {
     from { opacity: 0; transform: translateY(calc(var(--foco-desplaza) * -1)); }
