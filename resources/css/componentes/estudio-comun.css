@@ -1,0 +1,152 @@
+/* ---------- Estudio: temporizador, historial y fichas de métodos ---------- */
+/* Pestañas: control segmentado en pastilla (padding 3px, activa en el color de la página) */
+.estudio-pestanas {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 3px;
+    margin-bottom: var(--foco-espacio-4);
+    background: var(--foco-papel);
+    border-radius: var(--foco-radio-pastilla);
+}
+.estudio-pestanas a {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    color: var(--foco-texto-suave);
+    font-size: var(--foco-texto-sm);
+    text-decoration: none;
+    border-radius: var(--foco-radio-pastilla);
+    transition: color var(--foco-transicion), background-color var(--foco-transicion);
+}
+.estudio-pestanas a:hover { background: var(--color-neutral-200); }
+.estudio-pestanas a.activa { color: var(--foco-acento-texto); background: var(--color-bg); }
+
+.pomodoro-tiempo-grande { font-size: 5.5rem; }
+
+/* El reloj grande es un botón: al tocarlo se vuelve un campo del mismo tamaño (reloj-editable.js). */
+button.pomodoro-tiempo {
+    appearance: none;
+    margin: 0;
+    padding: 0 var(--foco-espacio-3);
+    border: 0;
+    border-radius: var(--foco-radio-sm);
+    background: transparent;
+    cursor: text;
+}
+button.pomodoro-tiempo:hover:not(.es-bloqueado) { background: var(--foco-papel-hundido); }
+button.pomodoro-tiempo.es-bloqueado { cursor: default; }
+button.pomodoro-tiempo:focus-visible, .pomodoro-tiempo.reloj-input:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+.pomodoro-tiempo.reloj-input {
+    width: 8ch;
+    max-width: 100%;
+    height: 1.2em;
+    margin: -0.1em 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--foco-radio-sm);
+    background: var(--foco-papel-hundido);
+    box-shadow: inset 0 -3px 0 var(--foco-acento);
+    text-align: center;
+}
+.pomodoro-tiempo.reloj-input[aria-invalid="true"] { box-shadow: inset 0 -3px 0 var(--foco-rojo-texto); }
+.pomodoro-tiempo.reloj-input[hidden] { display: none; }
+@media (max-width: 575.98px) { .pomodoro-tiempo-grande { font-size: 3.75rem; } }
+
+#pomodoro[data-fase="descanso"] .pomodoro-tiempo,
+#pomodoro[data-fase="libre"] .pomodoro-tiempo { color: var(--foco-azul-texto); }
+#pomodoro[data-pausado="true"] .pomodoro-tiempo { opacity: 0.55; }
+#pomodoro[data-fase="descanso"] .pomodoro-fase { background: var(--foco-azul-fondo); color: var(--foco-azul-texto); }
+#pomodoro[data-fase="libre"] .pomodoro-fase { background: var(--foco-ambar-fondo); color: var(--foco-ambar-texto); }
+#pomodoro[data-fase="foco"] .pomodoro-fase { background: var(--foco-acento-suave); color: var(--foco-acento-texto-hover); }
+
+.btn-lg-foco { min-width: 9.5rem; }
+.pomodoro-formulario { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pomodoro-formulario legend { float: none; width: auto; padding: 0; }
+.pomodoro-duracion { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pomodoro-formulario .pomodoro-duracion legend { float: none; width: auto; margin-bottom: var(--foco-espacio-1); padding-left: 14px; }
+.pomodoro-duracion-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pomodoro-duracion .form-control { min-width: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.pomodoro-duracion .form-control { padding-inline: var(--foco-espacio-3); -moz-appearance: textfield; appearance: textfield; }
+.pomodoro-duracion .form-control::-webkit-inner-spin-button, .pomodoro-duracion .form-control::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pomodoro-duracion .input-group-text { padding-inline: var(--foco-espacio-2); }
+.pomodoro-duracion [aria-invalid="true"] { outline: 2px solid var(--foco-rojo-texto); outline-offset: 2px; }
+.pomodoro-errores {
+    background: var(--foco-rojo-fondo);
+    border-radius: var(--foco-radio-sm);
+    color: var(--foco-rojo-texto);
+    padding: var(--foco-espacio-3) var(--foco-espacio-4);
+}
+
+.pomodoro-puntos { display: flex; justify-content: center; gap: var(--foco-espacio-2); min-height: 0.75rem; }
+.pomodoro-punto {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-neutral-300);
+}
+.pomodoro-punto.lleno { background: var(--foco-acento); }
+.pomodoro-punto.actual { box-shadow: 0 0 0 2px var(--foco-papel), 0 0 0 3.5px var(--color-neutral-500); }
+
+/* Fichas de métodos */
+.metodos-indice { display: flex; flex-wrap: wrap; gap: var(--foco-espacio-2); }
+.metodos-indice a {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: var(--foco-papel);
+    border-radius: var(--foco-radio-pastilla);
+    color: var(--foco-texto-suave);
+    font-size: var(--foco-texto-sm);
+    text-decoration: none;
+    transition: background-color var(--foco-transicion), color var(--foco-transicion);
+}
+.metodos-indice a:hover { background: var(--color-neutral-200); color: var(--foco-acento-texto); }
+/* "Formas de estudiar" ocupa todo el ancho: las fichas se acomodan en tantas columnas como entren (mínimo 26rem cada una). */
+.metodos-pagina { width: 100%; }
+.metodos-grilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr)); gap: 16px; align-items: stretch; }
+.metodos-celda { min-width: 0; }
+.ficha-metodo { scroll-margin-top: 1rem; }
+.ficha-titulo {
+    font-family: var(--foco-fuente-titulo);
+    font-size: 17px;
+    font-weight: var(--font-heading-weight);
+    font-synthesis: none;
+    color: var(--foco-texto);
+    margin: var(--foco-espacio-4) 0 var(--foco-espacio-1);
+}
+.ficha-pasos { padding-left: 1.25rem; margin-bottom: 0; }
+.ficha-pasos li { margin-bottom: var(--foco-espacio-1); }
+.ficha-fuentes { padding-left: 1.25rem; font-size: var(--foco-texto-sm); margin-bottom: var(--foco-espacio-3); }
+.ficha-metodo p { margin-bottom: var(--foco-espacio-2); }
+
+/* Paginación de Bootstrap: pastillas con el acento de la app */
+.pagination {
+    --bs-pagination-color: var(--foco-acento-texto);
+    --bs-pagination-hover-color: var(--foco-acento-texto-hover);
+    --bs-pagination-hover-bg: var(--color-neutral-200);
+    --bs-pagination-hover-border-color: transparent;
+    --bs-pagination-active-bg: var(--foco-boton);
+    --bs-pagination-active-border-color: var(--foco-boton);
+    --bs-pagination-bg: var(--foco-papel);
+    --bs-pagination-border-color: transparent;
+    --bs-pagination-focus-color: var(--foco-acento-texto-hover);
+    --bs-pagination-focus-bg: var(--color-neutral-200);
+    --bs-pagination-focus-box-shadow: none;
+    --bs-pagination-disabled-bg: var(--foco-papel);
+    --bs-pagination-disabled-border-color: transparent;
+    --bs-pagination-active-color: var(--color-on-accent);
+    --bs-pagination-font-size: var(--foco-texto-sm);
+    --bs-pagination-disabled-color: var(--foco-texto-suave);
+    gap: var(--foco-espacio-1);
+}
+.pagination .page-item .page-link {
+    min-width: 2rem;
+    min-height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+    border-radius: var(--foco-radio-pastilla);
+}
+

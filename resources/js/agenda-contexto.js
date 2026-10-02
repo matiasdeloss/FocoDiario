@@ -2,6 +2,7 @@
  * Piezas compartidas por el planner y la hoja del día: el guardador (con su indicador "Guardado")
  * y el editor de cajas. Un solo guardador por página, para que todo el guardado pase por el mismo indicador.
  */
+import { aviso as toast } from './avisos.js';
 import { crearGuardador } from './agenda-guardado.js';
 import { enviarCambios } from './agenda-red.js';
 import { crearEditorDeCajas } from './agenda-cajas.js';
@@ -36,6 +37,13 @@ export function mostrarEstado(estado, detalle = null) {
             aviso.textContent = 'Los cambios se guardaron.';
         }
     });
+
+    // El indicador en línea sigue siendo el estado vivo; la falla final además sale como aviso de error.
+    if (estado === 'error') {
+        const texto = detalle ? `${TEXTOS.error}: ${detalle}` : TEXTOS.error;
+
+        toast.error(texto.endsWith('.') ? texto : `${texto}.`);
+    }
 }
 
 export const guardador = crearGuardador({

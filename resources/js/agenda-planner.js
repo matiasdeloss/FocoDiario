@@ -1,6 +1,6 @@
 /*
  * Planner semanal: título editable (autoguardado al salir del campo) y "+N más" en las cajas de los días
- * cuando los renglones no entran en el alto de la caja.
+ * cuando los renglones no entran en el alto de la caja (se recalcula al redimensionar la tarjeta; ver agenda-planner-grilla.js).
  */
 import { guardador } from './agenda-contexto.js';
 
@@ -79,5 +79,10 @@ if (listas.length > 0) {
 
     ajustarTodas();
     document.fonts?.ready.then(ajustarTodas);
-    new ResizeObserver(ajustarTodas).observe(document.querySelector('.plan-dias'));
+
+    // Cada tarjeta se observa por separado: al agrandarla o achicarla (arrastrando el tirador o con el teclado)
+    // o al cambiar el ancho de la ventana, se recalcula cuántos renglones entran y el "+N más".
+    const observador = new ResizeObserver(ajustarTodas);
+
+    document.querySelectorAll('.plan-dia').forEach((tarjeta) => observador.observe(tarjeta));
 }

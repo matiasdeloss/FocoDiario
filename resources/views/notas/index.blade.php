@@ -72,9 +72,10 @@
                     <i class="bi bi-pin-angle{{ $soloFijadas ? '-fill' : '' }}" aria-hidden="true"></i> Fijadas
                 </a>
                 @foreach (\App\Enums\ColorNota::cases() as $c)
-                    <a href="{{ $enlace(['color' => $colorFiltro === $c ? null : $c->value]) }}" class="notas-pastilla"
-                       style="--nota-fondo: {{ $c->fondo() }}; --nota-marca: {{ $c->marca() }}" @if ($colorFiltro === $c) aria-current="true" @endif>
-                        <span class="notas-punto" aria-hidden="true"></span> {{ $c->etiqueta() }}
+                    <a href="{{ $enlace(['color' => $colorFiltro === $c ? null : $c->value]) }}" class="notas-pastilla notas-pastilla-color"
+                       style="--nota-fondo: {{ $c->fondo() }}; --nota-marca: {{ $c->marca() }}" aria-label="{{ $c->etiqueta() }}" title="{{ $c->etiqueta() }}"
+                       @if ($colorFiltro === $c) aria-current="true" @endif>
+                        <span class="notas-punto" aria-hidden="true"></span>
                     </a>
                 @endforeach
                 @if ($hayFiltros)

@@ -7,7 +7,7 @@
  * Todas las pestañas lo muestran; al resolverlo o cerrarlo en una, desaparece de las demás (localStorage).
  * Si la pestaña está oculta y hay permiso (lo pide Estudio), también sale una notificación del sistema.
  */
-import { mostrarAviso } from './avisos.js';
+import { aviso } from './avisos.js';
 import { agregarCerrado, claveDe, detalleDe, planificar } from './recordatorios-avisos-logica.js';
 import { pedirSeguro } from './red.js';
 
@@ -58,7 +58,7 @@ async function resolver(recordatorio, url, textoError) {
         vencidos = vencidos.filter((otro) => otro.id !== recordatorio.id);
     } catch {
         reabrir(recordatorio);
-        mostrarAviso(textoError, { tipo: 'error' });
+        aviso.error(textoError);
     }
 }
 
@@ -80,10 +80,8 @@ function notificarAlSistema(recordatorio) {
 }
 
 function mostrar(recordatorio) {
-    const aviso = mostrarAviso(recordatorio.mensaje, {
-        icono: 'bell',
+    const toast = aviso.recordatorio(recordatorio.mensaje, {
         detalle: detalleDe(recordatorio),
-        duracion: null,
         acciones: [
             { texto: 'Listo', alHacer: () => resolver(recordatorio, recordatorio.url_avisar, 'No se pudo marcar el recordatorio. Va a volver a aparecer.') },
             { texto: '10 min más', alHacer: () => resolver(recordatorio, recordatorio.url_posponer, 'No se pudo posponer el recordatorio. Va a volver a aparecer.') },
@@ -91,7 +89,7 @@ function mostrar(recordatorio) {
         alRetirar: () => cerrar(recordatorio),
     });
 
-    abiertos.set(claveDe(recordatorio), aviso);
+    abiertos.set(claveDe(recordatorio), toast);
     notificarAlSistema(recordatorio);
 }
 

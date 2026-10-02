@@ -80,7 +80,7 @@ class NotaTest extends TestCase
                 'origen' => 'hoy',
             ])
             ->assertOk()
-            ->assertSee('Nota guardada en Álgebra')
+            ->assertAvisoHtmx('Nota guardada en Álgebra.')
             ->assertDontSee('Repasar matrices');
 
         $this->assertDatabaseHas('notas', ['contenido' => 'Repasar matrices', 'contexto_id' => $contexto->id]);

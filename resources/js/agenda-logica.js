@@ -189,3 +189,25 @@ export function sumarDias(iso, dias) {
 export function esperaDeReintento(intento, esperas = [1000, 3000, 8000]) {
     return intento >= 0 && intento < esperas.length ? esperas[intento] : null;
 }
+
+/**
+ * Qué hace un clic dentro de una caja: elegir el tipo (botón con data-tipo, "Texto"/"Lista") o una acción
+ * (data-accion: agregar-item, quitar-item, hecha, menu). `articulo` acota la búsqueda a la caja.
+ * Importa que el contenedor de la hoja NO use data-tipo (usa data-hoja-tipo): si lo usara, taparía a los botones de acción.
+ * @returns {{ clase: 'tipo', valor: string } | { clase: 'accion', nombre: string, elemento: object } | null}
+ */
+export function resolverClic(objetivo, articulo) {
+    const tipo = objetivo?.closest?.('[data-tipo]');
+
+    if (tipo && articulo.contains(tipo)) {
+        return { clase: 'tipo', valor: tipo.dataset.tipo };
+    }
+
+    const boton = objetivo?.closest?.('[data-accion]');
+
+    if (boton && articulo.contains(boton)) {
+        return { clase: 'accion', nombre: boton.dataset.accion, elemento: boton };
+    }
+
+    return null;
+}

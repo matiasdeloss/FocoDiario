@@ -34,6 +34,4 @@
             <a href="{{ route('calendario.index') }}">ubicarlos en el calendario</a>
         </p>
     @endif
-
-    <p class="hoy-mensaje" role="status" data-mensaje></p>
 </section>

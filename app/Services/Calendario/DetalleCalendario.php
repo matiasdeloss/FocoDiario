@@ -80,6 +80,9 @@ class DetalleCalendario
             'etiqueta_comentario' => 'Descripción',
             'etiqueta_fecha' => 'Fecha y hora del aviso',
             'ayuda_fecha' => $avisado ? 'Los recordatorios ya avisados no se pueden reubicar.' : null,
+            'avisado' => $avisado !== null,
+            // Solo si ya avisó: la acción de volverlo a pendiente.
+            'url_reactivar' => $avisado ? route('recordatorios.reactivar', $recordatorio) : null,
             'tarea_id' => $recordatorio->tarea_id,
             // Tareas abiertas, más la ya vinculada aunque esté completada.
             'tareas' => Tarea::abiertas()
@@ -88,9 +91,20 @@ class DetalleCalendario
                 ->map(fn (Tarea $t) => ['valor' => $t->id, 'etiqueta' => $t->titulo !== '' ? $t->titulo : 'Sin título'])->all(),
             'filas' => [[
                 'etiqueta' => 'Aviso',
-                'valor' => $avisado ? 'Ya avisó el '.$avisado->format('d/m/Y').' a las '.$avisado->format('H:i') : 'Todavía no avisó',
+                'valor' => $avisado
+                    ? 'Ya avisó el '.$avisado->format('d/m/Y').' a las '.$avisado->format('H:i')
+                    : 'Todavía no avisó'.($this->avisaraEnSeguida($recordatorio) ? '. Volverá a avisar en el próximo chequeo.' : ''),
             ]],
         ];
+    }
+
+    /** Pendiente con la hora ya llegada (últimas 24 h, como lo que revisa el aviso periódico): volverá a avisar solo. */
+    private function avisaraEnSeguida(Recordatorio $recordatorio): bool
+    {
+        return $recordatorio->avisado_en === null
+            && $recordatorio->recordar_en !== null
+            && $recordatorio->recordar_en->isPast()
+            && $recordatorio->recordar_en->greaterThanOrEqualTo(now()->subDay());
     }
 
     private function nota(Nota $nota): array

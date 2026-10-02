@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegistroRequest;
 use App\Services\Cuentas\FusionarInvitado;
+use App\Support\Aviso;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,7 +50,7 @@ class CuentaController extends Controller
         $usuario = $request->user();
 
         if (! $usuario->es_invitado) {
-            return $this->listo($request, 'Ya tenés una cuenta iniciada.');
+            return $this->listo($request, 'Ya tenés una cuenta iniciada.', 'info');
         }
 
         $usuario->forceFill([
@@ -78,7 +79,7 @@ class CuentaController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('hoy')->with('estado', 'Saliste de tu cuenta. Ahora estás como invitado.');
+        return redirect()->route('hoy')->with(Aviso::flash('Saliste de tu cuenta. Ahora estás como invitado.', 'info'));
     }
 
     /** Token CSRF nuevo para las páginas que quedaron abiertas más que la sesión (lo pide resources/js/red.js ante un 419). */
@@ -87,9 +88,9 @@ class CuentaController extends Controller
         return response()->json(['token' => $request->session()->token()]);
     }
 
-    private function listo(Request $request, string $mensaje): RedirectResponse|JsonResponse
+    private function listo(Request $request, string $mensaje, ?string $tipo = null): RedirectResponse|JsonResponse
     {
-        $request->session()->flash('estado', $mensaje);
+        Aviso::guardar($mensaje, $tipo);
 
         if ($request->expectsJson()) {
             return response()->json(['mensaje' => $mensaje]);

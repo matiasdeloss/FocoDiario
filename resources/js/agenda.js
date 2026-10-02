@@ -40,10 +40,31 @@ document.addEventListener('submit', async (evento) => {
         return;
     }
 
+    // Sin cambios esperando en el autoguardado, el envío sigue su curso normal. (Antes se frenaba siempre y se reenviaba con
+    // requestSubmit dentro de la misma microtarea del evento: el navegador lo descartaba y hacía falta un segundo clic.)
+    if (!guardador.hayCambiosSinGuardar()) {
+        return;
+    }
+
     evento.preventDefault();
-    await guardador.vaciar();
+
+    // Si vaciar el autoguardado tarda, el botón avisa que ya está trabajando (y no se puede pulsar dos veces).
+    const boton = evento.submitter;
+
+    boton?.setAttribute('aria-busy', 'true');
+    if (boton) boton.disabled = true;
+
+    try {
+        await guardador.vaciar();
+        // Cede un turno: requestSubmit durante el despacho del evento original se ignora.
+        await new Promise((resolver) => setTimeout(resolver, 0));
+    } finally {
+        if (boton) boton.disabled = false;
+        boton?.removeAttribute('aria-busy');
+    }
+
     formulario.dataset.listo = '1';
-    formulario.requestSubmit(evento.submitter ?? undefined);
+    formulario.requestSubmit(boton ?? undefined);
 });
 
 // Ir a una semana: cualquier fecha lleva al lunes de su semana.

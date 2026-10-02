@@ -17,6 +17,8 @@
          data-estado="{{ json_encode($estado, JSON_UNESCAPED_UNICODE) }}" data-etiqueta-contenido="{{ $etiqueta }}"
          aria-labelledby="plan-nota-{{ $zona->value }}">
     <header class="plan-nota-cab">
+        <span class="plan-agarre" data-agarre role="button" tabindex="0" title="Arrastrar para mover"
+              aria-label="Mover la tarjeta {{ $zona->etiqueta() }}: con las flechas se mueve y con Mayús más flechas cambia el tamaño"><i class="bi bi-grip-vertical" aria-hidden="true"></i></span>
         <h2 class="plan-nota-titulo" id="plan-nota-{{ $zona->value }}">{{ $zona->etiqueta() }}</h2>
         <div class="plan-tipo" role="group" aria-label="Formato de {{ mb_strtolower($zona->etiqueta()) }}">
             <button type="button" data-tipo="texto" aria-pressed="{{ $tipo === 'texto' ? 'true' : 'false' }}">Texto</button>

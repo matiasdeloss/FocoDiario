@@ -1,7 +1,7 @@
 {{-- Esta semana: siete casilleros seleccionables. Requiere: $semana (ver App\Services\Hoy\SemanaHoy). Los datos viajan en data-semana y el JS cambia de día sin recargar. --}}
 @php
     $hoy = collect($semana)->firstWhere('hoy', true) ?? $semana[0];
-    $tiposEvento = ['tarea' => 'Tarea', 'recordatorio' => 'Recordatorio', 'nota' => 'Nota', 'sesion' => 'Estudio'];
+    $tiposEvento = ['tarea' => 'Tarea', 'recordatorio' => 'Recordatorio', 'nota' => 'Nota', 'sesion' => 'Estudio', 'planner' => 'Planner'];
 @endphp
 <section id="hoy-semana" class="hoy-tarjeta hoy-semana" aria-labelledby="hoy-semana-titulo"
          @if (! empty($oob)) hx-swap-oob="true" @endif

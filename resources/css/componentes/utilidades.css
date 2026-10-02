@@ -1,0 +1,73 @@
+/* Entradas: opacidad + un desplazamiento corto (se elimina con menos movimiento) */
+@keyframes foco-entra {
+    from { opacity: 0; transform: translateY(calc(var(--foco-desplaza) * -1)); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes foco-fila-entra {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Filas actualizadas con HTMX: la vieja se atenúa (htmx-swapping) y la nueva aparece (htmx-added) */
+tr.htmx-swapping { opacity: 0; }
+tr.htmx-added { animation: foco-fila-entra 180ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+tr.htmx-request { opacity: 0.6; }
+/* Cambio de estado: se reemplaza al instante y sin animar, para que activar y desactivar seguido no parpadee. */
+tr[data-sin-animar].htmx-added { animation: none; }
+tr[data-sin-animar] .btn-icono:disabled { opacity: 1; cursor: progress; }
+
+/* Formularios de una sola columna: ancho cómodo para leer */
+.formulario-angosto { max-width: 42rem; }
+
+/* Pantallas de lectura: ancho cómodo, alineadas a la izquierda como el resto de la página */
+.contenido-lectura { max-width: 72rem; }
+.contenido-lectura > * + .tarjeta,
+.contenido-lectura > * + section { margin-top: 1.75rem; }
+
+/* Atajos de teclado */
+kbd {
+    display: inline-block;
+    padding: 0.05em 0.45em;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: 4px;
+    background: var(--color-neutral-100);
+    color: var(--foco-texto);
+    font-family: 'Geist Mono', var(--foco-fuente-mono);
+    font-size: 0.85em;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+/* Hover casi imperceptible en tarjetas de resumen y de tareas */
+.tarjeta-resumen { transition: box-shadow 200ms ease; }
+.tarjeta-resumen:hover, .tarea-tarjeta:hover { box-shadow: 0 2px 8px color-mix(in srgb, var(--color-sombra) 4.5%, transparent); }
+
+/* Entrada suave al hacer scroll: entrada-scroll.js agrega la clase inicial solo si hay IntersectionObserver */
+.entrada-pendiente {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--indice, 0) * 80ms);
+}
+.entrada-pendiente.entrada-lista { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+    .entrada-pendiente { opacity: 1; transform: none; transition: none; }
+}
+
+/* Tarea completada o recordatorio avisado */
+.texto-tachado { text-decoration: line-through; color: var(--foco-texto-suave); }
+
+/* Fecha vencida */
+.texto-vencida { color: var(--foco-rojo-texto); font-weight: 600; }
+
+/* Botón de ícono del estado actual */
+.btn-icono.activo { background: var(--foco-acento-suave); color: var(--foco-acento-texto); }
+
+
+/* Respeta la preferencia de menos movimiento: se conservan opacidad y color, se quita el desplazamiento y el escalado */
+@media (prefers-reduced-motion: reduce) {
+    :root { --foco-desplaza: 0px; }
+    * { scroll-behavior: auto !important; }
+}
+

@@ -1,6 +1,7 @@
 /*
  * Sistema de diseño "Organic": tokens de color, tipografía, espaciado, radios y sombras.
- * Titulos en Newsreader (serif) y cuerpo en Figtree, como en el diseño Hoy v2.
+ * Titulos en Lora (serif), cuerpo y UI en Source Sans 3 y numeros en Figtree.
+ * Incluye el modo oscuro "Carbon calido": mismos nombres de variable con valores nuevos (al final del archivo).
  * Origen: docs/diseno/hoy-v2/_ds (carpeta organic, archivo styles.css) (exportado de Claude Design).
  * Los nombres de estas variables se conservan tal cual para que el diseño de referencia
  * y el código usen el mismo vocabulario. Las variables --foco-* de app.css se apoyan en ellas.
@@ -22,6 +23,8 @@
     --color-neutral-700: #645c50;
     --color-neutral-800: #474238;
     --color-neutral-900: #2e2b25;
+    /* Velo de los diálogos: oscurece la página en ambos temas. */
+    --color-velo: #2e2b25;
 
     --color-accent-100: #fff2eb;
     --color-accent-200: #ffe1d0;
@@ -43,9 +46,11 @@
     --color-accent-2-800: #3d472b;
     --color-accent-2-900: #272e1b;
 
-    --font-heading: "Newsreader Variable", "Newsreader", Georgia, serif;
+    --font-heading: "Lora Variable", "Lora", Georgia, serif;
     --font-heading-weight: 400;
-    --font-body: "Figtree Variable", "Figtree", system-ui, sans-serif;
+    --font-body: "Source Sans 3 Variable", "Source Sans 3", system-ui, sans-serif;
+    /* Solo para cifras: reloj, horas, números de día y estadísticas */
+    --font-num: "Figtree Variable", "Figtree", system-ui, sans-serif;
 
     --space-1: 4.4px;
     --space-2: 8.8px;
@@ -64,6 +69,12 @@
     --color-accent-boton: #a75b27;
     --color-accent-boton-hover: #8c491a;
     --color-accent-boton-activo: #643312;
+    /* Marca de los colores de nota y tarea (ColorNota): tonos bien distintos entre sí en ambos temas. */
+    --color-nota-durazno: var(--color-accent-400);
+    --color-nota-terracota: var(--color-accent-600);
+    --color-nota-salvia: var(--color-accent-2-400);
+    --color-nota-oliva: var(--color-accent-2-600);
+    --color-nota-arena: var(--color-neutral-500);
     --radius-card: 18px;
     --radius-pill: 999px;
     --radius-control: 8px;
@@ -75,6 +86,14 @@
     --color-warning-text: #6b4700;
     --color-info-bg: #dbe8e9;
     --color-info-text: #27525f;
+
+    /* Campos de formulario claros (antes #fff) y color base de las sombras suaves */
+    --color-campo: #fff;
+    --color-sombra: #2e2b25;
+    /* Fondo de la tarjeta sin color y del selector "sin color" */
+    --color-tarjeta-sin-color: #fbf6ec;
+    /* Texto sobre rellenos de acento-700 / salvia-700 (invertido en oscuro, donde esos tonos son claros) */
+    --color-on-acento-fuerte: #fff;
 
     --shadow-sm: 0 1px 2px color-mix(in srgb, #2e2b25 14%, transparent);
     --shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);
@@ -117,4 +136,179 @@
     --actividad-lavanda-fondo: #ddd8ee;
     --actividad-lavanda-acento: #8378b5;
     --actividad-lavanda-texto: #372f63;
+}
+
+/*
+ * Modo oscuro "Carbón cálido": mismos nombres de variable, valores nuevos. Los dos bloques son idénticos:
+ * el primero sigue al sistema mientras no haya una elección manual; el segundo la fuerza (interruptor del menú).
+ * El hex de acento de las actividades que se guarda en la base de datos no cambia: solo estas variantes de CSS.
+ */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --color-bg: #1b1815;
+        --color-surface: #211d1b;
+        --color-text: #efe7da;
+        --color-accent: #e08650;
+        --color-accent-2: #8fa073;
+        /* --color-divider no cambia: es un color-mix con el texto */
+
+        --color-neutral-100: #262220;
+        --color-neutral-200: #1f1c19;
+        --color-neutral-300: #423e3a;
+        --color-neutral-400: #58534f;
+        --color-neutral-500: #726d67;
+        --color-neutral-600: #a8a092;
+        --color-neutral-700: #cfc7ba;
+        --color-neutral-800: #e1d9cc;
+        --color-neutral-900: #efe7da;
+        --color-velo: #000000;
+        --color-nota-durazno: #ecb696;
+        --color-nota-terracota: #c26d34;
+        --color-nota-salvia: #aebf92;
+        --color-nota-oliva: #8c934a;
+        --color-nota-arena: #9a928a;
+        --foco-borde: #3a3633;
+
+        --color-accent-100: #3c2e26;
+        --color-accent-200: #4f382b;
+        --color-accent-300: #704a33;
+        --color-accent-400: #e08650;
+        --color-accent-500: #e08650;
+        --color-accent-600: #e49565;
+        --color-accent-700: #e7a177;
+        --color-accent-800: #ecb696;
+        --color-accent-900: #f3cfb9;
+
+        --color-accent-2-100: #33312a;
+        --color-accent-2-200: #3d3e32;
+        --color-accent-2-300: #505441;
+        --color-accent-2-400: #7a8a5e;
+        --color-accent-2-500: #8fa073;
+        --color-accent-2-600: #8fa073;
+        --color-accent-2-700: #aebf92;
+        --color-accent-2-800: #c3d3a8;
+        --color-accent-2-900: #d2d9c7;
+
+        --color-accent-boton: #b0602b;
+        --color-accent-boton-hover: #c26d34;
+        --color-accent-boton-activo: #d07a3f;
+        --color-danger-bg: #3f201b;
+        --color-danger-text: #f2b8aa;
+        --color-danger-border: #d9664f;
+        --color-warning-bg: #3b2f12;
+        --color-warning-text: #f0cf85;
+        --color-info-bg: #1d2f33;
+        --color-info-text: #a3cdd8;
+
+        --color-campo: #1f1c19;
+        --color-sombra: #000;
+        --color-tarjeta-sin-color: #262220;
+        --color-on-acento-fuerte: #1b1815;
+        --shadow-sm: 0 1px 2px rgb(0 0 0 / .4);
+        --shadow-md: 0 3px 10px rgb(0 0 0 / .45);
+        --shadow-lg: 0 12px 32px rgb(0 0 0 / .55);
+        --linea-cuadricula: color-mix(in srgb, #efe7da 4%, transparent);
+
+        /* Tipos del calendario (los claros viven en app.css): fondo oscuro tintado, texto claro (AA) y borde medio */
+        --tipo-recordatorio-fondo: #26361f;  --tipo-recordatorio-texto: #bfe3b4;  --tipo-recordatorio-borde: #5fae6e;
+        --tipo-nota-fondo: #222d45;          --tipo-nota-texto: #bcd0f3;          --tipo-nota-borde: #6f97dc;
+        --tipo-sesion-fondo: #3f2539;        --tipo-sesion-texto: #efc6e4;        --tipo-sesion-borde: #bd6fbf;
+        --tipo-planner-fondo: #2a2745;       --tipo-planner-texto: #cdc6f5;       --tipo-planner-borde: #8f84e0;
+
+        --actividad-terracota-fondo: #513527; --actividad-terracota-acento: #c97d58; --actividad-terracota-texto: #e9c9ba;
+        --actividad-salvia-fondo: #3b3f30; --actividad-salvia-acento: #879c71; --actividad-salvia-texto: #ced6c5;
+        --actividad-ocre-fondo: #4b3c1f; --actividad-ocre-acento: #b6923e; --actividad-ocre-texto: #e1d2b0;
+        --actividad-azul-polvo-fondo: #363e45; --actividad-azul-polvo-acento: #7798b1; --actividad-azul-polvo-texto: #c7d5df;
+        --actividad-ciruela-fondo: #432f37; --actividad-ciruela-acento: #9f6988; --actividad-ciruela-texto: #d7c1ce;
+        --actividad-rosa-fondo: #513539; --actividad-rosa-acento: #c97e8e; --actividad-rosa-texto: #e9cad0;
+        --actividad-oliva-fondo: #3d3c23; --actividad-oliva-acento: #8c934a; --actividad-oliva-texto: #d0d3b4;
+        --actividad-arena-fondo: #463d2d; --actividad-arena-acento: #a9966a; --actividad-arena-texto: #dcd4c2;
+        --actividad-celeste-fondo: #2c4042; --actividad-celeste-acento: #589faa; --actividad-celeste-texto: #bad7dc;
+        --actividad-lavanda-fondo: #403a4a; --actividad-lavanda-acento: #968cc0; --actividad-lavanda-texto: #d4d0e5;
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-bg: #1b1815;
+    --color-surface: #211d1b;
+    --color-text: #efe7da;
+    --color-accent: #e08650;
+    --color-accent-2: #8fa073;
+    /* --color-divider no cambia: es un color-mix con el texto */
+
+    --color-neutral-100: #262220;
+    --color-neutral-200: #1f1c19;
+    --color-neutral-300: #423e3a;
+    --color-neutral-400: #58534f;
+    --color-neutral-500: #726d67;
+    --color-neutral-600: #a8a092;
+    --color-neutral-700: #cfc7ba;
+    --color-neutral-800: #e1d9cc;
+    --color-neutral-900: #efe7da;
+    --color-velo: #000000;
+    --color-nota-durazno: #ecb696;
+    --color-nota-terracota: #c26d34;
+    --color-nota-salvia: #aebf92;
+    --color-nota-oliva: #8c934a;
+    --color-nota-arena: #9a928a;
+    --foco-borde: #3a3633;
+
+    --color-accent-100: #3c2e26;
+    --color-accent-200: #4f382b;
+    --color-accent-300: #704a33;
+    --color-accent-400: #e08650;
+    --color-accent-500: #e08650;
+    --color-accent-600: #e49565;
+    --color-accent-700: #e7a177;
+    --color-accent-800: #ecb696;
+    --color-accent-900: #f3cfb9;
+
+    --color-accent-2-100: #33312a;
+    --color-accent-2-200: #3d3e32;
+    --color-accent-2-300: #505441;
+    --color-accent-2-400: #7a8a5e;
+    --color-accent-2-500: #8fa073;
+    --color-accent-2-600: #8fa073;
+    --color-accent-2-700: #aebf92;
+    --color-accent-2-800: #c3d3a8;
+    --color-accent-2-900: #d2d9c7;
+
+    --color-accent-boton: #b0602b;
+    --color-accent-boton-hover: #c26d34;
+    --color-accent-boton-activo: #d07a3f;
+    --color-danger-bg: #3f201b;
+    --color-danger-text: #f2b8aa;
+    --color-danger-border: #d9664f;
+    --color-warning-bg: #3b2f12;
+    --color-warning-text: #f0cf85;
+    --color-info-bg: #1d2f33;
+    --color-info-text: #a3cdd8;
+
+    --color-campo: #1f1c19;
+    --color-sombra: #000;
+    --color-tarjeta-sin-color: #262220;
+    --color-on-acento-fuerte: #1b1815;
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / .4);
+    --shadow-md: 0 3px 10px rgb(0 0 0 / .45);
+    --shadow-lg: 0 12px 32px rgb(0 0 0 / .55);
+    --linea-cuadricula: color-mix(in srgb, #efe7da 4%, transparent);
+
+    /* Tipos del calendario (los claros viven en app.css): fondo oscuro tintado, texto claro (AA) y borde medio */
+    --tipo-recordatorio-fondo: #26361f;  --tipo-recordatorio-texto: #bfe3b4;  --tipo-recordatorio-borde: #5fae6e;
+    --tipo-nota-fondo: #222d45;          --tipo-nota-texto: #bcd0f3;          --tipo-nota-borde: #6f97dc;
+    --tipo-sesion-fondo: #3f2539;        --tipo-sesion-texto: #efc6e4;        --tipo-sesion-borde: #bd6fbf;
+    --tipo-planner-fondo: #2a2745;       --tipo-planner-texto: #cdc6f5;       --tipo-planner-borde: #8f84e0;
+
+    --actividad-terracota-fondo: #513527; --actividad-terracota-acento: #c97d58; --actividad-terracota-texto: #e9c9ba;
+    --actividad-salvia-fondo: #3b3f30; --actividad-salvia-acento: #879c71; --actividad-salvia-texto: #ced6c5;
+    --actividad-ocre-fondo: #4b3c1f; --actividad-ocre-acento: #b6923e; --actividad-ocre-texto: #e1d2b0;
+    --actividad-azul-polvo-fondo: #363e45; --actividad-azul-polvo-acento: #7798b1; --actividad-azul-polvo-texto: #c7d5df;
+    --actividad-ciruela-fondo: #432f37; --actividad-ciruela-acento: #9f6988; --actividad-ciruela-texto: #d7c1ce;
+    --actividad-rosa-fondo: #513539; --actividad-rosa-acento: #c97e8e; --actividad-rosa-texto: #e9cad0;
+    --actividad-oliva-fondo: #3d3c23; --actividad-oliva-acento: #8c934a; --actividad-oliva-texto: #d0d3b4;
+    --actividad-arena-fondo: #463d2d; --actividad-arena-acento: #a9966a; --actividad-arena-texto: #dcd4c2;
+    --actividad-celeste-fondo: #2c4042; --actividad-celeste-acento: #589faa; --actividad-celeste-texto: #bad7dc;
+    --actividad-lavanda-fondo: #403a4a; --actividad-lavanda-acento: #968cc0; --actividad-lavanda-texto: #d4d0e5;
 }

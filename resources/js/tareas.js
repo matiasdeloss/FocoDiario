@@ -6,6 +6,7 @@
  * El check sigue la misma regla que Hoy: cambia al instante, se bloquea mientras hay una petición en vuelo,
  * las peticiones salen de a una y la respuesta del servidor manda (si falla, la fila vuelve a lo que estaba).
  */
+import { aviso } from './avisos.js';
 import { crearSerie, estadoFinal, estaMarcado, marcadoDeTarea, puedeAlternar } from './hoy-lista-logica.js';
 import { pedirSeguro } from './red.js';
 
@@ -20,7 +21,6 @@ if (raiz) {
 
 function iniciar(raiz) {
     const lista = raiz.querySelector('[data-lista]');
-    const mensaje = raiz.querySelector('[data-mensaje]');
     const completadas = lista.querySelector('.t-grupo-completadas');
     const vacio = lista.querySelector('[data-vacio]');
     const sinResultados = lista.querySelector('[data-sin-resultados]');
@@ -173,7 +173,6 @@ function iniciar(raiz) {
 
         clearTimeout(fila.temporizador);
         fila.classList.remove('es-saliendo');
-        mensaje.textContent = '';
         boton.setAttribute('aria-busy', 'true');
         pintar(fila, pedido);
 
@@ -195,13 +194,13 @@ function iniciar(raiz) {
                     ajustarResumen(fila.dataset.tipo, fila.dataset.momento, marcada ? -1 : 1);
                 }
 
-                mensaje.textContent = esTarea
+                aviso.exito(esTarea
                     ? (marcada ? 'Tarea completada.' : 'Tarea vuelta a pendiente.')
-                    : (marcada ? 'Recordatorio marcado como avisado.' : 'Recordatorio vuelto a pendiente.');
+                    : (marcada ? 'Recordatorio marcado como avisado.' : 'Recordatorio vuelto a pendiente.'));
                 programarSalida(fila, inicio);
             } catch {
                 pintar(fila, previo);
-                mensaje.textContent = esTarea ? 'No se pudo actualizar la tarea. Probá de nuevo.' : 'No se pudo actualizar el recordatorio. Probá de nuevo.';
+                aviso.error(esTarea ? 'No se pudo actualizar la tarea. Probá de nuevo.' : 'No se pudo actualizar el recordatorio. Probá de nuevo.');
             } finally {
                 boton.removeAttribute('aria-busy');
             }

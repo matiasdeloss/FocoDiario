@@ -7,6 +7,8 @@ use App\Http\Requests\EventosCalendarioRequest;
 use App\Http\Requests\FechaNotaRequest;
 use App\Http\Requests\FechaRecordatorioRequest;
 use App\Http\Requests\FechaTareaRequest;
+use App\Http\Requests\MoverCajaPlannerRequest;
+use App\Models\Caja;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
@@ -78,5 +80,31 @@ class CalendarioController extends Controller
             'evento' => $recordatorio->recordar_en ? $calendario->eventoRecordatorio($recordatorio) : null,
             'panel' => $recordatorio->recordar_en ? null : $tarjetas->html($recordatorio),
         ]);
+    }
+
+    /**
+     * Mueve una caja del planner (día y hora). Si cambia de día, queda al final de la hoja de ese día
+     * (debajo de lo que ya hay) para no superponerse. Las cajas de zona semanal no tienen día: no se mueven.
+     */
+    public function moverPlanner(MoverCajaPlannerRequest $request, Caja $caja, EventosCalendario $calendario): JsonResponse
+    {
+        if ($caja->fecha === null) {
+            return response()->json(['message' => 'Las cajas de Notas y Pendiente de la semana no se mueven desde el calendario.'], 422);
+        }
+
+        $fecha = $request->validated('fecha');
+        $inicio = $request->validated('hora_inicio');
+
+        if ($caja->fecha->toDateString() !== $fecha) {
+            $fondo = (int) Caja::query()->delDia($fecha)->whereKeyNot($caja->id)->selectRaw('max(y + alto) as fondo')->value('fondo');
+            $caja->y = min($fondo, Caja::MAX_FILA);
+            $caja->fecha = $fecha;
+        }
+
+        $caja->hora_inicio = $inicio;
+        $caja->hora_fin = $inicio === null ? null : $request->validated('hora_fin');
+        $caja->save();
+
+        return response()->json(['evento' => $calendario->eventoPlanner($caja->load('actividad'))]);
     }
 }

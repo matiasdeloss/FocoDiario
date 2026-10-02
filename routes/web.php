@@ -68,6 +68,7 @@ Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
     Route::patch('calendario/tareas/{tarea}/fecha', [CalendarioController::class, 'fechaTarea'])->name('calendario.tareas.fecha');
     Route::patch('calendario/recordatorios/{recordatorio}/fecha', [CalendarioController::class, 'fechaRecordatorio'])->name('calendario.recordatorios.fecha');
     Route::patch('calendario/notas/{nota}/fecha', [CalendarioController::class, 'fechaNota'])->name('calendario.notas.fecha');
+    Route::patch('calendario/planner/{caja}/mover', [CalendarioController::class, 'moverPlanner'])->name('calendario.planner.mover');
     Route::get('calendario/detalle/{tipo}/{id}', [DetalleCalendarioController::class, 'show'])
         ->whereIn('tipo', ['tarea', 'recordatorio', 'nota', 'sesion'])->whereNumber('id')->name('calendario.detalle');
     Route::post('calendario/tarjetas', [TarjetaCalendarioController::class, 'store'])->name('calendario.tarjetas.store');
@@ -93,6 +94,10 @@ Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
     // ---- Agenda ----
     Route::get('agenda', [AgendaController::class, 'index'])->name('agenda.index');
     Route::put('agenda/titulo', [AgendaController::class, 'titulo'])->name('agenda.titulo');
+    Route::patch('agenda/semana/{semana}/layout', [AgendaController::class, 'layout'])
+        ->where('semana', '\d{4}-\d{2}-\d{2}')->name('agenda.layout');
+    Route::delete('agenda/semana/{semana}/layout', [AgendaController::class, 'restablecerLayout'])
+        ->where('semana', '\d{4}-\d{2}-\d{2}')->name('agenda.layout.restablecer');
     Route::get('agenda/dia/{fecha}', [AgendaController::class, 'dia'])
         ->where('fecha', '\d{4}-\d{2}-\d{2}')->name('agenda.dia');
     Route::patch('agenda/dia/{fecha}/layout', [CajaController::class, 'layout'])

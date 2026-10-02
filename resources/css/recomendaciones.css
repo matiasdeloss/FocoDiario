@@ -1,39 +1,66 @@
-/* Recomendaciones: dos columnas de cards (para ti / ideas). Tarjetas de 18px sin borde. */
+/* Recomendaciones: tablero a pantalla completa. Hero con métricas, franja "Para ti ahora" y un panel tintado por categoría; los paneles se reparten el ancho y se estiran a la misma altura. */
 .rec-pagina {
     --rec-tono: var(--color-neutral-200);
     --rec-tono-texto: var(--color-neutral-800);
-    max-width: 72rem;
+    --rec-gap: clamp(0.875rem, 1.2vw, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--rec-gap);
+    /* Cabecera, relleno de la página y pie restan altura: así el tablero llega hasta abajo en pantallas altas. */
+    min-height: calc(100dvh - 10.5rem);
 }
 
-.rec-encabezado {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem 2rem;
-    margin-bottom: 1.75rem;
+.rec-accion:focus-visible, .rec-fuente a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* Hero: título y resumen a la izquierda, tres métricas grandes a la derecha */
+.rec-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: center;
 }
+.rec-hero .pagina-titulo { margin-bottom: 0.25rem; }
 .rec-resumen { margin: 0; color: var(--foco-texto-suave); max-width: 40rem; }
 .rec-resumen-alerta { color: var(--color-danger-text); font-weight: 600; }
 
-.rec-filtros { display: flex; flex-wrap: wrap; gap: 0.375rem; }
-.rec-filtro {
-    padding: 6px 14px;
-    border-radius: var(--radius-pill);
-    background: var(--foco-papel);
-    color: var(--foco-texto-suave);
-    font-size: var(--foco-texto-sm);
-    text-decoration: none;
-    transition: background-color 150ms ease, color 150ms ease;
+.rec-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
 }
-.rec-filtro:hover { background: var(--color-neutral-200); color: var(--foco-texto); }
-.rec-filtro.es-activo { background: var(--color-accent-boton); color: var(--color-on-accent); }
-.rec-filtro:focus-visible, .rec-accion:focus-visible, .rec-fuente a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.rec-stat {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    gap: 0.25rem;
+    padding: 14px 18px;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--rec-tono) 80%, var(--foco-papel));
+    color: var(--rec-tono-texto);
+    min-width: 0;
+}
+.rec-stat dt {
+    display: flex; align-items: center; gap: 0.4em;
+    font-size: var(--foco-texto-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.rec-stat dd {
+    margin: 0;
+    font-family: var(--font-num);
+    font-size: clamp(2.25rem, 4vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
 
-.rec-columnas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
-.rec-columna { display: flex; flex-direction: column; gap: 0.875rem; min-width: 0; }
+@media (min-width: 1200px) {
+    .rec-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 42rem); gap: 2rem; }
+}
 
-.rec-columna-titulo {
+/* Franja "Para ti ahora": cards grandes con el tono de la alerta */
+.rec-destacadas { display: flex; flex-direction: column; gap: 0.75rem; }
+.rec-destacadas-cabecera { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.25rem 1rem; }
+.rec-seccion-titulo {
     display: flex; align-items: center; gap: 0.5rem;
     margin: 0;
     font-family: var(--foco-fuente-titulo);
@@ -41,28 +68,101 @@
     font-weight: var(--font-heading-weight);
     font-synthesis: none;
 }
-.rec-columna-cuenta {
-    padding: 1px 9px;
+.rec-seccion-sub { margin: 0; font-size: var(--foco-texto-sm); color: var(--foco-texto-meta); }
+.rec-destacadas-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--rec-gap); }
+.rec-card.rec-destacada {
+    padding: 22px 26px;
+    background: color-mix(in srgb, var(--rec-tono) 85%, var(--foco-papel));
+    color: var(--rec-tono-texto);
+}
+.rec-destacada .rec-titulo { font-size: 22px; color: inherit; }
+.rec-destacada .rec-texto, .rec-destacada .rec-fuente { color: inherit; opacity: 0.85; }
+.rec-destacada .rec-icono, .rec-destacada .rec-pill { background: color-mix(in srgb, var(--rec-tono-texto) 14%, transparent); }
+.rec-card.rec-destacada:hover { background: color-mix(in srgb, var(--rec-tono) 70%, var(--foco-papel)); }
+.rec-destacada .rec-dato { background: color-mix(in srgb, var(--foco-papel) 55%, transparent); }
+
+.rec-cuenta {
+    padding: 1px 10px;
     border-radius: var(--radius-pill);
-    background: var(--color-neutral-200);
-    color: var(--color-neutral-800);
+    background: color-mix(in srgb, var(--rec-tono-texto) 14%, transparent);
+    color: var(--rec-tono-texto);
     font-family: var(--foco-fuente);
     font-size: 12px;
     font-weight: 600;
+    line-height: 1.6;
 }
-.rec-columna-sub { margin: -0.5rem 0 0.125rem; font-size: var(--foco-texto-sm); color: var(--foco-texto-meta); }
+.rec-destacadas .rec-cuenta { --rec-tono-texto: var(--color-danger-text); }
+
+/* Paneles por categoría: 1 columna, 2 desde 900px y cuatro iguales desde 1400px. Los que faltan dejan que el resto reparta el ancho. */
+.rec-paneles {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--rec-gap);
+    align-items: stretch;
+}
+@media (min-width: 900px) {
+    .rec-paneles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .rec-paneles[data-paneles="1"] { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 1400px) {
+    .rec-paneles { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+}
+
+.rec-panel {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: clamp(14px, 1.3vw, 22px);
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--rec-tono) 55%, var(--color-bg));
+    min-width: 0;
+}
+.rec-panel-cabecera {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 6px 6px 4px;
+    color: var(--rec-tono-texto);
+}
+.rec-panel-icono {
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: none;
+    width: 48px; height: 48px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--rec-tono-texto) 22%, var(--rec-tono)), color-mix(in srgb, var(--rec-tono-texto) 6%, var(--rec-tono)));
+    font-size: 22px;
+}
+.rec-panel-titulo {
+    flex: 1; min-width: 0;
+    margin: 0;
+    font-family: var(--foco-fuente-titulo);
+    font-size: 24px;
+    font-weight: var(--font-heading-weight);
+    font-synthesis: none;
+    line-height: 1.15;
+}
+.rec-panel-lista { display: flex; flex-direction: column; gap: 0.75rem; position: relative; z-index: 1; }
+/* Marca decorativa anclada al fondo: da cuerpo al panel cuando tiene pocas cards */
+.rec-panel-marca {
+    position: absolute; right: -14px; bottom: -22px;
+    font-size: 150px; line-height: 1;
+    color: var(--rec-tono-texto);
+    opacity: 0.07;
+    pointer-events: none;
+}
 
 .rec-card {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 20px 22px;
+    padding: 18px 20px;
     background: var(--foco-papel);
     border-radius: var(--radius-card);
     min-width: 0;
-    transition: background-color 150ms ease;
+    transition: background-color 150ms ease, transform 150ms ease;
 }
-.rec-card:hover { background: color-mix(in srgb, var(--foco-papel) 60%, var(--rec-tono)); }
+.rec-card:hover { background: color-mix(in srgb, var(--foco-papel) 60%, var(--rec-tono)); transform: translateY(-2px); }
 
 .rec-card-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
 .rec-icono {
@@ -101,6 +201,9 @@
 .rec-fuente { margin: 0; font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); line-height: 1.45; overflow-wrap: anywhere; }
 .rec-fuente a { color: var(--foco-acento-texto); }
 .rec-accion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
     align-self: flex-start;
     margin-top: 0.25rem;
     padding: 6px 14px;
@@ -124,9 +227,7 @@
 .rec-cat-productividad { --rec-tono: var(--color-info-bg); --rec-tono-texto: var(--color-info-text); }
 .rec-cat-bienestar { --rec-tono: var(--color-neutral-200); --rec-tono-texto: var(--color-neutral-800); }
 
-@media (max-width: 991.98px) {
-    .rec-columnas { grid-template-columns: minmax(0, 1fr); }
-}
 @media (prefers-reduced-motion: reduce) {
-    .rec-filtro, .rec-card, .rec-accion { transition: none; }
+    .rec-card, .rec-accion { transition: none; }
+    .rec-card:hover { transform: none; }
 }

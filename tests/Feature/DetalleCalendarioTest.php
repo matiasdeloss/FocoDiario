@@ -37,6 +37,48 @@ class DetalleCalendarioTest extends TestCase
             ->assertJsonCount(3, 'detalle.prioridades');
     }
 
+    public function test_el_detalle_de_un_recordatorio_avisado_ofrece_marcarlo_como_no_avisado(): void
+    {
+        $avisado = Recordatorio::factory()->create(['tarea_id' => null, 'recordar_en' => '2026-10-05 09:30:00', 'avisado_en' => '2026-10-05 09:31:00']);
+        $this->getJson(route('calendario.detalle', ['tipo' => 'recordatorio', 'id' => $avisado->id]))
+            ->assertOk()
+            ->assertJsonPath('detalle.avisado', true)
+            ->assertJsonPath('detalle.url_reactivar', route('recordatorios.reactivar', $avisado))
+            ->assertJsonPath('detalle.ayuda_fecha', 'Los recordatorios ya avisados no se pueden reubicar.');
+
+        $pendiente = Recordatorio::factory()->create(['tarea_id' => null, 'recordar_en' => now()->addDay()]);
+        $this->getJson(route('calendario.detalle', ['tipo' => 'recordatorio', 'id' => $pendiente->id]))
+            ->assertOk()
+            ->assertJsonPath('detalle.avisado', false)
+            ->assertJsonPath('detalle.url_reactivar', null)
+            ->assertJsonPath('detalle.bloqueada', false)
+            ->assertJsonPath('detalle.ayuda_fecha', null)
+            ->assertJsonPath('detalle.filas.0.valor', 'Todavía no avisó');
+    }
+
+    public function test_al_reactivar_un_recordatorio_cuya_hora_ya_paso_el_detalle_dice_que_volvera_a_avisar(): void
+    {
+        $recordatorio = Recordatorio::factory()->create([
+            'tarea_id' => null, 'recordar_en' => now()->subHour(), 'avisado_en' => now()->subMinutes(50),
+        ]);
+
+        $this->patchJson(route('recordatorios.reactivar', $recordatorio))
+            ->assertOk()->assertExactJson(['id' => $recordatorio->id, 'avisado' => false]);
+
+        $this->getJson(route('calendario.detalle', ['tipo' => 'recordatorio', 'id' => $recordatorio->id]))
+            ->assertOk()
+            ->assertJsonPath('detalle.avisado', false)
+            ->assertJsonPath('detalle.bloqueada', false)
+            ->assertJsonPath('detalle.url_reactivar', null)
+            ->assertJsonPath('detalle.ayuda_fecha', null)
+            ->assertJsonPath('detalle.filas.0.valor', 'Todavía no avisó. Volverá a avisar en el próximo chequeo.');
+
+        // Más de 24 h atrás el aviso periódico ya no lo toma: no se promete nada.
+        $viejo = Recordatorio::factory()->create(['tarea_id' => null, 'recordar_en' => now()->subDays(3), 'avisado_en' => null]);
+        $this->getJson(route('calendario.detalle', ['tipo' => 'recordatorio', 'id' => $viejo->id]))
+            ->assertJsonPath('detalle.filas.0.valor', 'Todavía no avisó');
+    }
+
     public function test_detalle_de_recordatorio_nota_y_sesion(): void
     {
         $avisado = Recordatorio::factory()->create(['tarea_id' => null, 'mensaje' => 'Llamar', 'recordar_en' => '2026-10-05 09:30:00', 'avisado_en' => '2026-10-05 09:31:00']);

@@ -246,9 +246,11 @@
 .hoy-cuaderno { position: relative; display: flex; flex-direction: column; }
 
 .hoy-cuaderno-titulo {
-    width: 100%;
     min-width: 0;
-    padding: 4px 40px 8px 0;
+    /* El relleno lateral, compensado con el margen, deja lugar al anillo de foco sin mover el texto. */
+    padding: 4px 40px 8px 10px;
+    margin-inline-start: -10px;
+    width: calc(100% + 10px);
     border: 0;
     border-bottom: 1px solid var(--color-neutral-300);
     border-radius: 0;
@@ -262,8 +264,8 @@
 }
 
 .hoy-cuaderno-titulo:hover { border-bottom-color: var(--color-neutral-400); }
-.hoy-cuaderno-titulo:focus { outline: 0; border-bottom-color: var(--color-accent); box-shadow: 0 1px 0 0 var(--color-accent); }
-.hoy-cuaderno-titulo.es-invalido { border-bottom-color: var(--color-accent-700); box-shadow: 0 1px 0 0 var(--color-accent-700); }
+.hoy-cuaderno-titulo:focus { outline: 0; border-radius: 10px; border-bottom-color: transparent; box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 40%, transparent); }
+.hoy-cuaderno-titulo.es-invalido { border-radius: 10px; border-bottom-color: transparent; box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-700) 70%, transparent); }
 .hoy-cuaderno-titulo::placeholder, .hoy-cuaderno-hoja::placeholder { color: var(--color-neutral-600); opacity: 1; }
 
 .hoy-cuaderno-hoja {
@@ -291,9 +293,7 @@
     line-height: var(--hoy-renglon);
 }
 
-/* En reposo ocupa dos renglones; con el foco en el cuaderno o con texto, se abre. */
-.hoy-cuaderno:focus-within .hoy-cuaderno-hoja,
-.hoy-cuaderno:has(.hoy-cuaderno-hoja:not(:placeholder-shown)) .hoy-cuaderno-hoja { min-height: calc(var(--hoy-renglon) * 4); }
+/* Ocupa dos renglones y crece solo con el contenido: tomar el foco no cambia el alto de la tarjeta. */
 
 .hoy-cuaderno-hoja:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 2px; }
 .hoy-cuaderno-hoja.es-invalido { outline: 2px solid var(--color-accent-700); outline-offset: 4px; border-radius: 2px; }
@@ -330,8 +330,8 @@
 .hoy-nota-form[data-color="durazno"] .hoy-guardar { --guardar-fondo: var(--color-accent-400); --guardar-texto: var(--color-text); }
 .hoy-nota-form[data-color="salvia"] .hoy-guardar { --guardar-fondo: var(--color-accent-2-400); --guardar-texto: var(--color-text); }
 .hoy-nota-form[data-color="arena"] .hoy-guardar { --guardar-fondo: var(--color-neutral-500); --guardar-texto: var(--color-text); }
-.hoy-nota-form[data-color="terracota"] .hoy-guardar { --guardar-fondo: var(--color-accent-700); --guardar-texto: var(--color-on-accent); }
-.hoy-nota-form[data-color="oliva"] .hoy-guardar { --guardar-fondo: var(--color-accent-2-700); --guardar-texto: var(--color-on-accent); }
+.hoy-nota-form[data-color="terracota"] .hoy-guardar { --guardar-fondo: var(--color-accent-700); --guardar-texto: var(--color-on-acento-fuerte); }
+.hoy-nota-form[data-color="oliva"] .hoy-guardar { --guardar-fondo: var(--color-accent-2-700); --guardar-texto: var(--color-on-acento-fuerte); }
 
 .hoy-nota-form[data-color] .hoy-guardar { background: var(--guardar-fondo); color: var(--guardar-texto); }
 .hoy-nota-form[data-color] .hoy-guardar:hover:not(:disabled) { background: color-mix(in srgb, var(--guardar-fondo) 88%, black); }
@@ -410,6 +410,9 @@
 .hoy-campo-fecha { width: 160px; }
 .hoy-campo-hora { width: 120px; }
 .hoy-campo-destino { width: min(280px, 100%); }
+.hoy-campo-tarea-proyecto { width: min(240px, 100%); }
+.hoy-campo-tarea-prioridad { width: 140px; }
+.hoy-campo-tarea-columna { width: min(220px, 100%); }
 .hoy-panel .hoy-entrada { min-height: 40px; background: transparent; border: 1px solid var(--color-neutral-400); }
 .hoy-panel .hoy-entrada:hover { border-color: var(--color-neutral-500); }
 .hoy-panel .hoy-entrada:focus { border-color: var(--color-accent); }
@@ -467,14 +470,14 @@
     .hoy-colores { --hoy-color-gap: 14px; }
 }
 
-.hoy-color-durazno { --hoy-muestra: var(--color-accent-400); }
-.hoy-color-salvia { --hoy-muestra: var(--color-accent-2-400); }
-.hoy-color-arena { --hoy-muestra: var(--color-neutral-500); }
-.hoy-color-terracota { --hoy-muestra: var(--color-accent-600); }
-.hoy-color-oliva { --hoy-muestra: var(--color-accent-2-600); }
+.hoy-color-durazno { --hoy-muestra: var(--color-nota-durazno); }
+.hoy-color-salvia { --hoy-muestra: var(--color-nota-salvia); }
+.hoy-color-arena { --hoy-muestra: var(--color-nota-arena); }
+.hoy-color-terracota { --hoy-muestra: var(--color-nota-terracota); }
+.hoy-color-oliva { --hoy-muestra: var(--color-nota-oliva); }
 
 @media (prefers-reduced-motion: no-preference) {
-    .hoy-chip-grupo, .hoy-tipo > span, .hoy-cuaderno-titulo { transition: border-color 150ms var(--hoy-suave), background-color 150ms var(--hoy-suave), color 150ms var(--hoy-suave); }
+    .hoy-chip-grupo, .hoy-tipo > span, .hoy-cuaderno-titulo { transition: border-color 150ms var(--hoy-suave), background-color 150ms var(--hoy-suave), color 150ms var(--hoy-suave), box-shadow 150ms var(--hoy-suave); }
     .js-hoy .hoy-panel.es-abierto { animation: hoy-panel-entra 160ms var(--hoy-suave); }
 }
 
@@ -528,7 +531,7 @@
     text-align: center;
 }
 
-.hoy-dia-numero { font-variant-numeric: tabular-nums; }
+.hoy-dia-numero { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .hoy-dia:hover { background: var(--color-neutral-200); }
 .hoy-dia[data-hoy] { box-shadow: inset 0 0 0 1.5px var(--color-accent-600); }
 
@@ -558,7 +561,7 @@
 .hoy-dia-punto, .hoy-punto { flex: none; border-radius: 999px; background: var(--punto, var(--color-accent)); }
 .hoy-dia-punto { width: 6px; height: 6px; }
 .hoy-dia-punto.es-hecho { opacity: 0.4; }
-.hoy-dia-mas { font-size: 10px; line-height: 6px; font-weight: 600; color: var(--color-text); font-variant-numeric: tabular-nums; }
+.hoy-dia-mas { font-size: 10px; line-height: 6px; font-weight: 600; color: var(--color-text); font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
 /* Día seleccionado (relleno oscuro): cada punto pasa a la versión clara de su tipo (--tipo-fondo). */
 .hoy-dia[aria-pressed="true"] .hoy-dia-punto { background: var(--tipo-fondo); }
@@ -583,7 +586,7 @@
 .hoy-evento { min-width: 0; }
 .hoy-evento-titulo { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
 .hoy-evento-titulo > * { min-width: 0; }
-.hoy-evento-hora { flex: none; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
+.hoy-evento-hora { flex: none; color: var(--color-neutral-600); font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .hoy-tachado { text-decoration: line-through; color: var(--color-neutral-700); }
 
 .hoy-punto { width: 6px; height: 6px; }
@@ -614,6 +617,8 @@
     background: var(--tono-fondo);
     color: var(--tono-texto);
     font-size: 14px;
+    /* Se centra con la línea del título (16px × 1.2 de alto), no con el borde superior del bloque. */
+    margin-top: calc((16px * 1.2 - 30px) / 2);
 }
 
 .hoy-rec-contenido { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
@@ -677,7 +682,7 @@
 .hoy-rec-detalle[hidden] { display: none; }
 .hoy-dato { display: flex; justify-content: space-between; gap: 12px; }
 .hoy-dato-etiqueta { color: var(--color-neutral-700); }
-.hoy-dato-valor { font-variant-numeric: tabular-nums; text-align: right; }
+.hoy-dato-valor { font-family: var(--font-num); font-variant-numeric: tabular-nums; text-align: right; }
 .hoy-rec-fuente { margin: 0; font-size: 12px; color: var(--color-neutral-600); }
 .hoy-rec-fuente a { color: var(--color-accent-700); }
 
@@ -699,7 +704,7 @@
     font-weight: 600;
     line-height: 1;
     white-space: nowrap;
-    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num); font-variant-numeric: tabular-nums;
 }
 
 .hoy-insignia.es-al-dia { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
@@ -836,7 +841,7 @@
 }
 
 /* Reloj de 36px; con más caracteres (H:MM:SS) baja de tamaño para caber siempre dentro del anillo. */
-.hoy-reloj { font-size: 36px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hoy-reloj { font-size: 36px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hoy-reloj[data-tamano="medio"] { font-size: 32px; }
 .hoy-reloj[data-tamano="largo"] { font-size: 26px; }
 .hoy-reloj[data-tamano="extra"] { font-size: 22px; }

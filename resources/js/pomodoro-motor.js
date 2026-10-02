@@ -15,7 +15,7 @@ import { adquirirCandado, liberarCandado } from './pomodoro-candado.js';
 import { pedirSeguro } from './red.js';
 import {
     avanzar, CONFIG_POR_DEFECTO, crearEstado, DESCANSO, describir, FOCO, iniciarSiguienteFoco, migrarConfig, migrarEstado,
-    migrarEvento, pausar, reanudar, reiniciar, saltar, terminar,
+    migrarEvento, pausar, reanudar, reiniciar, saltar, sonidoValido, terminar, TONOS_SONIDO,
 } from './pomodoro-logica.js';
 import { confirmar } from './confirmar.js';
 
@@ -25,6 +25,7 @@ const CLAVE_CONFIG_ANTIGUA = 'focodiario.estudio.config';
 export const CLAVE_ESTADO = 'focodiario.estudio.estado';
 export const CLAVE_PENDIENTES = 'focodiario.estudio.pendientes';
 export const CLAVE_SONIDO = 'focodiario.estudio.sonido';
+export const CLAVE_SONIDO_TIPO = 'focodiario.estudio.sonido-tipo';
 export const CLAVE_CANDADO = 'focodiario.estudio.candado';
 
 const ID_PESTANA = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -108,28 +109,40 @@ export function prepararAudio() {
     }
 }
 
-function sonar() {
-    if (!sonidoActivo()) return;
+/** Sonido elegido, leído en el momento de sonar (sin guardarlo en memoria) para que un cambio hecho en otra pestaña se aplique. */
+export const sonidoElegido = () => sonidoValido(leer(CLAVE_SONIDO_TIPO, null));
 
+/** Reproduce un sonido del catálogo. Para la vista previa hay que llamarlo dentro de un clic (crea o reanuda el contexto de audio). */
+export function reproducirSonido(clave) {
     try {
         prepararAudio();
-        [0, 0.22].forEach((retraso) => {
+        contextoAudio.resume?.();
+
+        const base = contextoAudio.currentTime;
+
+        TONOS_SONIDO[sonidoValido(clave)].forEach((t) => {
             const oscilador = contextoAudio.createOscillator();
             const volumen = contextoAudio.createGain();
-            const inicio = contextoAudio.currentTime + retraso;
+            const inicio = base + t.inicio;
+            const fin = inicio + t.duracion;
 
-            oscilador.type = 'sine';
-            oscilador.frequency.value = 880;
+            oscilador.type = t.onda;
+            oscilador.frequency.value = t.frecuencia;
+            // Ataque corto y caída hasta casi cero antes de parar, para que no haya clics.
             volumen.gain.setValueAtTime(0.0001, inicio);
-            volumen.gain.exponentialRampToValueAtTime(0.2, inicio + 0.02);
-            volumen.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.18);
+            volumen.gain.exponentialRampToValueAtTime(t.ganancia, inicio + 0.02);
+            volumen.gain.exponentialRampToValueAtTime(0.0001, fin - 0.02);
             oscilador.connect(volumen).connect(contextoAudio.destination);
             oscilador.start(inicio);
-            oscilador.stop(inicio + 0.2);
+            oscilador.stop(fin);
         });
     } catch {
         // El navegador no permite audio: se sigue sin sonido.
     }
+}
+
+function sonar() {
+    if (sonidoActivo()) reproducirSonido(sonidoElegido());
 }
 
 function avisar(titulo, cuerpo) {

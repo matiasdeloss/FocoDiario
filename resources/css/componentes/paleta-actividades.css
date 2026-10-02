@@ -1,0 +1,42 @@
+/* ---------- Actividades: colores de la paleta (variables de organic.css) ---------- */
+/* Sin actividad: superficie neutra y sin filete. Cada clase de actividad redefine las tres variables. */
+:root {
+    --caja-fondo: var(--color-neutral-200);
+    --caja-acento: transparent;
+    --caja-texto: var(--color-text);
+}
+.actividad-terracota { --caja-fondo: var(--actividad-terracota-fondo); --caja-acento: var(--actividad-terracota-acento); --caja-texto: var(--actividad-terracota-texto); }
+.actividad-salvia { --caja-fondo: var(--actividad-salvia-fondo); --caja-acento: var(--actividad-salvia-acento); --caja-texto: var(--actividad-salvia-texto); }
+.actividad-ocre { --caja-fondo: var(--actividad-ocre-fondo); --caja-acento: var(--actividad-ocre-acento); --caja-texto: var(--actividad-ocre-texto); }
+.actividad-azul-polvo { --caja-fondo: var(--actividad-azul-polvo-fondo); --caja-acento: var(--actividad-azul-polvo-acento); --caja-texto: var(--actividad-azul-polvo-texto); }
+.actividad-ciruela { --caja-fondo: var(--actividad-ciruela-fondo); --caja-acento: var(--actividad-ciruela-acento); --caja-texto: var(--actividad-ciruela-texto); }
+.actividad-rosa { --caja-fondo: var(--actividad-rosa-fondo); --caja-acento: var(--actividad-rosa-acento); --caja-texto: var(--actividad-rosa-texto); }
+.actividad-oliva { --caja-fondo: var(--actividad-oliva-fondo); --caja-acento: var(--actividad-oliva-acento); --caja-texto: var(--actividad-oliva-texto); }
+.actividad-arena { --caja-fondo: var(--actividad-arena-fondo); --caja-acento: var(--actividad-arena-acento); --caja-texto: var(--actividad-arena-texto); }
+.actividad-celeste { --caja-fondo: var(--actividad-celeste-fondo); --caja-acento: var(--actividad-celeste-acento); --caja-texto: var(--actividad-celeste-texto); }
+.actividad-lavanda { --caja-fondo: var(--actividad-lavanda-fondo); --caja-acento: var(--actividad-lavanda-acento); --caja-texto: var(--actividad-lavanda-texto); }
+
+/* Selector de color de las actividades (pastillas con el color y el nombre) */
+.paleta-actividades { display: flex; flex-wrap: wrap; gap: 8px; }
+.paleta-opcion {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--caja-fondo);
+    color: var(--caja-texto);
+    font-size: var(--foco-texto-sm);
+    cursor: pointer;
+    transition: box-shadow var(--foco-transicion);
+}
+.paleta-opcion input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.paleta-punto { width: 12px; height: 12px; border-radius: 50%; background: var(--caja-acento); flex: none; }
+.paleta-sin-color { padding-left: 14px; }
+.paleta-opcion:hover { box-shadow: inset 0 0 0 1.5px var(--caja-acento, var(--color-neutral-400)); }
+.paleta-opcion:has(input:checked) { box-shadow: inset 0 0 0 2px var(--caja-texto); font-weight: 600; }
+.paleta-opcion:has(input:focus-visible) { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .paleta-opcion { transition: none; } }
+

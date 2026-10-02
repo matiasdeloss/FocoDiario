@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Enums\CategoriaRecomendacion;
 use App\Enums\EstadoTarea;
+use App\Enums\TipoRecomendacion;
 use App\Models\Tarea;
 use App\Services\Recomendaciones\CatalogoRecomendaciones;
 use App\Services\Recomendaciones\MotorRecomendaciones;
+use App\Services\Recomendaciones\Recomendacion;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -51,51 +53,116 @@ class CatalogoRecomendacionesTest extends TestCase
         $this->assertTrue($estudio->every(fn ($c) => $c->categoria === CategoriaRecomendacion::Estudio));
     }
 
-    public function test_la_vista_muestra_dos_columnas_y_el_resumen(): void
+    public function test_la_vista_muestra_una_seccion_por_categoria_y_el_resumen(): void
     {
+        $html = $this->get(route('recomendaciones.index'))
+            ->assertOk()
+            ->assertSee('Hora sugerida para acostarte')
+            ->assertSee('rec-card', false)
+            ->assertDontSee('rec-filtro', false)
+            ->getContent();
+
+        foreach (CategoriaRecomendacion::cases() as $categoria) {
+            $this->assertStringContainsString('id="rec-cat-'.$categoria->value.'"', $html, $categoria->value);
+            $this->assertStringContainsString($categoria->etiqueta(), $html);
+        }
+        $this->assertSame(1, substr_count($html, '<h1'));
+        $this->assertStringContainsString('ideas de estudio y vida', $html);
+    }
+
+    public function test_las_secciones_siguen_el_orden_del_enum(): void
+    {
+        $html = $this->get(route('recomendaciones.index'))->getContent();
+
+        $posiciones = array_map(fn ($c) => strpos($html, 'id="rec-cat-'.$c->value.'"'), CategoriaRecomendacion::cases());
+        $ordenadas = $posiciones;
+        sort($ordenadas);
+        $this->assertSame($ordenadas, $posiciones);
+    }
+
+    public function test_la_banda_para_ti_solo_aparece_con_alertas_sin_categoria(): void
+    {
+        $this->get(route('recomendaciones.index'))->assertOk()->assertDontSee('id="rec-para-ti"', false);
+
+        $motor = $this->mock(MotorRecomendaciones::class);
+        $motor->shouldReceive('generar')->andReturn(collect([
+            new Recomendacion('Algo urgente sin categoría', 'Mensaje urgente.', TipoRecomendacion::Alerta, 'bi-exclamation-triangle', 90),
+        ]));
+
         $this->get(route('recomendaciones.index'))
             ->assertOk()
-            ->assertSee('Para ti ahora')
-            ->assertSee('Ideas para tu día')
-            ->assertSee('Salud y hábitos')
-            ->assertSee('Hora sugerida para acostarte')
-            ->assertSee('rec-card', false);
+            ->assertSee('id="rec-para-ti"', false)
+            ->assertSee('Algo urgente sin categoría')
+            ->assertSee('1 alerta')
+            ->assertSee('rec-destacada', false);
+    }
+
+    public function test_el_hero_muestra_las_tres_metricas(): void
+    {
+        $motor = $this->mock(MotorRecomendaciones::class);
+        $motor->shouldReceive('generar')->andReturn(collect([
+            new Recomendacion('Urgente', 'Mensaje.', TipoRecomendacion::Alerta, 'bi-exclamation-triangle', 90),
+            new Recomendacion('Otra', 'Mensaje.', TipoRecomendacion::Info, 'bi-info-circle', 10),
+        ]));
+
+        $html = $this->get(route('recomendaciones.index'))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/data-stat="alertas">1</', $html);
+        $this->assertMatchesRegularExpression('/data-stat="datos">2</', $html);
+        $this->assertMatchesRegularExpression('/data-stat="ideas">8</', $html);
+    }
+
+    public function test_una_categoria_sin_items_no_se_muestra(): void
+    {
+        $motor = $this->mock(MotorRecomendaciones::class);
+        $motor->shouldReceive('generar')->andReturn(collect());
+
+        $html = $this->get(route('recomendaciones.index'))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('id="rec-para-ti"', $html);
+        // Con el motor vacío quedan las ideas del catálogo: dos por categoría.
+        $this->assertSame(2 * count(CategoriaRecomendacion::cases()), substr_count($html, 'class="rec-card '));
+    }
+
+    public function test_el_parametro_categoria_ya_no_tiene_efecto_y_no_rompe(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-09-29 10:00'));
+
+        foreach (['estudio', 'xx', ''] as $valor) {
+            $html = $this->get(route('recomendaciones.index', ['categoria' => $valor]))->assertOk()->getContent();
+            foreach (CategoriaRecomendacion::cases() as $categoria) {
+                $this->assertStringContainsString('id="rec-cat-'.$categoria->value.'"', $html, $valor);
+            }
+        }
     }
 
     public function test_la_vista_es_estable_al_recargar(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-09-29 10:00'));
+        $titulos = fn (string $html) => collect(CatalogoRecomendaciones::todos())
+            ->filter(fn ($c) => str_contains($html, e($c->titulo)))->pluck('clave')->sort()->values()->all();
+
         $primera = $this->get(route('recomendaciones.index'))->assertOk()->getContent();
         $segunda = $this->get(route('recomendaciones.index'))->getContent();
 
-        $this->assertSame(
-            CatalogoRecomendaciones::delDia('2026-09-29')->take(8)->pluck('titulo')->all(),
-            CatalogoRecomendaciones::delDia('2026-09-29')->take(8)->pluck('titulo')->all(),
-        );
-        $this->assertStringContainsString(e(CatalogoRecomendaciones::delDia('2026-09-29')->first()->titulo), $primera);
-        $this->assertStringContainsString(e(CatalogoRecomendaciones::delDia('2026-09-29')->first()->titulo), $segunda);
-    }
-
-    public function test_el_filtro_por_categoria_oculta_las_demas_y_una_categoria_invalida_se_ignora(): void
-    {
-        $this->get(route('recomendaciones.index', ['categoria' => 'estudio']))
-            ->assertOk()
-            ->assertSee('Estudiá con la técnica Pomodoro')
-            ->assertDontSee('Regla de los 2 minutos')
-            ->assertDontSee('Hora sugerida para acostarte');
-
-        $this->get(route('recomendaciones.index', ['categoria' => 'salud']))
-            ->assertOk()
-            ->assertSee('Hora sugerida para acostarte');
-
-        $this->get(route('recomendaciones.index', ['categoria' => 'xx']))->assertOk()->assertSee('Para ti ahora');
+        $this->assertSame($titulos($primera), $titulos($segunda));
+        $esperadas = collect(CategoriaRecomendacion::cases())
+            ->flatMap(fn ($c) => CatalogoRecomendaciones::delDia('2026-09-29', $c)->take(2)->pluck('clave'))->sort()->values()->all();
+        $this->assertSame($esperadas, $titulos($primera));
     }
 
     public function test_los_consejos_sin_fuente_se_marcan_como_generales(): void
     {
-        $this->get(route('recomendaciones.index', ['categoria' => 'salud']))
-            ->assertSee('Consejo general, sin fuente específica.')
-            ->assertSee('who.int', false);
+        // Se busca un día en que entre las ideas mostradas haya una sin fuente (la rotación cambia por día).
+        $dia = collect(range(0, 30))
+            ->map(fn ($i) => CarbonImmutable::parse('2026-09-01')->addDays($i))
+            ->first(fn ($f) => collect(CategoriaRecomendacion::cases())
+                ->flatMap(fn ($c) => CatalogoRecomendaciones::delDia($f->toDateString(), $c)->take(2))
+                ->contains(fn ($x) => $x->fuente === null));
+        $this->assertNotNull($dia);
+
+        $this->travelTo($dia->setTime(10, 0));
+        $this->get(route('recomendaciones.index'))->assertSee('Consejo general, sin fuente específica.');
     }
 
     public function test_un_parcial_cercano_genera_una_recomendacion_de_estudio(): void

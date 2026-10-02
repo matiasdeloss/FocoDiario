@@ -1,0 +1,25 @@
+/* Los controles de la derecha de la barra comparten alto (--nav-control-alto). Solo el selector de tema es una pastilla; los botones llevan esquinas suaves. */
+.navbar-foco { --nav-control-alto: 38px; }
+.nav-invitado, .nav-usuario { display: inline-flex; align-items: center; gap: 6px; height: var(--nav-control-alto); padding: 0 14px; font-size: 13px; color: var(--foco-texto-suave); white-space: nowrap; }
+/* "Invitado" es una etiqueta de texto, no un botón: sin fondo ni pastilla, en el color del texto. */
+.nav-invitado { padding-inline: 4px; color: var(--color-text); font-size: 14px; font-weight: 600; }
+/* La cuenta se lee de un vistazo: nombre en el color del texto y un ícono más grande. */
+.nav-usuario { font-size: 15px; font-weight: 600; color: var(--color-text); gap: 8px; }
+.nav-usuario .bi { font-size: 22px; line-height: 1; color: var(--color-accent); }
+.nav-invitado .bi { font-size: 18px; line-height: 1; }
+.nav-usuario { padding-inline: 4px; }
+/* Par de acciones de invitado: "Iniciar sesión" (contorno, secundaria) y "Guardar mis datos" (rellena, principal). Mismo alto y mismo ancho de borde, esquinas de 8px. */
+.navbar-foco .nav-entrar, .navbar-foco .nav-guardar {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: var(--nav-control-alto); padding: 0 18px; border: 1px solid transparent; border-radius: var(--radius-control);
+    font-size: 14px; font-weight: 600; line-height: 1; white-space: nowrap;
+    transition: background-color 150ms, border-color 150ms, color 150ms;
+}
+.navbar-foco .nav-entrar { border-color: var(--color-neutral-300); background: transparent; color: var(--color-text); }
+.navbar-foco .nav-entrar:hover { border-color: var(--color-neutral-400); background: var(--color-neutral-200); color: var(--color-text); }
+.navbar-foco .nav-guardar > .bi { font-size: 17px; }
+@media (prefers-reduced-motion: reduce) { .navbar-foco .nav-entrar, .navbar-foco .nav-guardar { transition: none; } }
+@media (max-width: 991.98px) {
+    .nav-cuenta { align-items: flex-start; padding-top: var(--foco-espacio-2); border-top: 1px solid var(--foco-borde); }
+}
+

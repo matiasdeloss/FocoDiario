@@ -383,7 +383,20 @@ export function desplazamientoAnillo(fraccion, circunferencia) {
     return circunferencia * (1 - f);
 }
 
-const FORMATOS_TIEMPO = 'Probá con 25, 25:00, 1:30, 90s o 1:05:00.';
+const FORMATOS_TIEMPO = 'Escribí solo números, por ejemplo 25 o 25:00.';
+
+/**
+ * Máscara de reloj mientras se escribe: solo deja dígitos (hasta 5) y con 3 o más pone los dos puntos solos, con los
+ * dos últimos como segundos ("0000" → "00:00", "250" → "2:50", "18000" → "180:00"). Con 1 o 2 dígitos queda el
+ * número tal cual (un número solo son minutos).
+ */
+export function enmascararTiempo(texto) {
+    const digitos = String(texto ?? '').replace(/\D/g, '').slice(0, 5);
+
+    if (digitos.length < 3) return digitos;
+
+    return `${digitos.slice(0, -2)}:${digitos.slice(-2)}`;
+}
 
 /**
  * Interpreta lo que se escribe al editar el reloj. Reglas:
@@ -425,3 +438,47 @@ export function interpretarTiempo(texto) {
 
     return { ok: true, seg: total };
 }
+
+/* ---------- Sonidos de aviso ---------- */
+/* Cada sonido es una lista de tonos sintetizados con Web Audio (sin archivos). inicio y duracion van en segundos. */
+export const SONIDO_POR_DEFECTO = 'campana';
+
+export const SONIDOS = [
+    { clave: 'campana', nombre: 'Campana', descripcion: 'Dos toques suaves y breves' },
+    { clave: 'suave', nombre: 'Suave', descripcion: 'Tres notas ascendentes, tranquilas' },
+    { clave: 'alarma', nombre: 'Alarma', descripcion: 'Pitidos repetidos, imposible de ignorar' },
+    { clave: 'digital', nombre: 'Digital', descripcion: 'Doble pitido de reloj digital' },
+    { clave: 'marimba', nombre: 'Marimba', descripcion: 'Secuencia cálida y melodiosa' },
+];
+
+const tono = (frecuencia, inicio, duracion, onda, ganancia) => ({ frecuencia, inicio, duracion, onda, ganancia });
+
+/** Seis pitidos que alternan dos alturas, uno cada 0,5 s (unos 2,8 s en total). */
+const pitidosAlarma = Array.from({ length: 6 }, (_, i) => tono(i % 2 === 0 ? 988 : 740, i * 0.5, 0.3, 'square', 0.1));
+
+/** Cuatro pitidos cortos de reloj digital en dos pares (beep-beep, beep-beep). */
+const tonosDigital = [
+    tono(1046.5, 0, 0.09, 'square', 0.12),
+    tono(1046.5, 0.13, 0.09, 'square', 0.12),
+    tono(1046.5, 0.40, 0.09, 'square', 0.12),
+    tono(1046.5, 0.53, 0.09, 'square', 0.12),
+];
+
+/** Secuencia armónica de marimba: cuatro notas ascendentes. */
+const tonosMarimba = [
+    tono(523.25, 0, 0.28, 'sine', 0.20),
+    tono(659.25, 0.14, 0.28, 'sine', 0.19),
+    tono(783.99, 0.28, 0.28, 'sine', 0.18),
+    tono(1046.5, 0.42, 0.45, 'triangle', 0.18),
+];
+
+export const TONOS_SONIDO = {
+    campana: [tono(880, 0, 0.2, 'sine', 0.2), tono(880, 0.22, 0.2, 'sine', 0.2)],
+    suave: [tono(523.25, 0, 0.7, 'sine', 0.18), tono(659.25, 0.25, 0.7, 'triangle', 0.16), tono(783.99, 0.5, 0.9, 'sine', 0.18)],
+    alarma: pitidosAlarma,
+    digital: tonosDigital,
+    marimba: tonosMarimba,
+};
+
+/** Clave válida de sonido; cualquier otra cosa (nulo, desconocida) cae en la campana de siempre. */
+export const sonidoValido = (clave) => (SONIDOS.some((s) => s.clave === clave) ? clave : SONIDO_POR_DEFECTO);

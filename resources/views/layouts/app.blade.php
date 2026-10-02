@@ -8,6 +8,8 @@
     <meta name="url-login" content="{{ route('login') }}">
     <meta name="url-recordatorios-vencidos" content="{{ route('recordatorios.vencidos') }}">
     <title>@yield('titulo', 'FocoDiario')</title>
+    {{-- Aplica el tema guardado antes de pintar (sin destello). Lleva el nonce de la CSP; el interruptor está en resources/js/tema.js. --}}
+    <script nonce="{{ Vite::cspNonce() }}">try{var t=localStorage.getItem('foco-tema');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
@@ -31,9 +33,6 @@
     </nav>
 
     <main class="container-fluid px-3 px-lg-5 principal-foco">
-        @if (session('estado'))
-            <div class="aviso-foco" role="status" data-aviso-flash>{{ session('estado') }}</div>
-        @endif
         @yield('contenido')
     </main>
 
@@ -62,6 +61,14 @@
 
     @if (auth()->user()?->es_invitado)
         @include('layouts._dialogo-cuenta')
+    @endif
+
+    {{-- Avisos (toasts): un solo contenedor para toda la app (resources/js/avisos.js). El mensaje de la sesión flash
+         queda en un nodo oculto que el script convierte en aviso; no hay banner visible en la página. --}}
+    <div id="avisos-flotantes" class="avisos-flotantes" popover="manual"></div>
+    @if (session('estado'))
+        <div hidden data-aviso-flash data-tipo="{{ session('estado_tipo', 'exito') }}" data-texto="{{ session('estado') }}"
+             @if (session('estado_detalle')) data-detalle="{{ session('estado_detalle') }}" @endif></div>
     @endif
 </body>
 </html>

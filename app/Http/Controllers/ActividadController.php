@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\TipoContexto;
 use App\Http\Requests\ActividadRequest;
 use App\Models\Contexto;
+use App\Support\Aviso;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -22,7 +23,7 @@ class ActividadController extends Controller
             'contexto_padre_id' => null,
         ]);
 
-        return back()->with('estado', 'Actividad creada.');
+        return back()->with(Aviso::flash('Actividad creada.'));
     }
 
     public function update(ActividadRequest $request, Contexto $actividad): RedirectResponse
@@ -31,7 +32,7 @@ class ActividadController extends Controller
 
         $actividad->update($request->validated());
 
-        return back()->with('estado', 'Actividad actualizada.');
+        return back()->with(Aviso::flash('Actividad actualizada.'));
     }
 
     public function destroy(Contexto $actividad): RedirectResponse
@@ -40,7 +41,7 @@ class ActividadController extends Controller
 
         $actividad->delete();
 
-        return back()->with('estado', 'Actividad eliminada. Sus cajas quedaron sin actividad.');
+        return back()->with(Aviso::flash('Actividad eliminada. Sus cajas quedaron sin actividad.'));
     }
 
     /** Solo se gestionan desde la agenda los contextos que tienen color. */

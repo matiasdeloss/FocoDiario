@@ -1,0 +1,47 @@
+/* ---------- Calendario: colores por tipo y tira semanal ---------- */
+/*
+ * Cinco tipos con hues bien separados (única fuente de verdad; se valida con tests/js/contraste-tipos.mjs):
+ * tarea = terracota (24°), recordatorio = verde vivo (131°), nota = azul polvo (218°), estudio = ciruela (299°), planner semanal = índigo (247°).
+ * Cada uno: fondo suave, texto AA >= 4.5:1 y borde/punto >= 3:1. Se usan vía .tipo-* y .ev-tipo-*.
+ */
+:root {
+    --tipo-tarea-fondo: var(--color-accent-200);  --tipo-tarea-texto: var(--color-accent-800);  --tipo-tarea-borde: var(--color-accent-600);
+    --tipo-recordatorio-fondo: #cdebc5;           --tipo-recordatorio-texto: #1c4a29;           --tipo-recordatorio-borde: #3a8748;
+    --tipo-nota-fondo: #d9e4f7;                   --tipo-nota-texto: #20407a;                   --tipo-nota-borde: #4a72b8;
+    --tipo-sesion-fondo: #f0d3e9;                 --tipo-sesion-texto: #591f4c;                 --tipo-sesion-borde: #98479a;
+    --tipo-planner-fondo: #e1ddf6;                --tipo-planner-texto: #2f2670;                --tipo-planner-borde: #6a5bc0;
+}
+/* Cada tipo: punto de los chips, y fondo / texto / borde de eventos, botones y tarjetas */
+.tipo-tarea { --punto: var(--tipo-tarea-borde); --tipo-fondo: var(--tipo-tarea-fondo); --tipo-texto: var(--tipo-tarea-texto); --tipo-borde: var(--tipo-tarea-borde); }
+.tipo-recordatorio { --punto: var(--tipo-recordatorio-borde); --tipo-fondo: var(--tipo-recordatorio-fondo); --tipo-texto: var(--tipo-recordatorio-texto); --tipo-borde: var(--tipo-recordatorio-borde); }
+.tipo-nota { --punto: var(--tipo-nota-borde); --tipo-fondo: var(--tipo-nota-fondo); --tipo-texto: var(--tipo-nota-texto); --tipo-borde: var(--tipo-nota-borde); }
+.tipo-planner { --punto: var(--tipo-planner-borde); --tipo-fondo: var(--tipo-planner-fondo); --tipo-texto: var(--tipo-planner-texto); --tipo-borde: var(--tipo-planner-borde); }
+.tipo-sesion { --punto: var(--tipo-sesion-borde); --tipo-fondo: var(--tipo-sesion-fondo); --tipo-texto: var(--tipo-sesion-texto); --tipo-borde: var(--tipo-sesion-borde); }
+
+/* Encabezado de grupo dentro de una tabla (p. ej. recordatorios sin fecha) */
+.fila-grupo th { background: var(--color-neutral-200); font-size: var(--foco-texto-sm); font-weight: 600; }
+
+.semana-tira { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--foco-espacio-1); }
+.semana-dia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-height: 5rem;
+    padding: var(--foco-espacio-2) 2px;
+    border-radius: var(--foco-radio-sm);
+    color: var(--foco-texto);
+    text-decoration: none;
+    transition-property: background-color, border-color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.semana-dia:hover { background: var(--color-neutral-200); color: var(--foco-texto); }
+.semana-dia-hoy { background: var(--foco-boton); color: var(--color-on-accent); }
+.semana-dia-nombre { font-size: 11px; color: var(--foco-texto-meta); }
+.semana-dia-hoy .semana-dia-nombre, .semana-dia-hoy .semana-punto { color: var(--color-on-accent); }
+.semana-dia-numero { font-family: var(--font-num); font-size: 20px; font-weight: 400; font-synthesis: none; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.semana-dia-puntos { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 6px; }
+.semana-punto { display: inline-flex; align-items: center; gap: 3px; font-size: 0.7rem; font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--foco-texto-meta); }
+.semana-punto i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--punto); }
+

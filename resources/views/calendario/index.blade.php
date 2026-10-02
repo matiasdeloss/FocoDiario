@@ -5,10 +5,8 @@
 @section('contenido')
     <div class="mb-4">
         <h1 class="pagina-titulo">Calendario</h1>
-        <p class="text-secondary mb-0">Tareas, recordatorios, notas y sesiones de estudio en un solo lugar.</p>
+        <p class="text-secondary mb-0">Tareas, recordatorios, notas, sesiones de estudio y planner semanal en un solo lugar.</p>
     </div>
-
-    <div id="calendario-aviso" class="aviso-foco aviso-error" role="alert" hidden></div>
 
     <fieldset class="calendario-filtros mb-3">
         <legend class="visually-hidden">Qué mostrar en el calendario</legend>
@@ -17,6 +15,7 @@
             'recordatorio' => 'Recordatorios',
             'nota' => 'Notas',
             'sesion' => 'Estudio',
+            'planner' => 'Planner semanal',
         ] as $tipo => $etiqueta)
             <label class="filtro-chip tipo-{{ $tipo }}">
                 <input type="checkbox" value="{{ $tipo }}" data-filtro-tipo checked>
@@ -31,10 +30,12 @@
          data-url-eventos="{{ route('calendario.eventos') }}"
          data-url-tarea="{{ route('calendario.tareas.fecha', ['tarea' => '__ID__']) }}"
          data-url-recordatorio="{{ route('calendario.recordatorios.fecha', ['recordatorio' => '__ID__']) }}"
+         data-url-planner="{{ route('calendario.planner.mover', ['caja' => '__ID__']) }}"
          data-url-nota="{{ route('calendario.notas.fecha', ['nota' => '__ID__']) }}"
          data-url-tarjetas="{{ route('calendario.tarjetas.store') }}"
          data-url-tarjeta="{{ route('calendario.tarjetas.update', ['tipo' => '__TIPO__', 'id' => '__ID__']) }}"
          data-url-detalle="{{ route('calendario.detalle', ['tipo' => '__TIPO__', 'id' => '__ID__']) }}"
+         data-url-reactivar="{{ route('recordatorios.reactivar', ['recordatorio' => '__ID__']) }}"
          data-url-pagina="{{ route('calendario.tarjetas.index', ['tipo' => '__TIPO__']) }}">
         <div class="col-lg-8">
             <div class="tarjeta tarjeta-relleno">
@@ -133,6 +134,7 @@
 
             <div class="detalle-acciones">
                 <button type="button" class="btn btn-sm btn-foco-suave detalle-boton" id="detalle-completar" data-tipos="tarea" aria-pressed="false"></button>
+                <button type="button" class="btn btn-sm btn-foco-suave detalle-boton" id="detalle-reactivar" data-tipos="recordatorio" hidden><i class="bi bi-bell" aria-hidden="true"></i> Marcar como no avisado</button>
                 <a href="#" class="detalle-boton detalle-enlace-boton" id="detalle-historial" data-tipos="sesion"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver el historial de Estudio</a>
             </div>
         </div>

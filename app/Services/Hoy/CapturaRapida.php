@@ -23,7 +23,7 @@ class CapturaRapida
     }
 
     /**
-     * @param  array{tipo: string, titulo: string, descripcion?: ?string, fecha?: ?string, hora?: ?string, contexto_id?: ?int, color?: ?string}  $datos
+     * @param  array{tipo: string, titulo: string, descripcion?: ?string, fecha?: ?string, hora?: ?string, contexto_id?: ?int, color?: ?string, proyecto?: ?string, prioridad?: ?string, columna_id?: ?int}  $datos
      */
     public function crear(array $datos): Model
     {
@@ -34,8 +34,12 @@ class CapturaRapida
             'tarea' => Tarea::create([
                 'titulo' => $datos['titulo'],
                 'descripcion' => $descripcion,
-                'prioridad' => PrioridadTarea::Media,
+                'proyecto' => filled($datos['proyecto'] ?? null) ? $datos['proyecto'] : null,
+                'prioridad' => PrioridadTarea::tryFrom((string) ($datos['prioridad'] ?? '')) ?? PrioridadTarea::Media,
+                // Sin columna elegida, pendiente; con columna, el estado lo fija la categoría de esa columna (Tarea::booted).
                 'estado' => EstadoTarea::Pendiente,
+                'columna_id' => $datos['columna_id'] ?? null,
+                'color' => $datos['color'] ?? null,
                 'fecha_limite' => $fecha,
             ]),
             // Solo el día: a las 09:00. Sin día: queda "por ubicar" en el calendario.

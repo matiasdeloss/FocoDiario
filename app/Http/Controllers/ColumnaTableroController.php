@@ -11,6 +11,7 @@ use App\Http\Requests\MoverTareaColumnaRequest;
 use App\Http\Requests\TarjetaColumnaRequest;
 use App\Models\ColumnaTablero;
 use App\Models\Tarea;
+use App\Support\Aviso;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -129,12 +130,12 @@ class ColumnaTableroController extends Controller
         if ($request->expectsJson()) {
             // Los modales recargan la página tras guardar: el aviso viaja en la sesión.
             if ($request->hasHeader('X-Modal')) {
-                $request->session()->flash('estado', $mensaje);
+                Aviso::guardar($mensaje);
             }
 
             return response()->json($datos + ['mensaje' => $mensaje], $codigo);
         }
 
-        return redirect()->route('tablero.index')->with('estado', $mensaje);
+        return redirect()->route('tablero.index')->with(Aviso::flash($mensaje));
     }
 }

@@ -1,6 +1,7 @@
-{{-- Formulario de captura rápida, con aspecto de cuaderno (se reemplaza a sí mismo con HTMX). Requiere: $destinos. Opcionales: $valores (lo escrito), $guardada, $recienGuardado. --}}
+{{-- Formulario de captura rápida, con aspecto de cuaderno (se reemplaza a sí mismo con HTMX). Requiere: $destinos. Opcionales: $valores (lo escrito), $guardada, $recienGuardado, $proyectos y $columnasOrden (campos de la tarea; los pone el composer si faltan). --}}
 @php
     use App\Enums\ColorNota;
+    use App\Enums\PrioridadTarea;
     use App\Services\Hoy\CapturaRapida;
 
     $valores = ($valores ?? []) ?: old();
@@ -18,6 +19,13 @@
 
     // Lo que muestra cada chip cuando tiene valor.
     $textoFecha = CapturaRapida::etiquetaFecha($fecha, $tipo === 'recordatorio' ? $hora : null);
+    // Campos propios de la tarea (los mismos del modal de tareas): proyecto, prioridad y columna.
+    $proyectoElegido = $valores['proyecto'] ?? '';
+    $prioridadElegida = PrioridadTarea::tryFrom((string) ($valores['prioridad'] ?? ''));
+    $textoTarea = collect([
+        $prioridadElegida && $prioridadElegida !== PrioridadTarea::Media ? $prioridadElegida->etiqueta() : null,
+        $proyectoElegido !== '' ? $proyectoElegido : null,
+    ])->filter()->implode(' · ');
     $hayDestino = $contextoElegido !== null && $contextoElegido !== '' && isset($destinos[$contextoElegido]);
     $textoDestino = $hayDestino ? $destinos[$contextoElegido] : 'Bandeja de entrada';
 
@@ -25,28 +33,29 @@
     $abierto = [
         'fecha' => $errors->has('fecha') || $errors->has('hora'),
         'destino' => $errors->has('contexto_id'),
+        'tarea' => $errors->hasAny(['proyecto', 'prioridad', 'columna_id']),
     ];
-    $para = ['fecha' => 'tarea recordatorio nota', 'destino' => 'nota'];
+    $para = ['fecha' => 'tarea recordatorio nota', 'destino' => 'nota', 'tarea' => 'tarea'];
     $oculto = fn (string $clave) => ! in_array($tipo, explode(' ', $para[$clave]), true);
 @endphp
 <form id="nota-rapida-form" method="POST" action="{{ route('hoy.captura') }}" novalidate class="hoy-nota-form" data-captura
       @if (! empty($recienGuardado) || ! empty($guardada)) data-recien-guardado @endif
       @if (! empty($valores['tipo'])) data-tipo-servidor @endif
-      @if ($tipo === 'nota' && $colorElegido) data-color="{{ $colorElegido->value }}" @endif
+      @if (in_array($tipo, ['nota', 'tarea'], true) && $colorElegido) data-color="{{ $colorElegido->value }}" @endif
       hx-post="{{ route('hoy.captura') }}" hx-target="this" hx-swap="outerHTML">
     @csrf
     <input type="hidden" name="color" value="{{ $colorElegido?->value }}" data-nota-color-valor>
 
-    {{-- Cabecera: título a la izquierda y los colores siempre a la vista a la derecha (el color solo se guarda en las notas). --}}
+    {{-- Cabecera: título a la izquierda y los colores siempre a la vista a la derecha (el color se guarda en las notas y las tareas). --}}
     <div class="hoy-nota-cab">
         <h2 class="hoy-tarjeta-titulo" id="nota-rapida-titulo">Nota rápida</h2>
-        <div class="hoy-colores hoy-solo-js" role="group" aria-label="Color de la nota" aria-describedby="nota-rapida-color-ayuda"
-             title="El color se guarda solo en las notas">
+        <div class="hoy-colores hoy-solo-js" role="group" aria-label="Color de la nota o la tarea" aria-describedby="nota-rapida-color-ayuda"
+             title="El color se guarda en las notas y las tareas">
             @foreach (ColorNota::cases() as $color)
                 <button type="button" class="hoy-color hoy-color-{{ $color->value }}" data-color-nota="{{ $color->value }}"
                         aria-label="Color {{ mb_strtolower($color->etiqueta()) }}" aria-pressed="{{ $colorElegido === $color ? 'true' : 'false' }}"></button>
             @endforeach
-            <span class="hoy-solo-lector" id="nota-rapida-color-ayuda">El color se guarda solo en las notas.</span>
+            <span class="hoy-solo-lector" id="nota-rapida-color-ayuda">El color se guarda en las notas y las tareas.</span>
         </div>
     </div>
     @error('color') <p class="hoy-error">{{ $message }}</p> @enderror
@@ -58,7 +67,6 @@
                autocomplete="off" enterkeyhint="done" required
                @error('titulo') aria-invalid="true" aria-describedby="nota-rapida-error-titulo" @enderror
                @if ($enfocarTitulo) autofocus @endif>
-        <button type="button" class="hoy-descartar hoy-solo-js" data-nota-descartar aria-label="Descartar lo escrito" title="Descartar (Esc)"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
         @error('titulo') <p class="hoy-error" id="nota-rapida-error-titulo">{{ $message }}</p> @enderror
 
         <label class="hoy-solo-lector" for="nota-rapida-descripcion">Descripción (opcional)</label>
@@ -67,6 +75,8 @@
                   placeholder="Detalles o contexto…"
                   @if ($errorDescripcion) aria-invalid="true" aria-describedby="nota-rapida-error-descripcion" @endif>{{ $descripcion }}</textarea>
         @if ($errorDescripcion) <p class="hoy-error" id="nota-rapida-error-descripcion">{{ $errorDescripcion }}</p> @endif
+        {{-- Va al final del cuaderno en el orden del teclado (Tab pasa del título a la descripción); se dibuja arriba a la derecha por CSS. --}}
+        <button type="button" class="hoy-descartar hoy-solo-js" data-nota-descartar aria-label="Descartar lo escrito" title="Descartar (Esc)"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </div>
 
     <div class="hoy-nota-pie">
@@ -98,6 +108,13 @@
                     <i class="bi bi-folder2" aria-hidden="true"></i><span class="hoy-chip-texto" data-chip-texto>{{ $textoDestino }}</span>
                 </button>
                 <button type="button" class="hoy-chip-x" data-chip-quitar="destino" aria-label="Volver a la bandeja de entrada" @unless ($hayDestino) hidden @endunless><i class="bi bi-x" aria-hidden="true"></i></button>
+            </span>
+            {{-- Más detalles de la tarea: proyecto, prioridad y columna --}}
+            <span class="hoy-chip-grupo {{ $abierto['tarea'] ? 'es-error' : '' }}" data-chip-grupo="tarea" data-para="{{ $para['tarea'] }}" @if ($oculto('tarea')) data-oculto @endif>
+                <button type="button" class="hoy-chip" data-chip="tarea" aria-expanded="{{ $abierto['tarea'] ? 'true' : 'false' }}" aria-controls="nota-rapida-panel-tarea"
+                        aria-label="Más detalles de la tarea{{ $textoTarea !== '' ? ': ' . $textoTarea : '' }}">
+                    <i class="bi bi-sliders" aria-hidden="true"></i><span class="hoy-chip-texto" data-chip-texto>{{ $textoTarea !== '' ? $textoTarea : 'Más detalles' }}</span>
+                </button>
             </span>
         </div>
 
@@ -143,6 +160,18 @@
             </div>
             @error('contexto_id') <p class="hoy-error" id="nota-rapida-error-destino">{{ $message }}</p> @enderror
         </div>
+
+        {{-- Los mismos campos propios que el modal de tareas (partial compartido, con otro prefijo de ids). --}}
+        <div class="hoy-panel {{ $abierto['tarea'] ? 'es-abierto' : '' }}" id="nota-rapida-panel-tarea" data-panel="tarea" role="group" aria-label="Más detalles de la tarea" data-para="{{ $para['tarea'] }}" @if ($oculto('tarea')) data-oculto @endif>
+            <div class="hoy-panel-campos">
+                @include('tareas._campo-extra', ['campo' => 'proyecto', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $proyectoElegido])
+                @include('tareas._campo-extra', ['campo' => 'prioridad', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $valores['prioridad'] ?? null])
+                @if ($columnasOrden->isNotEmpty())
+                    @include('tareas._campo-extra', ['campo' => 'columna', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $valores['columna_id'] ?? null])
+                @endif
+            </div>
+        </div>
     </div>
     @error('tipo') <p class="hoy-error">{{ $message }}</p> @enderror
 </form>
+

@@ -127,8 +127,6 @@
             </p>
             <p class="t-vacio" data-sin-resultados hidden>Ninguna fila coincide con la búsqueda.</p>
         </div>
-
-        <p class="visually-hidden" role="status" data-mensaje></p>
     </div>
 
     @include('tareas._dialogo-tarea', ['proyectos' => $proyectos])

@@ -12,11 +12,11 @@ use Illuminate\Support\Collection;
 /** Datos del planner semanal: los siete días con sus cajas por hora, las cajas de la semana y las actividades. */
 class PlannerSemanal
 {
-    private const CLAVES_DIA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+    public const CLAVES_DIA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 
     /**
      * @return array{
-     *     tituloPlanner: string, lunes: CarbonImmutable, domingo: CarbonImmutable, dias: list<array<string, mixed>>,
+     *     tituloPlanner: string, layout: array<string, array{x: int, y: int, ancho: int, alto: int}>, lunes: CarbonImmutable, domingo: CarbonImmutable, dias: list<array<string, mixed>>,
      *     semanales: array<string, Caja|null>, actividades: Collection<int, Contexto>,
      *     etiquetaSemana: string, etiquetaMes: string, esEstaSemana: bool,
      *     urlAnterior: string, urlSiguiente: string
@@ -51,6 +51,7 @@ class PlannerSemanal
 
         return [
             'tituloPlanner' => Ajuste::tituloPlanner(),
+            'layout' => PlannerLayout::obtener($lunes),
             'lunes' => $lunes,
             'domingo' => $domingo,
             'dias' => $dias,

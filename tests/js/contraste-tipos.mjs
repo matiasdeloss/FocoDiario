@@ -1,4 +1,4 @@
-// Verifica la paleta de los 4 tipos (tarea, recordatorio, nota, estudio): texto/fondo >= 4.5, borde/punto >= 3
+// Verifica la paleta de los 5 tipos (tarea, recordatorio, nota, estudio, planner): texto/fondo >= 4.5, borde/punto >= 3
 // contra el fondo del tipo y contra el papel. Los valores deben coincidir con los tokens --tipo-*-* de app.css.
 // Uso: node tests/js/contraste-tipos.mjs   (sale con código 1 si algún par no llega)
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -20,6 +20,7 @@ const TIPOS = {
     recordatorio: { fondo: '#cdebc5', texto: '#1c4a29', borde: '#3a8748' },
     nota:         { fondo: '#d9e4f7', texto: '#20407a', borde: '#4a72b8' },
     sesion:       { fondo: '#f0d3e9', texto: '#591f4c', borde: '#98479a' },
+    planner:      { fondo: '#e1ddf6', texto: '#2f2670', borde: '#6a5bc0' },
 };
 let bajos = 0;
 const fila = (n, r, min) => { const ok = r >= min; if (!ok) bajos++; console.log(n.padEnd(52) + r.toFixed(2).padEnd(8) + String(min).padEnd(6) + (ok ? 'OK' : 'no llega')); };

@@ -13,6 +13,7 @@ use App\Models\Tarea;
 use App\Services\Hoy\ListasHoy;
 use App\Services\Tareas\ItemLista;
 use App\Services\Tareas\ListaTareas;
+use App\Support\Aviso;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -65,7 +66,7 @@ class TareaController extends Controller
 
         // Modal de tareas: solo confirma; la página se recarga y muestra el aviso.
         if ($request->expectsJson() && $request->hasHeader('X-Modal')) {
-            $request->session()->flash('estado', 'Tarea creada.');
+            Aviso::guardar('Tarea creada.');
 
             return response()->json(['id' => $tarea->id, 'mensaje' => 'Tarea creada.'], 201);
         }
@@ -81,7 +82,7 @@ class TareaController extends Controller
             ] + $this->listaHoy($listas), 201);
         }
 
-        return redirect()->route('tareas.index')->with('estado', 'Tarea creada.');
+        return redirect()->route('tareas.index')->with(Aviso::flash('Tarea creada.'));
     }
 
     public function show(Tarea $tarea): RedirectResponse
@@ -99,12 +100,12 @@ class TareaController extends Controller
         $tarea->update($request->validated());
 
         if ($request->expectsJson()) {
-            $request->session()->flash('estado', 'Tarea actualizada.');
+            Aviso::guardar('Tarea actualizada.');
 
             return response()->json(['id' => $tarea->id, 'mensaje' => 'Tarea actualizada.']);
         }
 
-        return redirect()->route('tareas.index')->with('estado', 'Tarea actualizada.');
+        return redirect()->route('tareas.index')->with(Aviso::flash('Tarea actualizada.'));
     }
 
     public function destroy(Request $request, Tarea $tarea): Response|RedirectResponse
@@ -115,7 +116,7 @@ class TareaController extends Controller
             return response('');
         }
 
-        return redirect()->route('tareas.index')->with('estado', 'Tarea eliminada.');
+        return redirect()->route('tareas.index')->with(Aviso::flash('Tarea eliminada.'));
     }
 
     /** Cambia el estado con un clic. Con HTMX devuelve solo la fila actualizada. */
@@ -131,7 +132,7 @@ class TareaController extends Controller
             return view('tareas._item', ['item' => ItemLista::deTarea($tarea), 'hoy' => today()]);
         }
 
-        return back()->with('estado', 'Estado actualizado.');
+        return back()->with(Aviso::flash('Estado actualizado.'));
     }
 
     /**

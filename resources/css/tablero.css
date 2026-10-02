@@ -78,7 +78,7 @@
     width: var(--ancho-columna);
     min-width: 0;
     padding: 8px;
-    background: #fff;
+    background: var(--color-campo);
     border-radius: var(--radius-card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 6%, transparent);
     min-height: 6rem;
@@ -113,7 +113,7 @@
     color: var(--color-neutral-800);
     font-size: 11px;
     font-weight: 600;
-    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num); font-variant-numeric: tabular-nums;
 }
 .tablero-lista { display: flex; flex-direction: column; gap: 8px; min-height: 8px; }
 .tablero-vacio { padding: 12px 4px; font-size: 13px; }
@@ -122,7 +122,7 @@
 
 /* ---------- Tarjeta ---------- */
 .tarea-tarjeta {
-    --tarjeta-fondo: #fbf6ec;
+    --tarjeta-fondo: var(--color-tarjeta-sin-color);
     position: relative;
     padding: 10px 12px;
     background: var(--tarjeta-fondo);
@@ -171,7 +171,7 @@
 .k-chip-punto { flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .k-chip-texto { overflow: hidden; text-overflow: ellipsis; }
 .k-chip-proyecto { max-width: 140px; }
-.k-chip-fecha { background: transparent; padding-inline: 4px; color: var(--color-neutral-700); font-variant-numeric: tabular-nums; }
+.k-chip-fecha { background: transparent; padding-inline: 4px; color: var(--color-neutral-700); font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .k-chip-fecha.k-fecha-vencida { background: var(--color-danger-bg); color: var(--color-danger-text); padding-inline: 8px; }
 .k-chip-fecha.k-fecha-hoy { background: var(--color-accent-200); color: var(--color-accent-800); padding-inline: 8px; }
 /* Etiquetas de prioridad: tonos suaves de los tokens de estado (alta = rojo, media = ámbar, baja = azul) */

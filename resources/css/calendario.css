@@ -56,7 +56,9 @@
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 .fc .fc-button:hover { background: var(--color-neutral-200); color: var(--color-neutral-700); }
-.fc .fc-button:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; box-shadow: none; }
+/* Sin el halo gris de FullCalendar: el foco del teclado es un anillo suave del acento, redondeado como el botón. */
+.fc .fc-button:focus { outline: 0; box-shadow: none; }
+.fc .fc-button:focus-visible { outline: 0; box-shadow: 0 0 0 2px color-mix(in srgb, var(--foco-acento) 45%, transparent); }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
     background: var(--foco-boton);
@@ -64,9 +66,11 @@
     color: var(--color-on-accent);
 }
 .fc .fc-button-primary:disabled { background: var(--color-bg); color: var(--foco-texto-suave); opacity: 0.5; }
-.fc .fc-button-group > .fc-button { border-radius: 0; }
-.fc .fc-button-group > .fc-button:first-child { border-radius: var(--radius-control) 0 0 var(--radius-control); }
-.fc .fc-button-group > .fc-button:last-child { border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+/* Los grupos (Mes / Semana / Día / Lista) son una pastilla con las opciones adentro: cada opción, también la activa, es redonda. */
+.fc .fc-button-group { padding: 3px; gap: 2px; border-radius: var(--radius-pill); background: var(--color-bg); }
+.fc .fc-button-group > .fc-button, .fc .fc-button-group > .fc-button:first-child, .fc .fc-button-group > .fc-button:last-child { margin-left: 0; border-radius: var(--radius-pill); background: transparent; }
+.fc .fc-button-group > .fc-button:hover { background: var(--color-neutral-200); }
+.fc .fc-button-group > .fc-button-primary:not(:disabled).fc-button-active, .fc .fc-button-group > .fc-button-primary:not(:disabled):active { background: var(--foco-boton); }
 .fc .fc-button .fc-icon { font-size: 1.25em; }
 
 /* Encabezados de columna y celdas */
@@ -79,7 +83,7 @@
     text-transform: uppercase;
     color: var(--foco-texto-meta);
 }
-.fc .fc-daygrid-day-number { padding: 10px 12px 6px; font-variant-numeric: tabular-nums; color: var(--foco-texto); }
+.fc .fc-daygrid-day-number { padding: 10px 12px 6px; font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--foco-texto); }
 .fc .fc-day-other .fc-daygrid-day-number { color: var(--foco-texto-suave); opacity: 0.7; }
 .fc .fc-day-today { background: color-mix(in srgb, var(--color-accent-100) 55%, transparent); }
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -124,7 +128,7 @@
     font-weight: 600;
     color: var(--foco-acento-texto);
 }
-.fc .fc-timegrid-slot-label-cushion { font-variant-numeric: tabular-nums; }
+.fc .fc-timegrid-slot-label-cushion { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .fc .fc-scrollgrid { border: 0; }
 .fc .fc-scrollgrid td:last-child, .fc .fc-scrollgrid th:last-child { border-right: 0; }
 .fc .fc-scrollgrid-section-body > td { border-bottom: 0; }
@@ -144,7 +148,7 @@
 .fc .fc-event-main, .fc .fc-event-title { padding: 1px 4px; font-weight: 500; color: inherit; }
 .fc .fc-daygrid-event { padding: 2px 5px; font-size: 11.5px; line-height: 1.5; white-space: nowrap; overflow: hidden; }
 .fc .fc-daygrid-dot-event .fc-event-title { font-weight: 500; }
-.fc .fc-daygrid-block-event .fc-event-time, .fc .fc-daygrid-dot-event .fc-event-time { font-variant-numeric: tabular-nums; }
+.fc .fc-daygrid-block-event .fc-event-time, .fc .fc-daygrid-dot-event .fc-event-time { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .fc .fc-event-time { font-weight: 600; }
 /* Vista Semana/Día: el evento siempre muestra su título legible (hora arriba, título debajo, hasta 2 líneas) */
 .fc .fc-timegrid-event { min-height: 60px; overflow: hidden; font-size: 12px; line-height: 1.35; }
@@ -189,6 +193,9 @@
 .ev-tipo-recordatorio { --ev-fondo: var(--tipo-recordatorio-fondo); --ev-texto: var(--tipo-recordatorio-texto); --ev-borde: var(--tipo-recordatorio-borde); }
 .ev-tipo-nota { --ev-fondo: var(--tipo-nota-fondo); --ev-texto: var(--tipo-nota-texto); --ev-borde: var(--tipo-nota-borde); }
 .ev-tipo-sesion { --ev-fondo: var(--tipo-sesion-fondo); --ev-texto: var(--tipo-sesion-texto); --ev-borde: var(--tipo-sesion-borde); }
+.ev-tipo-planner { --ev-fondo: var(--tipo-planner-fondo); --ev-texto: var(--tipo-planner-texto); --ev-borde: var(--tipo-planner-borde); }
+/* Una caja con actividad toma el color de la actividad (las clases .actividad-* definen --caja-*) */
+.ev-tipo-planner[class*="actividad-"] { --ev-fondo: var(--caja-fondo); --ev-texto: var(--caja-texto); --ev-borde: var(--caja-acento); }
 
 /* La prioridad de la tarea se lee en el borde izquierdo */
 .ev-tipo-tarea.ev-prio-alta { --ev-borde: var(--foco-rojo-borde); }
@@ -285,6 +292,7 @@
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
+.crear-boton > .bi { translate: 0 1px; } /* el + de 13px queda 1px sobre el centro de su caja */
 .crear-boton:hover { filter: brightness(0.96); }
 .crear-boton:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
 .crear-boton:disabled { opacity: 0.55; cursor: progress; }
@@ -355,7 +363,7 @@
 .tarj:hover .tarj-asa { opacity: 0.8; }
 .tarj-tipo { display: inline-flex; align-items: center; gap: 6px; color: var(--tipo-texto); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 .tarj-punto { width: 6px; height: 6px; border-radius: 50%; background: var(--tipo-borde); }
-.tarj-creada { margin-left: auto; font-size: 11px; color: var(--tipo-texto); opacity: 0.75; font-variant-numeric: tabular-nums; }
+.tarj-creada { margin-left: auto; font-size: 11px; color: var(--tipo-texto); opacity: 0.75; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
 /* Campos editables en el lugar: se ven como texto hasta que se pasa el mouse o se enfoca */
 .tarj-campo {
@@ -572,6 +580,14 @@
 .detalle-opcion:disabled { opacity: 0.55; }
 .detalle-opcion i { width: 8px; height: 8px; border-radius: 50%; background: var(--punto-opcion, var(--tipo-borde)); }
 
+/* Colores: solo el punto (el nombre va en aria-label y title). El elegido lleva un anillo; "Sin color" es un aro vacío. */
+.detalle-opciones:has(.detalle-opcion-color) { gap: 4px; }
+.detalle-opcion.detalle-opcion-color { justify-content: center; width: 28px; height: 28px; padding: 0; background: transparent; border-radius: 50%; }
+.detalle-opcion.detalle-opcion-color i { width: 14px; height: 14px; }
+.detalle-opcion.detalle-opcion-color i:not([style]) { background: transparent; box-shadow: inset 0 0 0 2px var(--color-neutral-400); }
+.detalle-opcion.detalle-opcion-color:hover:not(:disabled) { background: var(--color-neutral-200); }
+.detalle-opcion.detalle-opcion-color[aria-checked="true"] { background: transparent; box-shadow: inset 0 0 0 2px var(--color-neutral-900); }
+
 .detalle-filas {
     display: grid;
     grid-template-columns: minmax(0, auto) minmax(0, 1fr);
@@ -642,7 +658,7 @@
 .tarj-extra > [data-campo-extra="tarea"] { grid-column: 1 / -1; }
 .detalle-mas:empty { display: none; }
 :is(.detalle-mas, .tarj-extra) .form-control,
-:is(.detalle-mas, .tarj-extra) .form-select { background-color: #fff; border: 1px solid var(--color-neutral-300); }
+:is(.detalle-mas, .tarj-extra) .form-select { background-color: var(--color-campo); border: 1px solid var(--color-neutral-300); }
 .extra-casilla { display: inline-flex; align-items: center; gap: 8px; min-height: 31px; font-size: var(--foco-texto-sm); cursor: pointer; }
 .extra-casilla .form-check-input { margin: 0; }
 
@@ -657,6 +673,7 @@
 .tarj-extra .detalle-campo { gap: 4px; }
 .tarj-extra :is(.form-control, .form-select) { font-size: 13px; }
 .tarj-extra .detalle-opcion { padding: 4px 11px; font-size: 12px; }
+.tarj-extra .detalle-opcion.detalle-opcion-color { padding: 0; }
 .tarj.es-completa { background: var(--tipo-fondo); }
 .tarj.es-completa .tarj-pie .btn-icono { opacity: 0.9; }
 .tarj-accion[aria-expanded="true"] { background: color-mix(in srgb, var(--color-neutral-100) 80%, transparent); opacity: 1; }

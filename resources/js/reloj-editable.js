@@ -4,7 +4,7 @@
  * campo confirma, Escape cancela. Si lo escrito no es válido se muestra el error y la edición sigue abierta.
  * Solo se edita sin una fase corriendo. Cómo se interpreta el texto está en pomodoro-logica.js.
  */
-import { formatearDuracion, formatearTiempo, interpretarTiempo } from './pomodoro-logica.js';
+import { enmascararTiempo, formatearDuracion, formatearTiempo, interpretarTiempo } from './pomodoro-logica.js';
 
 /**
  * @param {HTMLButtonElement} boton El reloj (el texto lo dibuja quien lo usa; aquí solo se maneja la edición).
@@ -27,7 +27,7 @@ export function hacerEditable(boton, { nombre, segundos, puedeEditar, confirmar,
     input.enterKeyHint = 'done';
     input.autocomplete = 'off';
     input.spellcheck = false;
-    input.maxLength = 9;
+    input.maxLength = 6;
     input.className = `${boton.className} reloj-input`;
     input.hidden = true;
     input.dataset.tamano = 'medio';
@@ -91,6 +91,14 @@ export function hacerEditable(boton, { nombre, segundos, puedeEditar, confirmar,
     input.addEventListener('input', () => {
         input.removeAttribute('aria-invalid');
         error('');
+
+        // Solo se aceptan números; los dos puntos se ponen solos (en el teclado numérico del celular no hay ":").
+        const enmascarado = enmascararTiempo(input.value);
+
+        if (enmascarado !== input.value) {
+            input.value = enmascarado;
+            input.setSelectionRange(enmascarado.length, enmascarado.length);
+        }
     });
     // Salir del campo confirma; si lo escrito no es válido, queda abierto con el error a la vista.
     input.addEventListener('blur', () => {

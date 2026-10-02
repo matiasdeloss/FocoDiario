@@ -3,7 +3,7 @@
  * ocultan su elemento al instante y muestran un aviso con Deshacer; el pedido DELETE sale recién cuando el aviso
  * se retira. Si la página se cierra antes, los borrados pendientes se mandan igual (keepalive).
  */
-import { mostrarAviso } from './avisos.js';
+import { aviso } from './avisos.js';
 import { pedirSeguro } from './red.js';
 
 /** Borrados esperando que se retire su aviso: url -> función que los manda por HTMX. */
@@ -39,7 +39,7 @@ export function activarDeshacer() {
         objetivo.classList.add('es-eliminando');
         pendientes.set(url, enviar);
 
-        const { botonAccion } = mostrarAviso(texto, {
+        const { botonAccion } = aviso.info(texto, {
             accion: {
                 texto: 'Deshacer',
                 alHacer: () => {

@@ -42,6 +42,21 @@ export function chipVisible(paraTipos, tipo) {
     return paraTipos.split(' ').includes(tipo);
 }
 
+/** Resumen del chip "Más detalles" de la tarea: la prioridad si no es la media y el proyecto. Vacío si no hay nada que destacar. */
+export function resumenTarea({ prioridad = '', etiquetaPrioridad = '', proyecto = '' } = {}) {
+    const partes = [];
+
+    if (prioridad !== '' && prioridad !== 'media' && etiquetaPrioridad !== '') partes.push(etiquetaPrioridad);
+    if (proyecto.trim() !== '') partes.push(proyecto.trim());
+
+    return partes.join(' · ');
+}
+
+/** El color de la tarjeta se guarda en las notas y en las tareas, no en los recordatorios. */
+export function tipoConColor(tipo) {
+    return tipo === 'nota' || tipo === 'tarea';
+}
+
 export const TIPOS = ['nota', 'tarea', 'recordatorio'];
 
 /** Tipo guardado en el navegador si es válido; si no, "nota". */

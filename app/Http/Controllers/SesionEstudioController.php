@@ -7,6 +7,7 @@ use App\Http\Requests\IntervaloEstudioRequest;
 use App\Http\Requests\SesionEstudioRequest;
 use App\Models\SesionEstudio;
 use App\Services\RegistroEstudio;
+use App\Support\Aviso;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,10 +55,13 @@ class SesionEstudioController extends Controller
     {
         $registro->borrarSesion($sesion);
 
+        // HX-Refresh recarga la página: el aviso viaja en la sesión.
         if ($request->header('HX-Request')) {
+            Aviso::guardar('Sesión eliminada.');
+
             return response('', 200, ['HX-Refresh' => 'true']);
         }
 
-        return redirect()->route('estudio.historial')->with('estado', 'Sesión eliminada.');
+        return redirect()->route('estudio.historial')->with(Aviso::flash('Sesión eliminada.'));
     }
 }

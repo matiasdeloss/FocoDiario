@@ -27,15 +27,25 @@
             <div class="dialogo-avisos" data-avisos role="alert"></div>
             <div>
                 <label for="cuenta-entrar-email" class="form-label">Email</label>
-                <input type="email" id="cuenta-entrar-email" name="email" class="form-control" autocomplete="username" required aria-describedby="cuenta-entrar-error-email">
+                <div class="cuenta-campo">
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                    <input type="email" id="cuenta-entrar-email" name="email" class="form-control" autocomplete="username" required aria-describedby="cuenta-entrar-error-email">
+                </div>
                 <p class="dialogo-error" id="cuenta-entrar-error-email" data-error="email"></p>
             </div>
             <div>
                 <label for="cuenta-entrar-password" class="form-label">Contraseña</label>
-                <input type="password" id="cuenta-entrar-password" name="password" class="form-control" autocomplete="current-password" required aria-describedby="cuenta-entrar-error-password">
+                <div class="cuenta-campo cuenta-campo-clave">
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                    <input type="password" id="cuenta-entrar-password" name="password" class="form-control" autocomplete="current-password" required aria-describedby="cuenta-entrar-error-password">
+                    <button type="button" class="cuenta-ver" data-ver-clave aria-label="Mostrar contraseña" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
                 <p class="dialogo-error" id="cuenta-entrar-error-password" data-error="password"></p>
             </div>
-            <button type="submit" class="btn btn-foco w-100" data-enviar>Iniciar sesión</button>
+            <div class="cuenta-pie">
+                <button type="button" class="cuenta-cambiar" data-cambiar-pestana="crear">¿No tenés cuenta? <strong>Crear cuenta</strong></button>
+                <button type="submit" class="btn btn-foco cuenta-enviar" data-enviar>Iniciar sesión <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            </div>
         </form>
 
         {{-- Crear cuenta --}}
@@ -46,24 +56,41 @@
             <div class="dialogo-avisos" data-avisos role="alert"></div>
             <div>
                 <label for="cuenta-crear-nombre" class="form-label">Nombre <span class="dialogo-opcional">(opcional)</span></label>
-                <input type="text" id="cuenta-crear-nombre" name="nombre" class="form-control" autocomplete="name" maxlength="80" aria-describedby="cuenta-crear-error-nombre">
+                <div class="cuenta-campo">
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <input type="text" id="cuenta-crear-nombre" name="nombre" class="form-control" autocomplete="name" maxlength="80" aria-describedby="cuenta-crear-error-nombre">
+                </div>
                 <p class="dialogo-error" id="cuenta-crear-error-nombre" data-error="nombre"></p>
             </div>
             <div>
                 <label for="cuenta-crear-email" class="form-label">Email</label>
-                <input type="email" id="cuenta-crear-email" name="email" class="form-control" autocomplete="email" required aria-describedby="cuenta-crear-error-email">
+                <div class="cuenta-campo">
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                    <input type="email" id="cuenta-crear-email" name="email" class="form-control" autocomplete="email" required aria-describedby="cuenta-crear-error-email">
+                </div>
                 <p class="dialogo-error" id="cuenta-crear-error-email" data-error="email"></p>
             </div>
             <div>
                 <label for="cuenta-crear-password" class="form-label">Contraseña <span class="dialogo-opcional">(mínimo 8 caracteres)</span></label>
-                <input type="password" id="cuenta-crear-password" name="password" class="form-control" autocomplete="new-password" minlength="8" required aria-describedby="cuenta-crear-error-password">
+                <div class="cuenta-campo cuenta-campo-clave">
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                    <input type="password" id="cuenta-crear-password" name="password" class="form-control" autocomplete="new-password" minlength="8" required aria-describedby="cuenta-crear-error-password">
+                    <button type="button" class="cuenta-ver" data-ver-clave aria-label="Mostrar contraseña" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
                 <p class="dialogo-error" id="cuenta-crear-error-password" data-error="password"></p>
             </div>
             <div>
                 <label for="cuenta-crear-password2" class="form-label">Repetí la contraseña</label>
-                <input type="password" id="cuenta-crear-password2" name="password_confirmation" class="form-control" autocomplete="new-password" required>
+                <div class="cuenta-campo cuenta-campo-clave">
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                    <input type="password" id="cuenta-crear-password2" name="password_confirmation" class="form-control" autocomplete="new-password" required>
+                    <button type="button" class="cuenta-ver" data-ver-clave aria-label="Mostrar contraseña" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-foco w-100" data-enviar>Crear cuenta</button>
+            <div class="cuenta-pie">
+                <button type="button" class="cuenta-cambiar" data-cambiar-pestana="entrar">¿Ya tenés cuenta? <strong>Iniciar sesión</strong></button>
+                <button type="submit" class="btn btn-foco cuenta-enviar" data-enviar>Crear cuenta <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            </div>
         </form>
     </div>
 </dialog>

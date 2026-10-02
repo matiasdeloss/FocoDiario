@@ -5,15 +5,18 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import '../css/calendario.css';
+import { aviso } from './avisos.js';
 import { pedirSeguro, primerMensaje } from './red.js';
 import { pintarCamposExtra } from './calendario-campos.js';
 import { confirmar } from './confirmar.js';
+import { tiposIniciales } from './calendario-filtros-logica.js';
 
 const CLAVE_FILTROS = 'focodiario.calendario.tipos';
-const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
+const CLAVE_VISTOS = 'focodiario.calendario.tipos-vistos'; // tipos que el usuario ya conoce: distingue "nunca lo vio" de "lo desmarcó"
+const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion', 'planner'];
 const TIPOS_TARJETA = ['tarea', 'recordatorio', 'nota'];
-const ETIQUETAS = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota', sesion: 'Sesión de estudio' };
-const ARTICULOS = { tarea: 'la tarea', recordatorio: 'el recordatorio', nota: 'la nota', sesion: 'la sesión' };
+const ETIQUETAS = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota', sesion: 'Sesión de estudio', planner: 'Planner semanal' };
+const ARTICULOS = { tarea: 'la tarea', recordatorio: 'el recordatorio', nota: 'la nota', sesion: 'la sesión', planner: 'la caja del planner' };
 
 const raiz = document.querySelector('[data-calendario]');
 
@@ -27,11 +30,9 @@ function iniciar(raiz) {
     const panel = document.getElementById('panel-sin-fecha');
     const lista = document.getElementById('lista-sin-fecha');
     const vacio = document.getElementById('sin-fecha-vacio');
-    const aviso = document.getElementById('calendario-aviso');
     const checks = [...document.querySelectorAll('[data-filtro-tipo]')];
     const esCelular = window.matchMedia('(max-width: 767.98px)');
     const esPantallaChica = window.matchMedia('(max-width: 575.98px)');
-    let temporizadorAviso;
     let filtroPanel = '';
 
     /* ---------- Utilidades ---------- */
@@ -41,11 +42,9 @@ function iniciar(raiz) {
     const fechaHoraLocal = (d) => `${fechaLocal(d)}T${horaLocal(d)}`;
     const aDiaAMostrar = (iso) => iso.slice(0, 10).split('-').reverse().join('/');
 
+    // Fallas al guardar o cargar: un aviso de error flotante (avisos.js).
     function mostrarAviso(mensaje) {
-        aviso.textContent = mensaje;
-        aviso.hidden = false;
-        clearTimeout(temporizadorAviso);
-        temporizadorAviso = setTimeout(() => { aviso.hidden = true; }, 7000);
+        aviso.error(mensaje);
     }
 
     function ajustarAlto(campo) {
@@ -57,15 +56,17 @@ function iniciar(raiz) {
     function leerFiltros() {
         try {
             const guardado = JSON.parse(localStorage.getItem(CLAVE_FILTROS));
-            if (Array.isArray(guardado)) {
-                return guardado.filter((tipo) => TIPOS.includes(tipo));
-            }
+            const vistos = JSON.parse(localStorage.getItem(CLAVE_VISTOS));
+            return tiposIniciales(guardado, vistos, TIPOS);
         } catch (e) { /* sin almacenamiento: se muestran todos */ }
         return [...TIPOS];
     }
 
     function guardarFiltros(tipos) {
-        try { localStorage.setItem(CLAVE_FILTROS, JSON.stringify(tipos)); } catch (e) { /* ignorar */ }
+        try {
+            localStorage.setItem(CLAVE_FILTROS, JSON.stringify(tipos));
+            localStorage.setItem(CLAVE_VISTOS, JSON.stringify(TIPOS));
+        } catch (e) { /* ignorar */ }
     }
 
     function tiposActivos() {
@@ -108,6 +109,27 @@ function iniciar(raiz) {
         nota: datos.urlNota,
     }[tipo], tipo, id);
 
+    /**
+     * Vuelve un recordatorio ya avisado a "todavía no avisó". Mientras corre, el botón queda ocupado (sin doble clic).
+     * Devuelve true si el servidor lo aceptó; avisa del resultado con un toast y refresca el calendario.
+     */
+    async function reactivarRecordatorio(id, boton) {
+        boton.disabled = true;
+        boton.setAttribute('aria-busy', 'true');
+        try {
+            await pedir(urlDe(datos.urlReactivar, 'recordatorio', id), 'PATCH');
+            aviso.exito('Recordatorio marcado como no avisado.');
+            calendario.refetchEvents();
+            return true;
+        } catch (error) {
+            aviso.error('No se pudo actualizar el recordatorio. Probá de nuevo.');
+            return false;
+        } finally {
+            boton.disabled = false;
+            boton.removeAttribute('aria-busy');
+        }
+    }
+
     /** Asigna (valor) o quita (null) la fecha. Recordatorio: fecha y hora; tarea y nota: solo el día. */
     function ponerFecha(tipo, id, valor) {
         if (tipo === 'recordatorio') {
@@ -115,6 +137,29 @@ function iniciar(raiz) {
             return enviar(urlFecha(tipo, id), { recordar_en: conSegundos });
         }
         return enviar(urlFecha(tipo, id), { fecha: valor ? valor.slice(0, 10) : null });
+    }
+
+    /** Mueve una caja del planner: día y franja (sin hora_inicio queda de todo el día). */
+    const moverPlanner = (id, cuerpo) => enviar(datos.urlPlanner.replace('__ID__', id), cuerpo);
+
+    /**
+     * Día y horas de un evento del planner. La hora de fin solo se envía si la caja ya tenía una o si se la estiró:
+     * el fin de 1 h que dibuja el calendario en las cajas sin fin es solo visual y no se guarda al moverlas.
+     * Un fin que cae otro día se recorta a las 23:59.
+     */
+    function datosPlanner(evento, estirada = false) {
+        const fecha = fechaLocal(evento.start);
+        if (evento.allDay) {
+            return { fecha, hora_inicio: null, hora_fin: null };
+        }
+        const inicio = evento.start;
+        const horaInicio = horaLocal(inicio).slice(0, 5);
+        if (!estirada && !evento.extendedProps.tieneFin) {
+            return { fecha, hora_inicio: horaInicio, hora_fin: null };
+        }
+        const fin = evento.end ?? new Date(inicio.getTime() + 3600000);
+        const mismoDia = fechaLocal(fin) === fecha;
+        return { fecha, hora_inicio: horaInicio, hora_fin: mismoDia ? horaLocal(fin).slice(0, 5) : '23:59' };
     }
 
     /** Fecha y hora de un recordatorio soltado en el calendario: 09:00 en el "todo el día" o la vista de mes. */
@@ -304,7 +349,14 @@ function iniciar(raiz) {
                 mostrarAviso(error.message);
                 pintar(await pedir(urlDe(datos.urlDetalle, tipo, id), 'GET').then((r) => r.detalle));
             }
-        }, { conPrioridadYColor: true });
+        }, {
+            conPrioridadYColor: true,
+            reactivar: async (botonReactivar) => {
+                if (await reactivarRecordatorio(id, botonReactivar)) {
+                    pintar(await pedir(urlDe(datos.urlDetalle, tipo, id), 'GET').then((r) => r.detalle));
+                }
+            },
+        });
 
         extra.setAttribute('aria-busy', 'true');
         try {
@@ -498,6 +550,7 @@ function iniciar(raiz) {
     const dQuitarFecha = porId('quitar-fecha');
     const dFilas = porId('filas');
     const dCompletar = porId('completar');
+    const dReactivar = porId('reactivar');
     const dMas = porId('mas');
     const dHistorial = porId('historial');
     const dGuardado = porId('guardado');
@@ -521,23 +574,27 @@ function iniciar(raiz) {
         if (abierto) eventosDe(abierto.tipo, abierto.id).forEach((el) => el.classList.add('ev-abierto'));
     }
 
-    function pintarOpciones(contenedor, opciones, actual, alElegir, deshabilitado = false) {
+    function pintarOpciones(contenedor, opciones, actual, alElegir, deshabilitado = false, soloPunto = false) {
         contenedor.replaceChildren();
         opciones.forEach((opcion) => {
             const boton = document.createElement('button');
             boton.type = 'button';
-            boton.className = 'detalle-opcion';
+            boton.className = soloPunto ? 'detalle-opcion detalle-opcion-color' : 'detalle-opcion';
             boton.setAttribute('role', 'radio');
             boton.setAttribute('aria-checked', String(opcion.valor === actual));
             boton.tabIndex = opcion.valor === actual || (actual == null && contenedor.childElementCount === 0) ? 0 : -1;
             boton.disabled = deshabilitado;
-            if (opcion.marca) {
+            if (soloPunto) {
+                boton.setAttribute('aria-label', opcion.etiqueta);
+                boton.title = opcion.etiqueta;
+            }
+            if (opcion.marca || soloPunto) {
                 const punto = document.createElement('i');
-                punto.style.setProperty('--punto-opcion', opcion.marca);
+                if (opcion.marca) punto.style.setProperty('--punto-opcion', opcion.marca);
                 punto.setAttribute('aria-hidden', 'true');
                 boton.append(punto);
             }
-            boton.append(opcion.etiqueta);
+            if (!soloPunto) boton.append(opcion.etiqueta);
             boton.addEventListener('click', () => alElegir(opcion.valor));
             contenedor.append(boton);
         });
@@ -581,9 +638,11 @@ function iniciar(raiz) {
             dCompletar.append(icono, d.completada ? ' Reabrir tarea' : ' Marcar como completada');
         }
 
+        dReactivar.hidden = !(d.tipo === 'recordatorio' && d.avisado);
+
         if (d.tipo === 'nota') {
-            pintarOpciones(dColor, d.colores.map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca })), d.color,
-                (valor) => guardarCambio({ color: valor }));
+            pintarOpciones(dColor, [{ valor: null, etiqueta: 'Sin color' }, ...d.colores.map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca }))], d.color ?? null,
+                (valor) => guardarCambio({ color: valor }), false, true);
         }
 
         if (d.solo_lectura) {
@@ -651,6 +710,7 @@ function iniciar(raiz) {
         dComentario.value = '';
         dFilas.replaceChildren();
         dAviso.hidden = true;
+        dReactivar.hidden = true;
         dGuardado.textContent = '';
         dPrioridad.replaceChildren();
         dColor.replaceChildren();
@@ -813,6 +873,21 @@ function iniciar(raiz) {
     });
     dQuitarFecha.addEventListener('click', () => cambiarFecha(null));
 
+    /* Marcar como no avisado: el detalle se vuelve a pedir (estado, fecha editable y ayuda salen del servidor). */
+    dReactivar.addEventListener('click', async () => {
+        const item = abierto;
+        if (!item || item.tipo !== 'recordatorio' || !(await reactivarRecordatorio(item.id, dReactivar))) return;
+        try {
+            const { detalle } = await pedir(urlDe(datos.urlDetalle, item.tipo, item.id), 'GET');
+            if (abierto === item) {
+                item.datos = detalle;
+                pintarResto(detalle);
+            }
+        } catch (error) {
+            mostrarAviso(error.message);
+        }
+    });
+
     /** Si la card abierta se movió arrastrándola en el calendario, el panel refleja la nueva fecha. */
     function sincronizarFecha(tipo, id, valor) {
         if (abierto?.datos && abierto.tipo === tipo && abierto.id === id) {
@@ -905,6 +980,23 @@ function iniciar(raiz) {
 
     const idDe = (props) => props[`${props.tipo}Id`];
 
+    /** Mover o estirar una caja del planner: se guarda en la caja (planner y hoja del día lo reflejan) o se deshace. */
+    async function guardarMovimientoPlanner(info) {
+        const evento = info.event;
+        if (!evento.start) {
+            info.revert();
+            return;
+        }
+
+        try {
+            await moverPlanner(evento.extendedProps.plannerId, datosPlanner(evento, 'endDelta' in info));
+            calendario.refetchEvents();
+        } catch (error) {
+            info.revert();
+            mostrarAviso(error.message);
+        }
+    }
+
     const calendario = new Calendar(elCalendario, {
         plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
         locale: esLocale,
@@ -937,7 +1029,7 @@ function iniciar(raiz) {
         longPressDelay: 300,
         eventLongPressDelay: 300,
         editable: true,
-        eventDurationEditable: false,
+        eventDurationEditable: false, // solo las cajas del planner se estiran (durationEditable por evento)
         droppable: true,
 
         events: async (info, exito, fallo) => {
@@ -963,11 +1055,16 @@ function iniciar(raiz) {
         eventClick: (info) => {
             const props = info.event.extendedProps;
             info.jsEvent.preventDefault();
+            // Las cajas del planner se ven y se editan en la hoja del día de la agenda.
+            if (props.tipo === 'planner') {
+                window.location.assign(props.urlDia);
+                return;
+            }
             abrirDetalle(props.tipo, idDe(props), { titulo: info.event.title });
         },
 
-        // Tareas y notas solo viven en el "todo el día"; los recordatorios aceptan cualquier hueco.
-        eventAllow: (destino, evento) => (evento.extendedProps.tipo === 'recordatorio' ? true : destino.allDay),
+        // Tareas y notas solo viven en el "todo el día"; los recordatorios y las cajas del planner aceptan cualquier hueco.
+        eventAllow: (destino, evento) => (['recordatorio', 'planner'].includes(evento.extendedProps.tipo) ? true : destino.allDay),
 
         eventDidMount: (info) => {
             const props = info.event.extendedProps;
@@ -976,6 +1073,8 @@ function iniciar(raiz) {
                 partes.push(`prioridad ${props.prioridadEtiqueta?.toLowerCase() ?? 'media'}`);
                 if (props.completada) partes.push('completada');
                 if (props.vencida) partes.push('vencida');
+            } else if (props.tipo === 'planner') {
+                partes.push(props.actividad ? `planner semanal, ${props.actividad}` : 'planner semanal');
             } else if (props.tipo === 'recordatorio' && props.avisado) {
                 partes.push('ya avisado');
             } else if (props.tipo === 'sesion') {
@@ -1003,6 +1102,9 @@ function iniciar(raiz) {
             calendario.refetchEvents();
         },
 
+        // Estirar una caja del planner cambia su hora de fin (info trae endDelta: ahí sí se envía el fin).
+        eventResize: (info) => guardarMovimientoPlanner(info),
+
         eventDragStart: (info) => {
             if (TIPOS_TARJETA.includes(info.event.extendedProps.tipo)) panel.classList.add('panel-destino');
         },
@@ -1028,6 +1130,10 @@ function iniciar(raiz) {
         eventDrop: async (info) => {
             const evento = info.event;
             const { tipo } = evento.extendedProps;
+            if (tipo === 'planner') {
+                await guardarMovimientoPlanner(info);
+                return;
+            }
             if (!evento.start || !TIPOS_TARJETA.includes(tipo) || (tipo !== 'recordatorio' && !evento.allDay)) {
                 info.revert();
                 return;

@@ -1,0 +1,15 @@
+/* Interruptor de tema (layouts/_tema): pastilla con dos botones, sol y luna. El marcado usa el tinte del acento. */
+/* Mismo estilo que el botón Salir: pill con borde, mismo alto e íconos del mismo tamaño. */
+.tema-interruptor { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--color-neutral-300); border-radius: var(--radius-pill); background: transparent; }
+.tema-opcion {
+    display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 30px; padding: 0;
+    border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-text); cursor: pointer;
+    transition: background-color var(--foco-transicion), color var(--foco-transicion);
+}
+.tema-opcion:hover { color: var(--foco-acento-texto); }
+.tema-opcion[aria-pressed="true"] { background: var(--foco-acento-suave); color: var(--color-accent-800); }
+.tema-opcion:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+.tema-opcion .bi { display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; font-size: 18px; line-height: 1; }
+/* Mismo ajuste que los demás íconos: el ::before de Bootstrap Icons baja el glifo .125em y lo dejaba arriba del centro. */
+.tema-opcion .bi::before { vertical-align: 0; line-height: 1; }
+@media (prefers-reduced-motion: reduce) { .tema-opcion { transition: none; } }

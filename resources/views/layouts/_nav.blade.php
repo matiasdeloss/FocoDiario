@@ -58,7 +58,10 @@
                 <span class="nav-invitado" title="Tus datos están guardados solo en este navegador"><i class="bi bi-person" aria-hidden="true"></i> Invitado</span>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('login') }}" data-abrir-cuenta="entrar">Iniciar sesión</a>
+                @include('layouts._tema')
+            </li>
+            <li class="nav-item">
+                <a class="nav-link nav-entrar" href="{{ route('login') }}" data-abrir-cuenta="entrar">Iniciar sesión</a>
             </li>
             <li class="nav-item">
                 <a class="btn btn-foco btn-sm nav-guardar" href="{{ route('hoy', ['cuenta' => 'crear']) }}" data-abrir-cuenta="crear">
@@ -69,11 +72,14 @@
             <li class="nav-item">
                 <span class="nav-usuario" title="{{ auth()->user()->email }}"><i class="bi bi-person-circle" aria-hidden="true"></i> {{ auth()->user()->nombreVisible() }}</span>
             </li>
+            <li class="nav-item">
+                @include('layouts._tema')
+            </li>
             <li class="nav-item nav-salir">
                 <form method="POST" action="{{ route('logout') }}" data-confirmar="¿Salir de tu cuenta? Vas a seguir como invitado, sin tus datos, hasta que vuelvas a iniciar sesión." data-confirmar-aceptar="Salir">
                     @csrf
                     <button type="submit" class="nav-link" title="Salir">
-                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="d-lg-none"> Salir</span><span class="visually-hidden d-none d-lg-inline">Salir</span>
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Salir</span>
                     </button>
                 </form>
             </li>

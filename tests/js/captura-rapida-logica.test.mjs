@@ -1,6 +1,6 @@
 // Verificación de la lógica pura de la nota rápida de Hoy. Se ejecuta con: node tests/js/captura-rapida-logica.test.mjs
 import assert from 'node:assert/strict';
-import { chipVisible, etiquetaFecha, fechaEnDias, fechaISO, tipoValido } from '../../resources/js/captura-rapida-logica.js';
+import { chipVisible, etiquetaFecha, fechaEnDias, fechaISO, resumenTarea, tipoConColor, tipoValido } from '../../resources/js/captura-rapida-logica.js';
 
 let pruebas = 0;
 const prueba = (nombre, fn) => { fn(); pruebas++; console.log('ok -', nombre); };
@@ -41,6 +41,20 @@ prueba('chipVisible y tipoValido', () => {
     assert.equal(tipoValido('tarea'), 'tarea');
     assert.equal(tipoValido('evento'), 'nota');
     assert.equal(tipoValido(null), 'nota');
+});
+
+prueba('resumenTarea: prioridad distinta de media y proyecto', () => {
+    assert.equal(resumenTarea({ prioridad: 'media', etiquetaPrioridad: 'Media', proyecto: '' }), '');
+    assert.equal(resumenTarea({ prioridad: 'alta', etiquetaPrioridad: 'Alta', proyecto: '' }), 'Alta');
+    assert.equal(resumenTarea({ prioridad: 'alta', etiquetaPrioridad: 'Alta', proyecto: ' Tesis ' }), 'Alta · Tesis');
+    assert.equal(resumenTarea({ proyecto: 'Tesis' }), 'Tesis');
+    assert.equal(resumenTarea(), '');
+});
+
+prueba('tipoConColor: notas y tareas, no recordatorios', () => {
+    assert.equal(tipoConColor('nota'), true);
+    assert.equal(tipoConColor('tarea'), true);
+    assert.equal(tipoConColor('recordatorio'), false);
 });
 
 console.log(`${pruebas} pruebas correctas`);

@@ -1,0 +1,22 @@
+/* ---------- Scrolls: una sola barra para toda la app ---------- */
+/* Fina, redondeada y del tono del papel; solo se marca al pasar el mouse. */
+:root {
+    --scroll-hilo: color-mix(in srgb, var(--color-neutral-600) 38%, transparent);
+    --scroll-hilo-hover: color-mix(in srgb, var(--color-neutral-700) 65%, transparent);
+}
+@supports selector(::-webkit-scrollbar) {
+    *::-webkit-scrollbar { width: 12px; height: 12px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb {
+        background: var(--scroll-hilo);
+        background-clip: content-box;
+        border: 3px solid transparent;
+        border-radius: 999px;
+    }
+    *::-webkit-scrollbar-thumb:hover { background: var(--scroll-hilo-hover); background-clip: content-box; }
+    *::-webkit-scrollbar-corner { background: transparent; }
+}
+@supports not selector(::-webkit-scrollbar) {
+    * { scrollbar-width: thin; scrollbar-color: var(--scroll-hilo) transparent; }
+}
+

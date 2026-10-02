@@ -7,9 +7,10 @@
  * Configuración (tiempos, estilo, tarea, contexto, tema): localStorage, solo para precargar el formulario.
  */
 import {
-    acciones as accionesMotor, CLAVE_CONFIG, CLAVE_SONIDO, conciliarSesion, configGuardada as config, crearSesionEnServidor,
-    escribir, estadoGuardado, iniciarEstado, iniciarMotor, prepararAudio, sonidoActivo, suscribir, terminarSesion,
+    acciones as accionesMotor, CLAVE_CONFIG, CLAVE_SONIDO, CLAVE_SONIDO_TIPO, conciliarSesion, configGuardada as config, crearSesionEnServidor,
+    escribir, estadoGuardado, iniciarEstado, iniciarMotor, prepararAudio, reproducirSonido, sonidoActivo, sonidoElegido, suscribir, terminarSesion,
 } from './pomodoro-motor.js';
+import { aviso } from './avisos.js';
 import { hacerEditable } from './reloj-editable.js';
 import {
     DESCANSO, describir, desplazamientoAnillo, dividirSegundos, estaPausado, FOCO, formatearDuracion, fraccionAnillo, formatearTiempo, LIBRE, transcurridoMs, validarDuracion,
@@ -134,7 +135,8 @@ function iniciarTemporizador(raiz) {
         raiz.dataset.fase = activo ? estado.fase : 'inactivo';
         raiz.dataset.pausado = activo && estaPausado(estado) ? 'true' : 'false';
         q('#p-formulario').disabled = activo;
-        q('[data-p="resumen-sesion"]').hidden = !activo;
+        // La tarjeta de la sesión no se oculta: aparecer al iniciar movería el resto de la columna.
+        q('[data-p="resumen-sesion"]').classList.toggle('es-inactiva', !activo);
 
         let texto = formatearTiempo((Number.isFinite(c.foco) ? c.foco : 0) * 1000);
         let etiqueta = 'Listo para empezar';
@@ -173,6 +175,11 @@ function iniciarTemporizador(raiz) {
         } else {
             q('[data-p="ciclo"]').textContent = '';
             q('[data-p="puntos"]').replaceChildren();
+            q('[data-p="completados"]').textContent = '0';
+            q('[data-p="interrumpidos"]').textContent = '0';
+            q('[data-p="descanso"]').textContent = '0 s';
+            q('[data-p="libre"]').textContent = '0 s';
+            q('[data-p="detalle"]').textContent = 'Todavía no empezaste una sesión.';
         }
 
         q('[data-p="tiempo"]').textContent = texto;
@@ -274,14 +281,19 @@ function iniciarTemporizador(raiz) {
         terminar: async () => {
             if (await terminarSesion()) {
                 mostrarErrores([]);
-                q('[data-p="terminada"]').hidden = false;
+                // La confirmación es un aviso flotante, con acceso directo al historial.
+                const urlHistorial = raiz.dataset.urlHistorial;
+
+                aviso.exito('Sesión terminada.', {
+                    duracion: 8000,
+                    acciones: urlHistorial ? [{ texto: 'Ver historial', alHacer: () => { window.location.href = urlHistorial; } }] : [],
+                });
             }
         },
     };
 
     raiz.querySelectorAll('[data-p-accion]').forEach((boton) => {
         boton.addEventListener('click', () => {
-            q('[data-p="terminada"]').hidden = true;
             acciones[boton.dataset.pAccion]?.();
         });
     });
@@ -291,7 +303,43 @@ function iniciarTemporizador(raiz) {
     const botonNotificar = q('[data-p="notificar"]');
 
     casillaSonido.checked = sonidoActivo();
-    casillaSonido.addEventListener('change', () => escribir(CLAVE_SONIDO, casillaSonido.checked));
+    const grupoSonido = q('[data-p="sonidos"]');
+    const selectSonido = q('#p-sonido-tipo');
+    const botonProbarSonido = grupoSonido.querySelector('[data-p-probar]');
+    const descSonido = grupoSonido.querySelector('[data-p="sonido-desc"]');
+
+    const actualizarDesc = () => {
+        if (!descSonido || !selectSonido) return;
+        const opcion = selectSonido.options[selectSonido.selectedIndex];
+        descSonido.textContent = opcion?.dataset?.desc || '';
+    };
+
+    const marcarSonido = () => {
+        const elegido = sonidoElegido();
+
+        if (selectSonido) {
+            selectSonido.value = elegido;
+            actualizarDesc();
+        }
+        grupoSonido.classList.toggle('sonidos-apagado', !casillaSonido.checked);
+    };
+
+    casillaSonido.addEventListener('change', () => {
+        escribir(CLAVE_SONIDO, casillaSonido.checked);
+        marcarSonido();
+    });
+
+    selectSonido?.addEventListener('change', () => {
+        escribir(CLAVE_SONIDO_TIPO, selectSonido.value);
+        actualizarDesc();
+        reproducirSonido(selectSonido.value);
+    });
+
+    botonProbarSonido?.addEventListener('click', () => {
+        reproducirSonido(selectSonido ? selectSonido.value : sonidoElegido());
+    });
+
+    marcarSonido();
 
     function estadoNotificaciones() {
         if (!('Notification' in window)) {

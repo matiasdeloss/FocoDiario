@@ -28,6 +28,15 @@ class AgendaActividadTest extends TestCase
         ]);
     }
 
+    public function test_el_formulario_de_nueva_actividad_trae_el_primer_color_elegido(): void
+    {
+        $html = $this->get(route('agenda.index'))->assertOk()->getContent();
+
+        $nueva = substr($html, strpos($html, 'actividad-nueva'));
+        $this->assertSame(1, preg_match_all('/<input type="radio" name="color"[^>]*checked/', $nueva), 'Exactamente un color debe venir elegido.');
+        $this->assertMatchesRegularExpression('/name="color" value="'.ColorActividad::cases()[0]->value.'"[^>]*checked/', $nueva);
+    }
+
     public function test_el_color_debe_ser_de_la_paleta(): void
     {
         $this->post(route('agenda.actividades.store'), ['nombre' => 'Neuro', 'color' => '#123456'])->assertSessionHasErrors('color');

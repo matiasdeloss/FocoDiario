@@ -11,7 +11,7 @@
 @endphp
 
 @section('contenido')
-    <div class="contenido-lectura">
+    <div class="metodos-pagina">
         <div class="mb-3">
             <h1 class="pagina-titulo">Estudio</h1>
             <p class="text-secondary mb-0">Fichas de métodos con pasos concretos, cuándo usarlos, el error más común y qué evidencia tienen.</p>
@@ -33,10 +33,10 @@
 
         <p class="small text-secondary mb-3">Niveles de evidencia: alta si hay varias revisiones o metaanálisis a favor, moderada si hay respaldo parcial o inferido de prácticas relacionadas, poca o discutida si hay pocos estudios o resultados mixtos. Es una clasificación resumida, no un veredicto.</p>
 
-        <div class="row g-3">
+        <div class="metodos-grilla">
             @foreach ($metodos as $metodo)
                 @php [$etiquetaNivel, $claseNivel] = $nivelesEvidencia[$metodo['evidencia']['nivel']]; @endphp
-                <div class="col-lg-6">
+                <div class="metodos-celda">
                     <article id="{{ $metodo['clave'] }}" class="tarjeta tarjeta-relleno h-100 ficha-metodo">
                         <header class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                             <h2 class="h4 mb-0">{{ $metodo['nombre'] }}</h2>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\TipoContexto;
 use App\Http\Requests\ContextoRequest;
 use App\Models\Contexto;
+use App\Support\Aviso;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ class ContextoController extends Controller
     {
         Contexto::create($request->datosContexto());
 
-        return redirect()->route('contextos.index')->with('estado', 'Contexto creado.');
+        return redirect()->route('contextos.index')->with(Aviso::flash('Contexto creado.'));
     }
 
     public function show(Contexto $contexto): RedirectResponse
@@ -46,18 +47,23 @@ class ContextoController extends Controller
     {
         $contexto->update($request->datosContexto());
 
-        return redirect()->route('contextos.index')->with('estado', 'Contexto actualizado.');
+        return redirect()->route('contextos.index')->with(Aviso::flash('Contexto actualizado.'));
     }
 
     public function destroy(Request $request, Contexto $contexto): Response|RedirectResponse
     {
         $contexto->delete();
 
+        $mensaje = 'Contexto eliminado. Sus notas pasaron a la bandeja de entrada.';
+
+        // La redirección de HTMX recarga la página: el aviso viaja en la sesión.
         if ($request->header('HX-Request')) {
+            Aviso::guardar($mensaje);
+
             return response('')->header('HX-Redirect', route('contextos.index'));
         }
 
-        return redirect()->route('contextos.index')->with('estado', 'Contexto eliminado. Sus notas pasaron a la bandeja de entrada.');
+        return redirect()->route('contextos.index')->with(Aviso::flash($mensaje));
     }
 
     private function datosFormulario(Contexto $contexto): array

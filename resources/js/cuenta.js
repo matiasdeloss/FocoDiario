@@ -3,7 +3,7 @@
  * Se envía con JSON (red.js); los errores de validación se muestran junto a cada campo y, si sale bien,
  * se recarga la página (el servidor deja el aviso "Cuenta creada" o "Iniciaste sesión").
  */
-import { mostrarAviso } from './avisos.js';
+import { aviso } from './avisos.js';
 import { pedirSeguro, primerMensaje } from './red.js';
 
 const CLAVE_AVISO_INVITADO = 'focodiario.invitado.avisado';
@@ -57,6 +57,24 @@ export function activarCuenta() {
 
             mostrarPestana(otra.dataset.pestana, { enfocar: false });
             otra.focus();
+        });
+    });
+
+    // Enlace del pie ("¿No tenés cuenta? Crear cuenta"): cambia de pestaña sin ser una pestaña más.
+    dialogo.querySelectorAll('[data-cambiar-pestana]').forEach((enlace) => {
+        enlace.addEventListener('click', () => mostrarPestana(enlace.dataset.cambiarPestana));
+    });
+
+    // Ojo de la contraseña: alterna entre ocultarla y mostrarla.
+    dialogo.querySelectorAll('[data-ver-clave]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            const campo = boton.closest('.cuenta-campo').querySelector('input');
+            const ver = campo.type === 'password';
+
+            campo.type = ver ? 'text' : 'password';
+            boton.setAttribute('aria-pressed', String(ver));
+            boton.setAttribute('aria-label', ver ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            boton.firstElementChild.className = `bi bi-${ver ? 'eye-slash' : 'eye'}`;
         });
     });
 
@@ -127,12 +145,12 @@ export function activarCuenta() {
 
                     primero?.focus();
                 } else if (respuesta.status === 429) {
-                    avisos.textContent = 'Demasiados intentos seguidos. Esperá un minuto y probá de nuevo.';
+                    aviso.aviso('Demasiados intentos seguidos. Esperá un minuto y probá de nuevo.');
                 } else {
-                    avisos.textContent = primerMensaje(datos) ?? 'No se pudo completar. Probá de nuevo.';
+                    aviso.error(primerMensaje(datos) ?? 'No se pudo completar. Probá de nuevo.');
                 }
             } catch {
-                avisos.textContent = 'No hay conexión con el servidor. Probá de nuevo.';
+                aviso.error('No hay conexión con el servidor. Probá de nuevo.');
             }
 
             enviar.disabled = false;
@@ -141,8 +159,7 @@ export function activarCuenta() {
 
     // Una sola vez por navegador: explicarle al invitado dónde quedan sus datos.
     if (!dialogo.dataset.abrirAlCargar && !yaSeAviso()) {
-        mostrarAviso('Estás usando FocoDiario como invitado: lo que guardes queda solo en este navegador.', {
-            icono: 'info-circle',
+        aviso.info('Estás usando FocoDiario como invitado: lo que guardes queda solo en este navegador.', {
             detalle: 'Creá una cuenta para no perderlo y usarlo en otros equipos.',
             accion: { texto: 'Crear cuenta', alHacer: () => abrir('crear') },
             duracion: 15000,

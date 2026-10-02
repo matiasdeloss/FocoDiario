@@ -26,16 +26,7 @@
         </div>
 
         <div class="dialogo-fila">
-            <div class="dialogo-campo">
-                <label for="tarea-proyecto" class="dialogo-etiqueta">Proyecto <span class="dialogo-opcional">(opcional)</span></label>
-                <input type="text" id="tarea-proyecto" name="proyecto" class="form-control" maxlength="255" list="tarea-lista-proyectos" autocomplete="off" aria-describedby="tarea-error-proyecto">
-                <datalist id="tarea-lista-proyectos">
-                    @foreach ($proyectos as $proyecto)
-                        <option value="{{ $proyecto }}">
-                    @endforeach
-                </datalist>
-                <div class="dialogo-error" id="tarea-error-proyecto" data-error="proyecto"></div>
-            </div>
+            @include('tareas._campo-extra', ['campo' => 'proyecto', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
             <div class="dialogo-campo">
                 <label for="tarea-fecha" class="dialogo-etiqueta">Fecha límite <span class="dialogo-opcional">(opcional)</span></label>
                 <input type="date" id="tarea-fecha" name="fecha_limite" class="form-control" aria-describedby="tarea-error-fecha_limite">
@@ -63,24 +54,8 @@
         </fieldset>
 
         <div class="dialogo-fila">
-            <div class="dialogo-campo">
-                <label for="tarea-prioridad" class="dialogo-etiqueta">Prioridad</label>
-                <select id="tarea-prioridad" name="prioridad" class="form-select" required aria-describedby="tarea-error-prioridad">
-                    @foreach (\App\Enums\PrioridadTarea::cases() as $prioridad)
-                        <option value="{{ $prioridad->value }}" @selected($prioridad === \App\Enums\PrioridadTarea::Media)>{{ $prioridad->etiqueta() }}</option>
-                    @endforeach
-                </select>
-                <div class="dialogo-error" id="tarea-error-prioridad" data-error="prioridad"></div>
-            </div>
-            <div class="dialogo-campo">
-                <label for="tarea-columna" class="dialogo-etiqueta">Columna</label>
-                <select id="tarea-columna" name="columna_id" class="form-select" required aria-describedby="tarea-error-columna_id">
-                    @foreach ($columnasOrden as $columna)
-                        <option value="{{ $columna->id }}">{{ $columna->nombre }}@if (mb_strtolower($columna->nombre) !== mb_strtolower($columna->categoria->etiqueta())) ({{ $columna->categoria->etiqueta() }})@endif</option>
-                    @endforeach
-                </select>
-                <div class="dialogo-error" id="tarea-error-columna_id" data-error="columna_id"></div>
-            </div>
+            @include('tareas._campo-extra', ['campo' => 'prioridad', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
+            @include('tareas._campo-extra', ['campo' => 'columna', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
         </div>
 
         <div class="dialogo-pie-acciones">

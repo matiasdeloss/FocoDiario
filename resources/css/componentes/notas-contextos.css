@@ -1,0 +1,40 @@
+/* ---------- Notas y contextos ---------- */
+.nota-item {
+    display: grid;
+    gap: var(--foco-espacio-2);
+    padding: var(--foco-espacio-4) 28px;
+    border-bottom: 1px solid var(--foco-borde);
+}
+.nota-item:last-child { border-bottom: 0; }
+.nota-fijada { background: var(--color-neutral-200); }
+.nota-item:first-child { border-radius: var(--foco-radio) var(--foco-radio) 0 0; }
+.nota-item:last-child { border-radius: 0 0 var(--foco-radio) var(--foco-radio); }
+.nota-contenido { white-space: pre-wrap; overflow-wrap: anywhere; }
+.nota-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--foco-espacio-1) var(--foco-espacio-3); }
+.nota-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--foco-espacio-1); }
+.nota-mover { flex: 1 1 14rem; max-width: 22rem; margin-right: auto; }
+.nota-item.htmx-swapping { opacity: 0; transition: opacity 120ms cubic-bezier(0.2, 0, 0, 1); }
+.nota-item.htmx-added { animation: foco-fila-entra 180ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+
+/* Aviso breve de la nota rápida: se desvanece solo */
+.nota-rapida-aviso { animation: foco-entra var(--foco-transicion-entrada) both, foco-aviso-sale 400ms ease 3s forwards; }
+@keyframes foco-aviso-sale { to { opacity: 0; } }
+
+/* Árbol de contextos: la sangría crece con el nivel */
+.arbol-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--foco-espacio-3);
+    padding: var(--foco-espacio-2) 28px;
+    padding-left: calc(28px + var(--nivel, 0) * 1.75rem);
+    border-bottom: 1px solid var(--foco-borde);
+}
+.arbol-fila:last-child { border-bottom: 0; }
+.arbol-nombre { display: flex; flex-wrap: wrap; align-items: center; gap: var(--foco-espacio-2); min-width: 0; }
+.arbol-color { width: 0.75rem; height: 0.75rem; border-radius: 50%; flex: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .nota-rapida-aviso { animation: foco-aviso-sale 400ms ease 3s forwards; }
+}
+

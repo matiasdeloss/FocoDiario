@@ -67,6 +67,7 @@ class AislamientoUsuariosTest extends TestCase
         $this->delete(route('tareas.destroy', $tarea))->assertNotFound();
 
         $this->patchJson(route('recordatorios.avisar', $recordatorio))->assertNotFound();
+        $this->patchJson(route('recordatorios.reactivar', $recordatorio))->assertNotFound();
         $this->patchJson(route('recordatorios.posponer', $recordatorio))->assertNotFound();
 
         $this->patchJson(route('agenda.cajas.update', $caja), ['titulo' => 'x'])->assertNotFound();

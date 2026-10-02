@@ -4,27 +4,13 @@
  * (hoy-pomodoro.js, que usa el motor único del temporizador).
  * Se carga solo en esta pantalla: es una entrada aparte de Vite (ver la vista hoy.blade.php).
  */
+import { aviso } from './avisos.js';
 import { pedirSeguro } from './red.js';
 import './hoy-pomodoro.js';
 import './captura-rapida.js';
 import { crearSerie, estadoFinal, estaMarcado, marcadoDeTarea, pendientesFinales, puedeAlternar, textoPendientes } from './hoy-lista-logica.js';
 
-const ETIQUETAS_EVENTO = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota', sesion: 'Estudio' };
-
-/* ---------- Nota rápida ---------- */
-// El formulario (chips, teclado, tipo) vive en captura-rapida.js; aquí solo se retira la confirmación.
-// La confirmación es breve: se retira sola (el lector de pantalla ya la anunció al aparecer).
-let temporizadorAviso;
-
-function programarRetiroDelAviso() {
-    const aviso = document.getElementById('nota-rapida-aviso');
-
-    clearTimeout(temporizadorAviso);
-
-    if (aviso && aviso.querySelector('.hoy-aviso:not(.es-error)')) {
-        temporizadorAviso = setTimeout(() => aviso.replaceChildren(), 6000);
-    }
-}
+const ETIQUETAS_EVENTO = { tarea: 'Tarea', recordatorio: 'Recordatorio', nota: 'Nota', sesion: 'Estudio', planner: 'Planner' };
 
 /* ---------- Esta semana ---------- */
 function iniciarSemana(raiz) {
@@ -184,7 +170,7 @@ function iniciarTareas(raiz) {
                 }
             } catch {
                 pintarFila(fila, previo);
-                mensaje.textContent = 'No se pudo actualizar la tarea. Probá de nuevo.';
+                aviso.error('No se pudo actualizar la tarea. Probá de nuevo.');
             } finally {
                 fila.removeAttribute('aria-busy');
             }
@@ -218,16 +204,21 @@ function iniciarTareas(raiz) {
                 const { ok, datos } = await pedir(formulario.action, 'POST', { titulo });
 
                 if (!ok) {
-                    mensaje.textContent = datos.errors ? Object.values(datos.errors).flat().join(' ') : 'No se pudo crear la tarea. Probá de nuevo.';
+                    // Lo que el servidor objeta de un campo queda junto al campo; una falla general, en un aviso.
+                    if (datos.errors) {
+                        mensaje.textContent = Object.values(datos.errors).flat().join(' ');
+                    } else {
+                        aviso.error('No se pudo crear la tarea. Probá de nuevo.');
+                    }
 
                     return;
                 }
 
                 campo.value = '';
                 aplicarRespuesta({ ...datos, pendientes: pendientesFinales(datos.pendientes, pendientes + 1) }, esUltima());
-                mensaje.textContent = 'Tarea agregada.';
+                aviso.exito('Tarea agregada.');
             } catch {
-                mensaje.textContent = 'No se pudo conectar con el servidor. Probá de nuevo.';
+                aviso.error('No se pudo conectar con el servidor. Probá de nuevo.');
             } finally {
                 boton.disabled = false;
                 campo.focus();
@@ -242,9 +233,7 @@ function iniciarTareas(raiz) {
  * instante, se bloquea mientras hay una petición en curso y vuelve atrás si falla. Nunca cambia de posición,
  * así que al desmarcar recupera su lugar por fecha; al recargar, los avisados dejan de listarse.
  */
-function iniciarRecordatorios(raiz) {
-    const mensaje = raiz.querySelector('[data-mensaje]');
-    const serie = crearSerie();
+function iniciarRecordatorios(raiz) {    const serie = crearSerie();
 
     function pintarFila(fila, marcada) {
         fila.setAttribute('aria-checked', marcada ? 'true' : 'false');
@@ -259,7 +248,6 @@ function iniciarRecordatorios(raiz) {
         const previo = estaMarcado(fila.getAttribute('aria-checked'));
         const pedido = !previo;
 
-        mensaje.textContent = '';
         fila.setAttribute('aria-busy', 'true');
         pintarFila(fila, pedido);
 
@@ -270,10 +258,10 @@ function iniciarRecordatorios(raiz) {
                 if (!ok) throw new Error('recordatorio');
 
                 pintarFila(fila, estadoFinal({ previo, pedido, ok, servidor: typeof datos.avisado === 'boolean' ? datos.avisado : undefined }));
-                mensaje.textContent = pedido ? 'Recordatorio marcado como avisado.' : 'Recordatorio vuelto a pendiente.';
+                aviso.exito(pedido ? 'Recordatorio marcado como avisado.' : 'Recordatorio vuelto a pendiente.');
             } catch {
                 pintarFila(fila, previo);
-                mensaje.textContent = 'No se pudo actualizar el recordatorio. Probá de nuevo.';
+                aviso.error('No se pudo actualizar el recordatorio. Probá de nuevo.');
             } finally {
                 fila.removeAttribute('aria-busy');
             }
@@ -298,7 +286,4 @@ function iniciarTarjetas() {
 
 document.addEventListener('DOMContentLoaded', iniciarTarjetas);
 
-document.addEventListener('htmx:afterSettle', () => {
-    iniciarTarjetas();
-    programarRetiroDelAviso();
-});
+document.addEventListener('htmx:afterSettle', iniciarTarjetas);

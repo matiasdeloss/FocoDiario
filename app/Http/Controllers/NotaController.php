@@ -8,6 +8,7 @@ use App\Http\Requests\NotaRequest;
 use App\Enums\ColorNota;
 use App\Models\Contexto;
 use App\Models\Nota;
+use App\Support\Aviso;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -80,23 +81,28 @@ class NotaController extends Controller
         ]);
     }
 
-    public function store(NotaRequest $request): View|RedirectResponse|JsonResponse
+    public function store(NotaRequest $request): Response|RedirectResponse|JsonResponse
     {
         $nota = Nota::create($request->datosNota());
 
         if ($request->expectsJson()) {
-            session()->flash('estado', 'Nota guardada.');
+            Aviso::guardar('Nota guardada.');
 
             return response()->json(['ok' => true]);
         }
 
         if ($request->header('HX-Request') && $request->input('origen') === 'hoy') {
-            return view('hoy._nota-rapida', ['guardada' => $nota->load('contexto')]);
+            $nota->load('contexto');
+
+            return Aviso::enHtmx(
+                view('hoy._nota-rapida', ['guardada' => $nota]),
+                'Nota guardada '.($nota->contexto ? 'en '.$nota->contexto->rutaCompleta() : 'en la bandeja de entrada').'.',
+            );
         }
 
         return redirect()
             ->route($request->input('origen') === 'hoy' ? 'hoy' : 'notas.index')
-            ->with('estado', 'Nota guardada.');
+            ->with(Aviso::flash('Nota guardada.'));
     }
 
     public function show(Nota $nota): RedirectResponse
@@ -117,12 +123,12 @@ class NotaController extends Controller
         $nota->update($request->datosNota());
 
         if ($request->expectsJson()) {
-            session()->flash('estado', 'Nota actualizada.');
+            Aviso::guardar('Nota actualizada.');
 
             return response()->json(['ok' => true]);
         }
 
-        return redirect()->route('notas.index')->with('estado', 'Nota actualizada.');
+        return redirect()->route('notas.index')->with(Aviso::flash('Nota actualizada.'));
     }
 
     public function destroy(Request $request, Nota $nota): Response|RedirectResponse
@@ -133,11 +139,11 @@ class NotaController extends Controller
             return response('');
         }
 
-        return redirect()->route('notas.index')->with('estado', 'Nota eliminada.');
+        return redirect()->route('notas.index')->with(Aviso::flash('Nota eliminada.'));
     }
 
     /** Fija o desfija la nota. Con HTMX devuelve solo la tarjeta actualizada. */
-    public function fijar(Request $request, Nota $nota): View|RedirectResponse
+    public function fijar(Request $request, Nota $nota): Response|RedirectResponse
     {
         $nota->update(['fijada' => ! $nota->fijada]);
 
@@ -145,22 +151,22 @@ class NotaController extends Controller
     }
 
     /** Mueve la nota a otro contexto (o a la bandeja de entrada si no se elige ninguno). */
-    public function mover(MoverNotaRequest $request, Nota $nota): View|RedirectResponse
+    public function mover(MoverNotaRequest $request, Nota $nota): Response|RedirectResponse
     {
         $nota->update(['contexto_id' => $request->validated()['contexto_id'] ?? null]);
 
         return $this->respuestaNota($request, $nota, 'Nota movida.');
     }
 
-    private function respuestaNota(Request $request, Nota $nota, string $mensaje): View|RedirectResponse
+    private function respuestaNota(Request $request, Nota $nota, string $mensaje): Response|RedirectResponse
     {
         if ($request->header('HX-Request')) {
-            return view('notas._nota', [
+            return Aviso::enHtmx(view('notas._nota', [
                 'nota' => $nota->load('contexto'),
                 'destinos' => Contexto::opciones(),
-            ]);
+            ]), $mensaje);
         }
 
-        return back()->with('estado', $mensaje);
+        return back()->with(Aviso::flash($mensaje));
     }
 }

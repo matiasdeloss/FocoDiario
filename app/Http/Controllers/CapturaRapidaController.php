@@ -10,8 +10,9 @@ use App\Models\Tarea;
 use App\Services\Hoy\CapturaRapida;
 use App\Services\Hoy\ListasHoy;
 use App\Services\Hoy\SemanaHoy;
-use Illuminate\Contracts\View\View;
+use App\Support\Aviso;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 
 class CapturaRapidaController extends Controller
 {
@@ -19,13 +20,13 @@ class CapturaRapidaController extends Controller
      * Crea el registro del tipo elegido. Con HTMX responde el formulario limpio más los fragmentos
      * de Hoy que cambian (tareas, recordatorios, semana) para reemplazarlos sin recargar.
      */
-    public function __invoke(CapturaRapidaRequest $request, CapturaRapida $captura, ListasHoy $listas, SemanaHoy $semana): View|RedirectResponse
+    public function __invoke(CapturaRapidaRequest $request, CapturaRapida $captura, ListasHoy $listas, SemanaHoy $semana): Response|RedirectResponse
     {
         $creado = $captura->crear($request->datosCaptura());
         $mensaje = $captura->mensaje($creado);
 
         if (! $request->header('HX-Request')) {
-            return redirect()->route('hoy')->with('estado', $mensaje);
+            return redirect()->route('hoy')->with(Aviso::flash($mensaje));
         }
 
         $fecha = match (true) {
@@ -34,13 +35,13 @@ class CapturaRapidaController extends Controller
             $creado instanceof Nota => $creado->fecha,
         };
 
-        return view('hoy._captura-respuesta', [
+        return Aviso::enHtmx(view('hoy._captura-respuesta', [
             'valores' => ['tipo' => $request->input('tipo')],
             'destinos' => Contexto::opciones(),
             'mensaje' => $mensaje,
             'tareas' => $creado instanceof Tarea ? $listas->tareas() : null,
             'recordatorios' => $creado instanceof Recordatorio ? $listas->recordatorios() : null,
             'semana' => $fecha ? $semana->datos() : null,
-        ]);
+        ]), $mensaje);
     }
 }

@@ -17,6 +17,7 @@
     <div id="pomodoro" class="estudio-fila"
          data-fase="inactivo"
          data-url-sesiones="{{ route('estudio.sesiones.store') }}"
+         data-url-historial="{{ route('estudio.historial') }}"
          data-sesion-activa="{{ $sesionActivaId }}"
          data-presets='@json($presets)'>
 
@@ -66,9 +67,6 @@
                     </button>
                 </div>
 
-                <div class="aviso-foco mt-3 mb-0" data-p="terminada" role="status" hidden>
-                    Sesión terminada. Podés verla en el <a href="{{ route('estudio.historial') }}">historial</a>.
-                </div>
                 <div class="pomodoro-errores mt-3" data-p="errores" role="alert" hidden></div>
         </section>
 
@@ -147,9 +145,10 @@
         </section>
 
         <div class="estudio-lateral">
-                <div class="tarjeta tarjeta-relleno" data-p="resumen-sesion" hidden>
+                {{-- Siempre presente (atenuada sin sesión): si apareciera al iniciar, empujaría hacia abajo las demás tarjetas. --}}
+                <div class="tarjeta tarjeta-relleno estudio-sesion es-inactiva" data-p="resumen-sesion">
                     <h2 class="tarjeta-titulo">Esta sesión</h2>
-                    <p class="fw-medium mb-3" data-p="detalle"></p>
+                    <p class="fw-medium mb-3" data-p="detalle">Todavía no empezaste una sesión.</p>
                     <div class="row g-3">
                         <div class="col-6"><div class="metrica-etiqueta">Pomodoros completos</div><div class="metrica-valor" data-p="completados">0</div></div>
                         <div class="col-6"><div class="metrica-etiqueta">Interrumpidos</div><div class="metrica-valor" data-p="interrumpidos">0</div></div>
@@ -162,7 +161,27 @@
                     <h2 class="tarjeta-titulo">Avisos</h2>
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="p-sonido" checked>
-                        <label class="form-check-label" for="p-sonido">Sonido corto al terminar cada fase</label>
+                        <label class="form-check-label" for="p-sonido">Sonido al terminar cada fase</label>
+                    </div>
+                    <div class="sonidos" data-p="sonidos">
+                        <label for="p-sonido-tipo" class="sonidos-leyenda">Elegí el sonido</label>
+                        <div class="sonido-selector-fila">
+                            <select id="p-sonido-tipo" class="form-select" aria-label="Elegí el sonido">
+                                @foreach ([
+                                    ['campana', 'Campana', 'Dos toques suaves y breves'],
+                                    ['suave', 'Suave', 'Tres notas ascendentes, tranquilas'],
+                                    ['alarma', 'Alarma', 'Pitidos repetidos, imposible de ignorar'],
+                                    ['digital', 'Digital', 'Doble pitido de reloj digital'],
+                                    ['marimba', 'Marimba', 'Secuencia cálida y melodiosa'],
+                                ] as [$clave, $nombre, $descripcion])
+                                    <option value="{{ $clave }}" data-desc="{{ $descripcion }}">{{ $nombre }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn-sonido-probar" data-p-probar aria-label="Probar sonido seleccionado">
+                                <i class="bi bi-play-fill" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p class="config-ayuda sonido-desc" data-p="sonido-desc" aria-live="polite"></p>
                     </div>
                     <button type="button" class="btn btn-foco-suave" data-p="notificar" hidden>
                         <i class="bi bi-bell"></i> Activar notificaciones del navegador

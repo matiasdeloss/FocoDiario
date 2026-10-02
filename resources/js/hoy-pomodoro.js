@@ -8,6 +8,7 @@ import {
     acciones, conciliarSesion, configGuardada, crearSesionEnServidor, estadoGuardado, guardarDuracion, iniciarEstado, iniciarMotor,
     prepararAudio, suscribir, terminarSesion,
 } from './pomodoro-motor.js';
+import { aviso } from './avisos.js';
 import { hacerEditable } from './reloj-editable.js';
 import { describir, estaPausado, formatearTiempo, LIBRE } from './pomodoro-logica.js';
 import {
@@ -133,7 +134,7 @@ function iniciarTarjeta(raiz) {
 
             iniciarEstado(resultado.id, { foco: config.foco, descanso: config.descanso, largo: config.largo, ciclos: config.ciclos }, modoElegido);
         } catch {
-            elementos.mensaje.textContent = 'No se pudo conectar con el servidor. Revisá tu conexión y probá de nuevo.';
+            aviso.error('No se pudo conectar con el servidor. Revisá tu conexión y probá de nuevo.');
         } finally {
             iniciando = false;
             elementos.principal.disabled = false;

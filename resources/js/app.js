@@ -4,7 +4,8 @@ import './pomodoro.js';
 import './dialogos-tablero.js';
 import './pomodoro-widget.js';
 import './entrada-scroll.js';
-import { mostrarAviso, prepararAvisosFlash } from './avisos.js';
+import './tema.js';
+import { aviso, escucharAvisosDelServidor, prepararAvisosFlash } from './avisos.js';
 import { activarFormulariosConConfirmacion, confirmar } from './confirmar.js';
 import { activarCuenta } from './cuenta.js';
 import { activarDeshacer } from './deshacer.js';
@@ -16,6 +17,7 @@ window.htmx = htmx;
 // La CSP no permite eval y la app no usa hx-on ni valores "js:": se apaga explícitamente.
 htmx.config.allowEval = false;
 
+escucharAvisosDelServidor();
 prepararAvisosFlash();
 activarFormulariosConConfirmacion();
 activarDeshacer();
@@ -63,20 +65,22 @@ document.addEventListener('htmx:responseError', async (evento) => {
         // La página quedó abierta más que la sesión: se renueva el token y el próximo intento ya funciona.
         const renovado = await renovarToken();
 
-        mostrarAviso(renovado
-            ? 'La sesión se había vencido y ya se renovó. Volvé a intentarlo.'
-            : 'La sesión venció. Recargá la página para seguir.', { tipo: 'error' });
+        if (renovado) {
+            aviso.aviso('La sesión se había vencido y ya se renovó. Volvé a intentarlo.');
+        } else {
+            aviso.error('La sesión venció. Recargá la página para seguir.');
+        }
 
         return;
     }
 
-    mostrarAviso(estado >= 500
+    aviso.error(estado >= 500
         ? 'Hubo un error en el servidor y no se guardó el cambio. Probá de nuevo en un rato.'
-        : 'No se pudo completar la acción. Recargá la página y probá de nuevo.', { tipo: 'error' });
+        : 'No se pudo completar la acción. Recargá la página y probá de nuevo.');
 });
 
 document.addEventListener('htmx:sendError', () => {
-    mostrarAviso('No hay conexión con el servidor. El cambio no se guardó.', { tipo: 'error' });
+    aviso.error('No hay conexión con el servidor. El cambio no se guardó.');
 });
 
 // El calendario (FullCalendar) solo se descarga en su página.

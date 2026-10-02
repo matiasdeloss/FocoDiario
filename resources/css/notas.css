@@ -58,11 +58,24 @@
     transition: background-color 150ms, color 150ms;
 }
 .notas-pastilla:hover { background: var(--color-neutral-200); color: var(--color-neutral-900); }
-.notas-pastilla:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.notas-pastilla:focus-visible { outline: 4px solid var(--color-accent); outline-offset: 2px; }
 .notas-pastilla[aria-current="true"] { background: var(--color-neutral-900); color: var(--color-neutral-100); }
 .notas-pastilla[style]:hover { background: var(--nota-fondo); }
 .notas-pastilla[style][aria-current="true"] { background: var(--nota-fondo); color: var(--color-neutral-900); box-shadow: inset 0 0 0 2px var(--nota-marca); }
 .notas-punto { width: 10px; height: 10px; border-radius: 50%; background: var(--nota-marca); }
+/* Filtro de color: solo el punto, sin caja alrededor (el nombre va en aria-label y title). Área táctil de 32px. */
+.notas-pastilla-color, .notas-pastilla.notas-pastilla-color[style]:hover { justify-content: center; width: 32px; height: 32px; padding: 0; background: transparent; }
+.notas-pastilla-color .notas-punto {
+    width: 20px; height: 20px;
+    /* Borde interior apenas visible para que los tonos claros no se pierdan sobre el fondo crema. */
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-neutral-900) 14%, transparent);
+    transition: transform 150ms;
+}
+.notas-pastilla-color:hover .notas-punto { transform: scale(1.12); }
+/* Filtro activo: un solo aro fino separado del punto, con tokens del tema (sirve en claro y en oscuro). */
+.notas-pastilla.notas-pastilla-color[style][aria-current="true"] { background: transparent; box-shadow: none; }
+.notas-pastilla-color[aria-current="true"] .notas-punto { box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3.5px var(--color-neutral-800); transform: none; }
+@media (prefers-reduced-motion: reduce) { .notas-pastilla-color .notas-punto { transition: none; } }
 .notas-limpiar { background: transparent; color: var(--color-info-text, var(--color-accent-700)); }
 .notas-limpiar:hover { background: var(--color-neutral-200); }
 

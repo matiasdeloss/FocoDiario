@@ -8,6 +8,7 @@ use App\Models\BloqueTiempo;
 use App\Models\Categoria;
 use App\Models\Tarea;
 use App\Services\ResumenRegistro;
+use App\Support\Aviso;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -36,7 +37,7 @@ class RegistroController extends Controller
         BloqueTiempo::create($request->datosBloque());
 
         return redirect()->route('registro.index', ['fecha' => $request->validated('fecha')])
-            ->with('estado', 'Bloque registrado.');
+            ->with(Aviso::flash('Bloque registrado.'));
     }
 
     public function edit(BloqueTiempo $registro): View
@@ -56,7 +57,7 @@ class RegistroController extends Controller
         $registro->update($request->datosBloque());
 
         return redirect()->route('registro.index', ['fecha' => $request->validated('fecha')])
-            ->with('estado', 'Bloque actualizado.');
+            ->with(Aviso::flash('Bloque actualizado.'));
     }
 
     public function destroy(BloqueTiempo $registro): RedirectResponse
@@ -64,6 +65,6 @@ class RegistroController extends Controller
         $registro->delete();
 
         return redirect()->route('registro.index', ['fecha' => $registro->inicio->format('Y-m-d')])
-            ->with('estado', 'Bloque eliminado.');
+            ->with(Aviso::flash('Bloque eliminado.'));
     }
 }

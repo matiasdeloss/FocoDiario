@@ -38,11 +38,11 @@ enum ColorNota: string
     public function marca(): string
     {
         return match ($this) {
-            self::Durazno => 'var(--color-accent-400)',
-            self::Terracota => 'var(--color-accent-600)',
-            self::Salvia => 'var(--color-accent-2-400)',
-            self::Oliva => 'var(--color-accent-2-600)',
-            self::Arena => 'var(--color-neutral-500)',
+            self::Durazno => 'var(--color-nota-durazno)',
+            self::Terracota => 'var(--color-nota-terracota)',
+            self::Salvia => 'var(--color-nota-salvia)',
+            self::Oliva => 'var(--color-nota-oliva)',
+            self::Arena => 'var(--color-nota-arena)',
         };
     }
 }

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {
     ajustarLayout, alternarItem, cambiarTextoItem, contarItems, errorDeHoras, esperaDeReintento, horaValida, insertarItemDespues,
-    listaATexto, lunesDe, moverLayout, normalizarItems, ordenarPorPosicion, quitarItem, redimensionarLayout, reordenar, sumarDias,
+    listaATexto, lunesDe, moverLayout, normalizarItems, ordenarPorPosicion, quitarItem, redimensionarLayout, reordenar, resolverClic, sumarDias,
     textoALista,
 } from '../../resources/js/agenda-logica.js';
 
@@ -153,6 +153,49 @@ prueba('esperaDeReintento crece y termina', () => {
     assert.equal(esperaDeReintento(3), null);
     assert.equal(esperaDeReintento(-1), null);
     assert.equal(esperaDeReintento(0, [5]), 5);
+});
+
+/* Árbol mínimo con closest() por selector de atributo [x], para probar el reparto de clics sin DOM. */
+const nodo = (atributos, padre = null) => ({
+    padre,
+    attrs: atributos,
+    dataset: Object.fromEntries(Object.entries(atributos).map(([k, v]) => [k.replace('data-', '').replace(/-(\w)/g, (_, c) => c.toUpperCase()), v])),
+    closest(selector) {
+        const clave = selector.slice(1, -1);
+
+        for (let actual = this; actual; actual = actual.padre) if (clave in actual.attrs) return actual;
+
+        return null;
+    },
+    contains(otro) {
+        for (let a = otro; a; a = a.padre) if (a === this) return true;
+
+        return false;
+    },
+});
+
+prueba('resolverClic: "Agregar ítem" dentro de la hoja es una acción, no un cambio de tipo (hoja con data-hoja-tipo)', () => {
+    const articulo = nodo({});
+    const hoja = nodo({ 'data-hoja': '', 'data-hoja-tipo': 'lista' }, articulo);
+    const agregar = nodo({ 'data-accion': 'agregar-item' }, hoja);
+    const quitar = nodo({ 'data-accion': 'quitar-item' }, nodo({ 'data-item': '' }, hoja));
+
+    assert.deepEqual(resolverClic(agregar, articulo), { clase: 'accion', nombre: 'agregar-item', elemento: agregar });
+    assert.equal(resolverClic(quitar, articulo).nombre, 'quitar-item');
+    assert.equal(resolverClic(hoja, articulo), null);
+});
+
+prueba('resolverClic: los botones Texto/Lista cambian de tipo; un contenedor con data-tipo taparía las acciones', () => {
+    const articulo = nodo({});
+    const lista = nodo({ 'data-tipo': 'lista' }, nodo({}, articulo));
+
+    assert.deepEqual(resolverClic(lista, articulo), { clase: 'tipo', valor: 'lista' });
+
+    // Regresión: con la hoja marcada data-tipo, el clic en "Agregar ítem" se tomaba por cambio de tipo.
+    const hojaVieja = nodo({ 'data-tipo': 'lista' }, articulo);
+    const agregar = nodo({ 'data-accion': 'agregar-item' }, hojaVieja);
+
+    assert.equal(resolverClic(agregar, articulo).clase, 'tipo');
 });
 
 console.log(`\n${pruebas} pruebas de agenda-logica en verde`);

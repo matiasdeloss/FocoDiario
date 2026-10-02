@@ -1,5 +1,6 @@
 // Notas: modal (<dialog> nativo) de crear/editar, vista cuadrícula/lista y estado vacío al borrar.
 // Mejora progresiva: sin JS, los enlaces llevan a las páginas de crear/editar y los filtros son enlaces.
+import { aviso } from './avisos.js';
 import { pedirSeguro } from './red.js';
 
 const lista = document.getElementById('lista-notas');
@@ -210,7 +211,7 @@ if (dialogo) {
 
             window.location.reload();
         } catch {
-            avisos.textContent = 'No se pudo guardar. Revisá tu conexión e intentá de nuevo.';
+            aviso.error('No se pudo guardar. Revisá tu conexión e intentá de nuevo.');
             enviarBtn.disabled = false;
         }
     });

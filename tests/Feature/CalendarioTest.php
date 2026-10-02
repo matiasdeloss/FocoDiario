@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\Caja;
+use App\Models\Contexto;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\SesionEstudio;
@@ -105,11 +107,13 @@ class CalendarioTest extends TestCase
         Tarea::factory()->count(15)->create(['fecha_limite' => '2026-10-10']);
         Recordatorio::factory()->count(15)->create(['recordar_en' => '2026-10-11 09:00:00']);
         Nota::factory()->count(15)->create(['fecha' => '2026-10-12']);
+        Caja::factory()->delDia('2026-10-13')->count(15)->create(['contexto_id' => Contexto::factory()->create(['color' => '#728a58'])->id]);
 
         \DB::enableQueryLog();
         $this->getJson(route('calendario.eventos', self::RANGO))->assertOk();
 
-        $this->assertLessThanOrEqual(4, count(\DB::getQueryLog()));
+        // Una consulta por tipo (4) más la de las cajas del planner y la de sus actividades, en bloque.
+        $this->assertLessThanOrEqual(6, count(\DB::getQueryLog()));
     }
 
     public function test_se_asigna_y_se_quita_la_fecha_de_una_tarea(): void
@@ -169,6 +173,27 @@ class CalendarioTest extends TestCase
         $this->patchJson(route('calendario.recordatorios.fecha', $recordatorio), ['recordar_en' => 'mañana'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['recordar_en' => 'La fecha y hora del recordatorio no son válidas.']);
+    }
+
+    public function test_reactivar_un_recordatorio_avisado_lo_vuelve_a_dejar_editable_en_el_calendario(): void
+    {
+        $recordatorio = Recordatorio::factory()->create([
+            'tarea_id' => null, 'recordar_en' => '2026-10-12 08:30:00', 'avisado_en' => '2026-10-12 08:31:00',
+        ]);
+        $id = 'recordatorio-'.$recordatorio->id;
+        $evento = fn () => collect($this->getJson(route('calendario.eventos', self::RANGO))->json())->firstWhere('id', $id);
+
+        $this->assertFalse($evento()['editable']);
+        $this->assertContains('ev-hecho', $evento()['classNames']);
+        $this->assertTrue($evento()['extendedProps']['avisado']);
+
+        $this->patchJson(route('recordatorios.reactivar', $recordatorio))
+            ->assertOk()->assertExactJson(['id' => $recordatorio->id, 'avisado' => false]);
+
+        $this->assertNull($recordatorio->fresh()->avisado_en);
+        $this->assertTrue($evento()['editable']);
+        $this->assertNotContains('ev-hecho', $evento()['classNames']);
+        $this->assertFalse($evento()['extendedProps']['avisado']);
     }
 
     public function test_hoy_muestra_la_tira_semanal_con_conteos(): void

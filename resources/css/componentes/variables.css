@@ -1,0 +1,85 @@
+/* ---------- Variables reutilizables ---------- */
+:root {
+    /* Superficies */
+    --foco-fondo: var(--color-bg);
+    --foco-papel: var(--color-neutral-100);
+    --foco-papel-hundido: var(--color-neutral-200);   /* filas alternas, cabeceras de tabla, campos */
+    --foco-borde: var(--color-neutral-200);              /* divisores muy suaves entre filas */
+    --foco-borde-fuerte: var(--color-neutral-500);     /* casillas y teclas */
+    --foco-borde-control: var(--color-neutral-500);    /* anillo de casillas y puntos */
+    --linea-cuadricula: color-mix(in srgb, var(--color-accent-800) 5%, transparent);
+    --cuadricula: 32px;
+
+    /* Texto */
+    --foco-texto: var(--color-text);                   /* 15:1 sobre papel */
+    --foco-texto-suave: var(--color-neutral-700);      /* texto secundario */
+    --foco-texto-meta: var(--color-neutral-600);       /* metadatos y etiquetas (12px o menos), como en el diseño */
+
+    /* Acento terracota */
+    --foco-acento: var(--color-accent);                /* íconos, puntos, bordes, foco: 3:1 */
+    --foco-acento-hover: var(--color-accent-600);
+    --foco-acento-texto: var(--color-accent-700);      /* texto y enlaces sobre fondo claro: 6:1 */
+    --foco-acento-texto-hover: var(--color-accent-800);
+    --foco-acento-suave: var(--color-accent-200);      /* fondos tintados: estado activo, hoy, selección */
+    --foco-acento-anillo: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    /* Botón primario del diseño: acento con texto blanco, hover acento 600 */
+    --foco-boton: var(--color-accent-boton);
+    --foco-boton-hover: var(--color-accent-boton-hover);
+    --foco-boton-activo: var(--color-accent-boton-activo);
+
+    /* Segundo acento salvia */
+    --foco-salvia: var(--color-accent-2-600);
+    --foco-salvia-suave: var(--color-accent-2-200);
+    --foco-salvia-texto: var(--color-accent-2-800);
+
+    /* Semánticos (fondo pastel cálido + texto oscuro) */
+    --foco-rojo-fondo: var(--color-danger-bg);    --foco-rojo-texto: var(--color-danger-text);    --foco-rojo-borde: var(--color-danger-border);
+    --foco-ambar-fondo: var(--color-warning-bg);  --foco-ambar-texto: var(--color-warning-text);
+    --foco-verde-fondo: var(--color-accent-2-200);   --foco-verde-texto: var(--color-accent-2-800);
+    --foco-azul-fondo: var(--color-info-bg);      --foco-azul-texto: var(--color-info-text);
+    --foco-gris-fondo: var(--color-neutral-200);     --foco-gris-texto: var(--color-neutral-800);
+
+    /* Tipografía */
+    --foco-fuente: var(--font-body), system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --foco-fuente-titulo: var(--font-heading), system-ui, sans-serif;
+    --foco-fuente-mono: ui-monospace, 'SF Mono', Consolas, monospace;
+    --foco-texto-xs: 0.75rem;                           /* 18px */
+    --foco-texto-sm: 0.8125rem;                         /* 13px */
+    --foco-texto-base: 0.9375rem;                       /* 15px */
+    --foco-texto-lg: 1.25rem;
+    --foco-texto-xl: 1.625rem;
+    --foco-texto-2xl: 2.125rem;                        /* 34px: título de página */
+    --foco-texto-display: 3.5rem;
+
+    /* Espaciado */
+    --foco-espacio-1: 0.25rem;
+    --foco-espacio-2: 0.5rem;
+    --foco-espacio-3: 0.75rem;
+    --foco-espacio-4: 1rem;
+    --foco-espacio-5: 1.5rem;
+    --foco-espacio-6: 2rem;
+
+    /* Forma y movimiento */
+    --foco-radio: var(--radius-card);                  /* tarjetas: 18px */
+    --foco-radio-sm: var(--radius-control);            /* 8px: elementos internos */
+    --foco-radio-lg: var(--radius-card);                  /* 18px */
+    --foco-radio-pastilla: var(--radius-control);                      /* botones, campos, etiquetas */
+    --foco-transicion: 150ms cubic-bezier(0.2, 0, 0, 1);
+    --foco-transicion-entrada: 200ms cubic-bezier(0.23, 1, 0.32, 1);
+    --foco-desplaza: 4px;               /* movimiento de entradas; se anula con prefers-reduced-motion */
+
+    /* Puente con Bootstrap */
+    --bs-body-font-family: var(--foco-fuente);
+    --bs-body-color: var(--foco-texto);
+    --bs-body-bg: var(--foco-fondo);
+    --bs-secondary-color: var(--foco-texto-suave);
+    --bs-border-color: var(--foco-borde);
+    --bs-link-color: var(--foco-acento-texto);
+    --bs-link-hover-color: var(--foco-acento-texto-hover);
+    /* Bootstrap 5.3 pinta los enlaces con la versión "rgb" de la variable: se declara igual (#8c491a y #643312).
+       En oscuro se redefine más abajo (accent-700 #e7a177 y accent-800 #ecb696). */
+    --bs-link-color-rgb: 140, 73, 26;
+    --bs-link-hover-color-rgb: 100, 51, 18;
+    --bs-focus-ring-color: var(--foco-acento-anillo);
+}
+

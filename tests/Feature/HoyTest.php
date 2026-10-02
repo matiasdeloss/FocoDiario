@@ -7,6 +7,7 @@ use App\Enums\PrioridadTarea;
 use App\Enums\TipoCategoria;
 use App\Enums\TipoIntervalo;
 use App\Models\BloqueTiempo;
+use App\Models\Caja;
 use App\Models\Categoria;
 use App\Models\Contexto;
 use App\Models\IntervaloEstudio;
@@ -50,6 +51,28 @@ class HoyTest extends TestCase
             ->assertDontSee('metrica-valor', false);
     }
 
+    public function test_la_semana_resume_las_cajas_del_planner(): void
+    {
+        $this->miercoles();
+        Caja::factory()->delDia('2026-09-30')->conHora('09:00', '10:00')->create(['titulo' => 'Bloque A']);
+        Caja::factory()->delDia('2026-09-30')->create(['titulo' => 'Bloque B']);
+
+        $this->get(route('hoy'))
+            ->assertOk()
+            ->assertSee('2 bloques del planner');
+    }
+
+    public function test_la_semana_etiqueta_las_cajas_del_planner_de_todo_el_dia(): void
+    {
+        $this->miercoles();
+        Caja::factory()->delDia('2026-09-30')->create(['titulo' => 'Bloque libre']);
+
+        $this->get(route('hoy'))
+            ->assertOk()
+            ->assertSee('Planner: ')
+            ->assertSee('Todo el día');
+    }
+
     public function test_el_saludo_depende_de_la_hora_y_no_lleva_nombre(): void
     {
         $this->assertSame('Buenos días', Saludo::para(Carbon::parse('2026-09-30 09:00')));
@@ -74,7 +97,7 @@ class HoyTest extends TestCase
                 'origen' => 'hoy',
             ])
             ->assertOk()
-            ->assertSee('Nota guardada en Álgebra')
+            ->assertAvisoHtmx('Nota guardada en Álgebra.')
             ->assertDontSee('Repasar matrices');
 
         $this->assertDatabaseHas('notas', ['contenido' => 'Repasar matrices', 'contexto_id' => $contexto->id, 'color' => 'salvia']);
@@ -85,7 +108,7 @@ class HoyTest extends TestCase
         $html = $this->get(route('hoy'))->assertOk()->assertDontSee('0 caracteres')->getContent();
 
         $this->assertSame(5, substr_count($html, 'data-color-nota='));
-        $this->assertStringContainsString('aria-label="Color de la nota"', $html);
+        $this->assertStringContainsString('aria-label="Color de la nota o la tarea"', $html);
     }
 
     public function test_un_color_de_nota_invalido_se_rechaza_y_se_conserva_el_formulario(): void

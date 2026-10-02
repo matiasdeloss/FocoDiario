@@ -1,0 +1,41 @@
+/*
+ * Modo oscuro: los tokens de color cambian en organic.css; aquí quedan los valores de Bootstrap que no salen de ellos.
+ * Mismos dos bloques que allí (sistema sin elección manual, o tema forzado con data-theme="dark").
+ */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        /* Enlaces: accent-700 y accent-800 (Bootstrap pinta los enlaces con la versión rgb) */
+        --bs-link-color-rgb: 231, 161, 119;
+        --bs-link-hover-color-rgb: 236, 182, 150;
+        /* Variables de Bootstrap que no salen de --foco-* y quedarían claras (tablas, bordes, fondos secundarios) */
+        --bs-body-color-rgb: 239, 231, 218;
+        --bs-body-bg-rgb: 27, 24, 21;
+        --bs-emphasis-color: #efe7da;
+        --bs-emphasis-color-rgb: 239, 231, 218;
+        --bs-secondary-color-rgb: 207, 199, 186;
+        --bs-secondary-bg: var(--color-neutral-100);
+        --bs-tertiary-bg: var(--color-neutral-200);
+        --bs-border-color-translucent: rgba(239, 231, 218, 0.16);
+    }
+    :root:not([data-theme="light"]) .form-select { --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23efe7da' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); }
+    :root:not([data-theme="light"]) .navbar-foco { --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23efe7da' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+    :root:not([data-theme="light"]) .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+}
+:root[data-theme="dark"] {
+    /* Enlaces: accent-700 y accent-800 (Bootstrap pinta los enlaces con la versión rgb) */
+    --bs-link-color-rgb: 231, 161, 119;
+    --bs-link-hover-color-rgb: 236, 182, 150;
+    /* Variables de Bootstrap que no salen de --foco-* y quedarían claras (tablas, bordes, fondos secundarios) */
+    --bs-body-color-rgb: 239, 231, 218;
+    --bs-body-bg-rgb: 27, 24, 21;
+    --bs-emphasis-color: #efe7da;
+    --bs-emphasis-color-rgb: 239, 231, 218;
+    --bs-secondary-color-rgb: 207, 199, 186;
+    --bs-secondary-bg: var(--color-neutral-100);
+    --bs-tertiary-bg: var(--color-neutral-200);
+    --bs-border-color-translucent: rgba(239, 231, 218, 0.16);
+}
+:root[data-theme="dark"] .form-select { --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23efe7da' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); }
+:root[data-theme="dark"] .navbar-foco { --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23efe7da' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+:root[data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+

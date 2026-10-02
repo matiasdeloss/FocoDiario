@@ -1,0 +1,73 @@
+/* ---------- Ventanas (dialog) ---------- */
+.dialogo {
+    width: min(560px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-card);
+    background: var(--color-neutral-100);
+    color: var(--color-text);
+}
+.dialogo::backdrop { background: color-mix(in srgb, var(--color-velo) 45%, transparent); }
+.dialogo[open] { animation: dialogo-entra 200ms var(--ease-dialogo); }
+@keyframes dialogo-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.dialogo-cuerpo { display: flex; flex-direction: column; gap: 16px; max-height: calc(100dvh - 24px); padding: 24px; overflow-y: auto; }
+.dialogo-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dialogo-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 22px; }
+.dialogo-subtitulo { margin: 0; font-family: var(--font-heading); font-size: 17px; color: var(--color-neutral-800); }
+.dialogo-cerrar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-neutral-700);
+    cursor: pointer;
+}
+.dialogo-cerrar:hover { background: var(--color-neutral-200); }
+.dialogo-grupo { min-width: 0; margin: 0; padding: 0; border: 0; }
+.dialogo-grupo legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--color-neutral-800); }
+.dialogo-opcional { font-weight: 400; color: var(--color-neutral-700); }
+.dialogo-ayuda { margin: 6px 0 0; font-size: 13px; color: var(--color-neutral-700); }
+.dialogo-error { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: var(--color-danger-text); }
+.dialogo-error:empty { display: none; }
+.dialogo-enlace { padding: 0; border: 0; background: none; color: var(--color-accent-700); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.dialogo-fila { display: flex; flex-wrap: wrap; gap: 12px; }
+.dialogo-opciones { gap: 20px; }
+.dialogo-campo { display: flex; flex-direction: column; gap: 4px; flex: 1 1 120px; min-width: 0; font-size: 13px; color: var(--color-neutral-800); }
+.dialogo-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.dialogo-hecha { margin: 0; }
+.dialogo-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; }
+
+.dialogo { --ease-dialogo: cubic-bezier(0.23, 1, 0.32, 1); }
+.dialogo :is(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.dialogo .form-check { display: flex; align-items: center; gap: 8px; padding-left: 0; margin: 0; }
+.dialogo .form-check-input { float: none; margin: 0; }
+.dialogo-form { display: flex; flex-direction: column; gap: 16px; }
+.dialogo-form .dialogo-campo { flex-basis: 200px; }
+.dialogo-form .form-control, .dialogo-form .form-select { border-color: var(--color-neutral-300); }
+.dialogo-form :is(.form-control, .form-select).is-invalid { border-color: var(--color-danger-border); }
+.dialogo-etiqueta { display: block; margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--color-neutral-800); }
+.dialogo-avisos { padding: 10px 14px; border-radius: 12px; background: var(--color-danger-bg); color: var(--color-danger-text); font-size: 14px; font-weight: 600; }
+.dialogo-avisos:empty { display: none; }
+.dialogo-avisos > div + div { margin-top: 4px; }
+.dialogo-pie-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+.dialogo-texto { margin: 0; color: var(--color-neutral-800); }
+.dialogo-chico { width: min(440px, calc(100vw - 24px)); }
+.dialogo [hidden] { display: none !important; }
+@media (max-width: 575.98px) {
+    .dialogo-pie-acciones > .btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 767.98px) {
+    .dialogo-cuerpo { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dialogo, .dialogo * { animation: none !important; transition: none !important; }
+}
+

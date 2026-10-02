@@ -1,0 +1,82 @@
+/* ---------- Barra superior: papel neutral-100 con línea inferior, para que se distinga de la página ---------- */
+.navbar-foco {
+    background: var(--foco-papel);
+    border-bottom: 1px solid var(--color-card-border);
+    padding-block: 10px;
+}
+
+.navbar-foco .navbar-brand {
+    font-family: var(--foco-fuente-titulo);
+    font-size: 22px;
+    font-weight: var(--font-heading-weight);
+    font-synthesis: none;
+    letter-spacing: 0;
+    color: var(--foco-texto);
+}
+.navbar-foco .navbar-brand:hover { color: var(--foco-acento-texto); }
+.navbar-foco .navbar-brand { display: inline-flex; align-items: center; gap: 0.3em; }
+.navbar-foco .navbar-brand .bi { color: var(--foco-acento); }
+
+.navbar-foco .nav-link {
+    color: var(--foco-texto);
+    font-size: 14px;
+    border-radius: var(--foco-radio-pastilla);
+    padding: 6px 14px;
+    transition: background-color var(--foco-transicion), color var(--foco-transicion);
+}
+
+.navbar-foco .nav-link:hover { color: var(--foco-acento-texto); background: var(--color-neutral-200); }
+
+.navbar-foco .nav-link.active,
+.navbar-foco .nav-link[aria-current="page"] {
+    color: var(--color-accent-800);
+    background: var(--color-accent-200);
+    font-weight: 600;
+}
+
+.navbar-foco .nav-link.disabled { color: var(--foco-texto-meta); }
+
+.navbar-foco .navbar-toggler { border: 1px solid var(--color-card-border); border-radius: var(--foco-radio-pastilla); }
+.navbar-foco .navbar-toggler:focus { box-shadow: none; }
+.navbar-foco :is(.navbar-toggler, .nav-link, .navbar-brand, .dropdown-item):focus-visible {
+    outline: 2px solid var(--foco-acento);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* Secciones que agrupan pantallas (layouts/_nav.blade.php) */
+.navbar-foco button.nav-link { border: 0; background: transparent; text-align: start; }
+.navbar-foco .dropdown-menu {
+    --bs-dropdown-bg: var(--foco-papel);
+    --bs-dropdown-border-color: var(--foco-borde);
+    --bs-dropdown-border-radius: var(--foco-radio-sm);
+    --bs-dropdown-link-color: var(--foco-texto);
+    --bs-dropdown-link-hover-bg: var(--color-neutral-200);
+    --bs-dropdown-link-hover-color: var(--foco-acento-texto);
+    --bs-dropdown-link-active-bg: var(--color-accent-200);
+    --bs-dropdown-link-active-color: var(--color-accent-800);
+    --bs-dropdown-item-padding-y: 8px;
+    font-size: 14px;
+    padding: 6px;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-neutral-900) 12%, transparent);
+}
+.navbar-foco .dropdown-item { display: flex; align-items: center; gap: 10px; border-radius: 6px; }
+.navbar-foco .dropdown-item.active { font-weight: 600; }
+.navbar-foco .dropdown-item .bi { color: var(--foco-acento); }
+.navbar-foco .dropdown-item.active .bi { color: inherit; }
+/* Salir se distingue del menú: botón con borde, texto visible e ícono más grande. */
+.navbar-foco .nav-salir .nav-link { display: inline-flex; align-items: center; gap: 8px; height: var(--nav-control-alto, 38px); padding: 0 18px; border: 1px solid var(--color-neutral-300); border-radius: var(--radius-control); color: var(--color-text); font-size: 14px; font-weight: 600; }
+.navbar-foco .nav-salir .nav-link .bi { font-size: 18px; line-height: 1; }
+.navbar-foco .nav-salir .nav-link:hover { border-color: var(--color-danger-border); color: var(--color-danger-text); background: var(--color-danger-bg); }
+@media (min-width: 992px) {
+    .navbar-foco .nav-salir { margin-left: var(--foco-espacio-2); }
+}
+@media (max-width: 991.98px) {
+    /* En el menú plegado los desplegables se abren en el lugar, con sangría. */
+    .navbar-foco .dropdown-menu { border: 0; box-shadow: none; background: transparent; padding: 0 0 4px 12px; }
+}
+
+@media (max-width: 767.98px) {
+    .navbar-foco .navbar-nav { padding-block: var(--foco-espacio-2); gap: 2px; }
+}
+

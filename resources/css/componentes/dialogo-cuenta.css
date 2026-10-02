@@ -1,0 +1,59 @@
+/* ---------- Cuenta: modal de iniciar sesión / crear cuenta (layouts/_dialogo-cuenta) ---------- */
+.dialogo-cuenta { width: min(460px, calc(100vw - 24px)); }
+.dialogo-cuenta .dialogo-cuerpo { position: relative; gap: var(--foco-espacio-5); padding: 36px 32px 30px; }
+.cuenta-cerrar { position: absolute; top: 14px; right: 14px; }
+.entrada-marca {
+    display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0;
+    font-family: var(--foco-fuente-titulo); font-size: 34px; line-height: 1.1; color: var(--foco-texto);
+}
+.entrada-marca .bi { color: var(--foco-acento); font-size: 30px; }
+.entrada-texto { margin: var(--foco-espacio-1) 0 0; text-align: center; font-size: var(--foco-texto-sm); color: var(--foco-texto-suave); }
+.cuenta-pestanas { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--radius-pill); background: var(--color-neutral-200); }
+.cuenta-pestanas button {
+    padding: 8px 12px; border: 0; border-radius: var(--radius-pill); background: transparent;
+    color: var(--foco-texto-suave); font: inherit; font-size: var(--foco-texto-sm); font-weight: 600; cursor: pointer;
+}
+.cuenta-pestanas button[aria-selected="true"] { background: var(--foco-papel); color: var(--foco-texto); box-shadow: 0 1px 3px color-mix(in srgb, var(--color-neutral-900) 12%, transparent); }
+.cuenta-pestanas button:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+.cuenta-nota { display: flex; gap: 8px; margin: 0; padding: 10px 12px; border-radius: var(--foco-radio-sm); background: var(--color-bg); font-size: var(--foco-texto-sm); color: var(--foco-texto-suave); }
+.cuenta-nota .bi { flex: none; color: var(--foco-acento); }
+.entrada-form { display: flex; flex-direction: column; gap: var(--foco-espacio-4); }
+.entrada-form[hidden] { display: none; }
+.entrada-form .form-label { padding-left: 0; font-size: var(--foco-texto-sm); font-weight: 700; color: var(--foco-texto); }
+.entrada-form .dialogo-opcional { font-weight: 400; }
+/* Campos blancos con borde fino, en lugar del fondo tintado general. */
+.entrada-form .form-control {
+    background: var(--color-campo); border: 1px solid var(--color-neutral-300); padding: 10px 12px;
+}
+.entrada-form .form-control:focus { background: var(--color-campo); border-color: var(--color-accent); box-shadow: none; }
+.entrada-form .form-control.is-invalid { border-color: var(--color-danger-border); }
+
+/* Campos con ícono a la izquierda (y ojo de la contraseña a la derecha). */
+.cuenta-campo { position: relative; }
+.cuenta-campo > .bi:first-child { position: absolute; left: 14px; top: 50%; translate: 0 -50%; font-size: 17px; line-height: 1; color: var(--foco-texto-meta); pointer-events: none; }
+.entrada-form .cuenta-campo .form-control { height: 46px; padding: 0 14px 0 42px; border-radius: var(--radius-control); }
+.entrada-form .cuenta-campo:focus-within > .bi:first-child { color: var(--foco-acento); }
+.entrada-form .cuenta-campo-clave .form-control { padding-right: 46px; }
+.cuenta-ver {
+    position: absolute; top: 50%; right: 6px; translate: 0 -50%;
+    display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0;
+    border: 0; border-radius: 50%; background: transparent; color: var(--foco-texto-meta); font-size: 17px; line-height: 1; cursor: pointer;
+}
+.cuenta-ver:hover { background: var(--color-neutral-200); color: var(--foco-texto); }
+.cuenta-ver:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 1px; }
+.cuenta-ver > .bi { display: inline-flex; line-height: 1; }
+.cuenta-ver > .bi::before { vertical-align: 0; }
+
+/* Pie del formulario: enlace para cambiar de pestaña a la izquierda y el botón, solo del ancho de su texto, a la derecha. */
+.cuenta-pie { display: flex; flex-wrap: wrap-reverse; align-items: center; justify-content: space-between; gap: 12px 16px; margin-top: var(--foco-espacio-1); }
+.cuenta-cambiar { padding: 0; border: 0; background: transparent; color: var(--foco-texto-suave); font: inherit; font-size: var(--foco-texto-sm); cursor: pointer; }
+.cuenta-cambiar strong { color: var(--foco-acento-texto); font-weight: 700; }
+.cuenta-cambiar:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.cuenta-cambiar:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 3px; border-radius: 4px; }
+.cuenta-enviar { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 26px; border-radius: var(--radius-control); font-size: 15px; font-weight: 600; }
+.cuenta-enviar > .bi { font-size: 1.1em; line-height: 1; transition: translate 150ms; }
+.cuenta-enviar:hover > .bi { translate: 3px 0; }
+@media (prefers-reduced-motion: reduce) { .cuenta-enviar > .bi { transition: none; } .cuenta-enviar:hover > .bi { translate: none; } }
+
+/* Edge trae su propio ojo en los campos de contraseña: se oculta para usar solo el de la app (.cuenta-ver). */
+.cuenta-campo input::-ms-reveal, .cuenta-campo input::-ms-clear { display: none; }

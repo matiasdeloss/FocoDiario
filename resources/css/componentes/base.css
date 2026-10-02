@@ -1,0 +1,53 @@
+/* ---------- Base ---------- */
+/* Fondo de cuaderno cuadriculado: líneas casi imperceptibles en tono cálido sobre el crema. */
+body {
+    font-family: var(--foco-fuente);
+    font-size: var(--foco-texto-base);
+    line-height: 1.6;
+    color: var(--foco-texto);
+    background-color: var(--foco-fondo);
+    background-image:
+        linear-gradient(var(--linea-cuadricula) 1px, transparent 1px),
+        linear-gradient(90deg, var(--linea-cuadricula) 1px, transparent 1px);
+    background-size: var(--cuadricula) var(--cuadricula);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .h1, .h2, .h3, .h4 { text-wrap: balance; }
+p, .estado-vacio { text-wrap: pretty; }
+
+/* Títulos: Lora 400 (solo se usa ese peso) */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: var(--foco-fuente-titulo);
+    font-weight: var(--font-heading-weight);
+    font-synthesis: none;
+    letter-spacing: 0;
+    line-height: 1.2;
+    color: var(--foco-texto);
+}
+h1, .h1 { font-size: var(--foco-texto-2xl); letter-spacing: -0.01em; }
+h2, .h2 { font-size: 19px; }
+h3, .h3 { font-size: 17px; }
+h4, .h4 { font-size: 16px; }
+h5, .h5, h6, .h6 { font-size: var(--foco-texto-base); }
+
+/* Espacio de la página: 40px arriba y 64px abajo, como en el diseño */
+.principal-foco { padding-top: 40px; padding-bottom: 64px; }
+@media (max-width: 767.98px) { .principal-foco { padding-top: 24px; padding-bottom: 40px; } }
+
+.text-secondary { color: var(--foco-texto-suave) !important; }
+
+a { text-underline-offset: 0.2em; }
+
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* Foco visible: anillo de 2px del acento (3:1 sobre el fondo crema) */
+:focus-visible {
+    outline: 2px solid var(--foco-acento);
+    outline-offset: 2px;
+}
+
+.border-bottom { border-color: var(--foco-borde) !important; }
+

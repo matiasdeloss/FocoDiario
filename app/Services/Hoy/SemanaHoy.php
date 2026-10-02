@@ -25,9 +25,10 @@ class SemanaHoy
         'recordatorio' => ['recordatorio', 'recordatorios'],
         'nota' => ['nota', 'notas'],
         'sesion' => ['sesión de estudio', 'sesiones de estudio'],
+        'planner' => ['bloque del planner', 'bloques del planner'],
     ];
 
-    private const ETIQUETAS_SIN_HORA = ['tarea' => 'Fecha límite', 'nota' => 'Nota'];
+    private const ETIQUETAS_SIN_HORA = ['tarea' => 'Fecha límite', 'nota' => 'Nota', 'planner' => 'Todo el día'];
 
     public function __construct(private readonly EventosCalendario $calendario)
     {

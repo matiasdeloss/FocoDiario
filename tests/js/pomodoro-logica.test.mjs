@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {
     avanzar, CONFIG_POR_DEFECTO, crearEstado, desplazamientoAnillo, DESCANSO, fraccionAnillo, dividirSegundos, FOCO, formatearDuracion, formatearTiempo, formatearTranscurrido,
-    iniciarSiguienteFoco, interpretarTiempo, LIBRE, migrarConfig, migrarEstado, migrarEvento, pausar, reanudar, reiniciar, restanteMs, saltar, terminar,
+    enmascararTiempo, iniciarSiguienteFoco, interpretarTiempo, LIBRE, migrarConfig, migrarEstado, migrarEvento, pausar, reanudar, reiniciar, restanteMs, saltar, terminar,
     transcurridoMs, validarDuracion,
 } from '../../resources/js/pomodoro-logica.js';
 
@@ -358,3 +358,27 @@ prueba('el desplazamiento del anillo es proporcional y se acota a 0..1', () => {
 });
 
 console.log(`\n${pruebas} pruebas correctas`);
+
+prueba('enmascararTiempo: con 3 a 5 dígitos pone los dos puntos solo, los dos últimos son segundos', () => {
+    assert.equal(enmascararTiempo('0000'), '00:00');
+    assert.equal(enmascararTiempo('2500'), '25:00');
+    assert.equal(enmascararTiempo('250'), '2:50');
+    assert.equal(enmascararTiempo('18000'), '180:00');
+    assert.equal(enmascararTiempo('25:0'), '2:50');
+    assert.equal(enmascararTiempo('25:00'), '25:00');
+});
+
+prueba('enmascararTiempo: con 1 o 2 dígitos deja el número y descarta todo lo que no sea un dígito', () => {
+    assert.equal(enmascararTiempo('25'), '25');
+    assert.equal(enmascararTiempo('5'), '5');
+    assert.equal(enmascararTiempo('25m'), '25');
+    assert.equal(enmascararTiempo('abc'), '');
+    assert.equal(enmascararTiempo('2a5b0c0'), '25:00');
+    assert.equal(enmascararTiempo('-2.5'), '25');
+    assert.equal(enmascararTiempo(''), '');
+});
+
+prueba('enmascararTiempo: más de 5 dígitos se recortan y "00:00" sigue siendo un tiempo inválido', () => {
+    assert.equal(enmascararTiempo('123456'), '123:45');
+    assert.equal(interpretarTiempo(enmascararTiempo('0000')).ok, false);
+});

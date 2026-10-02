@@ -3,6 +3,7 @@
 namespace App\Services\Calendario;
 
 use App\Enums\EstadoTarea;
+use App\Models\Caja;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\SesionEstudio;
@@ -16,7 +17,7 @@ use Illuminate\Support\Carbon;
  */
 class EventosCalendario
 {
-    public const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion'];
+    public const TIPOS = ['tarea', 'recordatorio', 'nota', 'sesion', 'planner'];
 
     public function __construct(private readonly TarjetasCalendario $tarjetas)
     {
@@ -98,7 +99,54 @@ class EventosCalendario
             }
         }
 
+        if (in_array('planner', $tipos, true)) {
+            // Solo cajas de un día (las de zona semanal no tienen fecha y quedan fuera).
+            $cajas = Caja::query()
+                ->with('actividad')
+                ->entreFechas($desde, $hasta->copy()->subDay())
+                ->orderBy('fecha')
+                ->enOrdenDePlanner()
+                ->get();
+
+            foreach ($cajas as $caja) {
+                $eventos[] = $this->eventoPlanner($caja);
+            }
+        }
+
         return $eventos;
+    }
+
+    /** Evento de una caja del planner: con hora si la tiene (fin = hora_fin o inicio + 1 h), si no de todo el día. */
+    public function eventoPlanner(Caja $caja): array
+    {
+        $dia = $caja->fecha->toDateString();
+        $conHora = $caja->hora_inicio !== null;
+        $color = $caja->actividad?->colorActividad();
+
+        $evento = [
+            'id' => 'planner-'.$caja->id,
+            'title' => $caja->tituloVisible(),
+            'start' => $conHora ? $dia.'T'.$caja->hora_inicio.':00' : $dia,
+            'allDay' => ! $conHora,
+            'editable' => true,
+            'durationEditable' => $conHora,
+            'classNames' => array_values(array_filter(['ev-tipo-planner', $caja->hecha ? 'ev-hecho' : null, $color?->clase()])),
+            'extendedProps' => [
+                'tipo' => 'planner',
+                'plannerId' => $caja->id,
+                'tieneFin' => $conHora && $caja->hora_fin !== null,
+                'actividad' => $caja->actividad?->nombre,
+                'urlDia' => route('agenda.dia', ['fecha' => $dia]),
+            ],
+        ];
+
+        if ($conHora) {
+            $evento['end'] = $caja->hora_fin !== null
+                ? $dia.'T'.$caja->hora_fin.':00'
+                : Carbon::parse($dia.' '.$caja->hora_inicio)->addHour()->format('Y-m-d\TH:i:s');
+        }
+
+        return $evento;
     }
 
     /** Evento de un recordatorio con fecha (con hora). Editable mientras no esté avisado. */

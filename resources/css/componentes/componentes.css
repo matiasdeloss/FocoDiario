@@ -1,0 +1,233 @@
+/* ---------- Componentes reutilizables ---------- */
+
+/* Botones en pastilla (Iniciar del diseño): 35px de alto, 13px/600, padding 0 20px */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 35px;
+    padding: 0 20px;
+    border-radius: var(--foco-radio-pastilla);
+    border: 0;
+    font-family: var(--foco-fuente);
+    font-size: var(--foco-texto-sm);
+    font-weight: 600;
+    line-height: 1.2;
+    transition-property: background-color, color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.btn > .bi { line-height: 1; font-size: 1.05em; }
+/* Ícono centrado con su texto: caja cuadrada de 1em con el glifo al medio. El ::before de Bootstrap Icons baja el glifo .125em
+   (vertical-align) y eso lo dejaba más arriba que el centro del texto. Solo para íconos que son hijos directos de una fila flex
+   (nunca global: en texto corrido el ícono debe seguir alineado a la línea base). Es el mismo patrón de .aviso-icono. */
+.btn > .bi,
+.btn-icono > .bi,
+.dropdown-item > .bi,
+.navbar-brand > .bi,
+.crear-boton > .bi,
+.rec-accion > .bi,
+.hoy-rec-icono > .bi,
+.plan-agarre > .bi,
+.dialogo-cerrar > .bi,
+.aviso-cerrar > .bi,
+.hoy-descartar > .bi,
+.sonido-probar > .bi,
+.tarj-asa {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+}
+.btn > .bi::before,
+.btn-icono > .bi::before,
+.dropdown-item > .bi::before,
+.navbar-brand > .bi::before,
+.crear-boton > .bi::before,
+.rec-accion > .bi::before,
+.hoy-rec-icono > .bi::before,
+.plan-agarre > .bi::before,
+.dialogo-cerrar > .bi::before,
+.aviso-cerrar > .bi::before,
+.hoy-descartar > .bi::before,
+.sonido-probar > .bi::before,
+.tarj-asa::before { vertical-align: 0; line-height: 1; }
+.btn-sm { height: 30px; padding: 0 14px; font-size: var(--foco-texto-xs); }
+.btn:disabled, .btn.disabled { cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; box-shadow: none; }
+.btn:active:not(:disabled):not(.disabled) { transform: scale(0.98); }
+
+.btn-foco {
+    --bs-btn-bg: var(--foco-boton);
+    --bs-btn-border-color: transparent;
+    --bs-btn-color: var(--color-on-accent);
+    --bs-btn-hover-bg: var(--foco-boton-hover);
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-hover-color: var(--color-on-accent);
+    --bs-btn-active-bg: var(--foco-boton-activo);
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-active-color: var(--color-on-accent);
+    --bs-btn-disabled-bg: var(--foco-boton);
+    --bs-btn-disabled-border-color: transparent;
+    --bs-btn-disabled-color: var(--color-on-accent);
+    --bs-btn-disabled-opacity: 0.45;
+}
+
+/* Secundario: como el botón de reinicio del diseño (fondo de la página, texto neutral-700) */
+.btn-foco-suave {
+    --bs-btn-bg: var(--color-bg);
+    --bs-btn-border-color: transparent;
+    --bs-btn-color: var(--color-neutral-700);
+    --bs-btn-hover-bg: var(--color-neutral-200);
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-hover-color: var(--color-neutral-700);
+    --bs-btn-active-bg: var(--color-neutral-300);
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-active-color: var(--color-neutral-700);
+    --bs-btn-disabled-opacity: 0.45;
+}
+
+.btn-foco-peligro {
+    --bs-btn-bg: var(--foco-rojo-fondo);
+    --bs-btn-border-color: transparent;
+    --bs-btn-color: var(--foco-rojo-texto);
+    --bs-btn-hover-bg: var(--foco-rojo-borde);
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-hover-color: var(--color-on-accent);
+    --bs-btn-active-bg: var(--foco-rojo-texto);
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-active-color: var(--color-on-accent);
+    --bs-btn-disabled-opacity: 0.45;
+}
+
+/* Botón mínimo solo con ícono: círculo de 32px (como el + del diseño) */
+.btn-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    color: var(--foco-texto-suave);
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition-property: background-color, color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.btn-icono > .bi { font-size: 0.9375rem; }
+.btn-icono:hover { background: var(--color-neutral-200); color: var(--foco-acento-texto); }
+.btn-icono:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+.btn-icono:disabled, .btn-icono.disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+/* Etiquetas (prioridad y estado): como las del diseño, 10px en mayúsculas con letter-spacing .1em */
+.badge-foco {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+    text-transform: uppercase;
+    background: var(--foco-gris-fondo);
+    color: var(--foco-gris-texto);
+}
+.badge-prioridad-alta, .badge-estado-vencida { background: var(--foco-rojo-fondo); color: var(--foco-rojo-texto); }
+.badge-prioridad-media, .badge-estado-pendiente { background: var(--foco-ambar-fondo); color: var(--foco-ambar-texto); }
+.badge-prioridad-baja, .badge-estado-en-curso { background: var(--foco-azul-fondo); color: var(--foco-azul-texto); }
+.badge-estado-completada, .badge-estado-hecha { background: var(--foco-verde-fondo); color: var(--foco-verde-texto); }
+.badge-estado-cancelada, .badge-estado-archivada { background: var(--foco-gris-fondo); color: var(--foco-gris-texto); }
+
+/* Formularios: campos en pastilla con el fondo de la página, sin borde (como "Nueva tarea…" del diseño) */
+.form-label { font-size: var(--foco-texto-xs); font-weight: 400; color: var(--foco-texto-meta); margin-bottom: var(--foco-espacio-1); padding-left: 14px; }
+.form-check .form-check-label { padding-left: 0; }
+.form-text { font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); }
+
+.form-control, .form-select {
+    background-color: var(--color-bg);
+    border: 0;
+    border-radius: var(--foco-radio-pastilla);
+    color: var(--foco-texto);
+    caret-color: var(--foco-acento);
+    font-size: var(--foco-texto-sm);
+    padding: 9px 14px;
+    min-height: 0;
+    transition-property: box-shadow, background-color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.form-select { padding-right: 2.25rem; background-position: right 0.9rem center; }
+.form-control-sm, .form-select-sm { padding: 6px 12px; font-size: var(--foco-texto-xs); }
+.form-select-sm { padding-right: 2rem; }
+/* Varias líneas: una pastilla no cabe, se usa el radio de 16px */
+textarea.form-control { border-radius: var(--radius-control); padding: 12px 14px; }
+.form-control::placeholder { color: var(--foco-texto-meta); opacity: 1; }
+.form-control:focus, .form-select:focus {
+    background-color: var(--color-bg);
+    box-shadow: none;
+    outline: 2px solid var(--foco-acento);
+    outline-offset: 2px;
+}
+.form-control:disabled, .form-select:disabled { background-color: var(--foco-papel-hundido); opacity: 0.55; }
+.form-control-color { padding: 4px; width: 3.5rem; height: 2.25rem; }
+.form-control.is-invalid, .form-select.is-invalid { background-image: none; outline: 2px solid var(--foco-rojo-texto); outline-offset: 2px; }
+.form-select.is-invalid { background-image: var(--bs-form-select-bg-img); }
+.invalid-feedback { color: var(--foco-rojo-texto); font-size: var(--foco-texto-xs); }
+.form-check-input { border: 1.5px solid var(--foco-borde-control); background-color: transparent; }
+.form-check-input:checked { background-color: var(--color-accent-2-500); border-color: var(--color-accent-2-500); }
+.form-check-input:focus { box-shadow: none; outline: 2px solid var(--foco-acento); outline-offset: 2px; }
+
+/* Tablas */
+.tabla-foco {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: var(--color-neutral-200);
+    --bs-table-color: var(--foco-texto);
+    --bs-table-border-color: var(--foco-borde);
+    margin-bottom: 0;
+    vertical-align: middle;
+    font-size: var(--foco-texto-sm);
+}
+.tabla-foco thead th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--foco-texto-meta);
+    background: transparent;
+    border-bottom: 1px solid var(--foco-borde);
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+.tabla-foco tbody td { padding: 12px 16px; font-variant-numeric: tabular-nums; }
+.tabla-foco :is(th, td):first-child { padding-left: 28px; }
+.tabla-foco :is(th, td):last-child { padding-right: 28px; }
+.tabla-foco tbody tr { transition: opacity 120ms cubic-bezier(0.2, 0, 0, 1); }
+.tabla-foco tbody tr:last-child td { border-bottom: 0; }
+
+/* Contenedor: una tabla dentro de .tarjeta con scroll horizontal en celular */
+.tabla-foco-contenedor { overflow-x: auto; border-radius: var(--foco-radio); }
+
+/* Estado vacío */
+.estado-vacio { color: var(--foco-texto-suave); padding: var(--foco-espacio-4) 0; margin: 0; }
+
+/* Atajos de teclado */
+kbd {
+    font-family: var(--foco-fuente-mono);
+    font-size: var(--foco-texto-xs);
+    color: var(--foco-texto);
+    background: var(--color-neutral-200);
+    border-radius: 6px;
+    padding: 0.1em 0.4em;
+}
+

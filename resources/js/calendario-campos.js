@@ -44,7 +44,8 @@ function selector(opciones, actual, vacio, alCambiar) {
     return select;
 }
 
-function botonesDeOpcion(opciones, actual, alElegir) {
+/** `soloPunto`: grupo de colores; cada opción es un punto redondo y su nombre queda en aria-label/title. */
+function botonesDeOpcion(opciones, actual, alElegir, soloPunto = false) {
     const grupo = document.createElement('div');
 
     grupo.className = 'detalle-opciones';
@@ -54,20 +55,25 @@ function botonesDeOpcion(opciones, actual, alElegir) {
         const boton = document.createElement('button');
 
         boton.type = 'button';
-        boton.className = 'detalle-opcion';
+        boton.className = soloPunto ? 'detalle-opcion detalle-opcion-color' : 'detalle-opcion';
         boton.setAttribute('role', 'radio');
         boton.setAttribute('aria-checked', String(opcion.valor === actual));
         boton.dataset.valor = opcion.valor;
 
-        if (opcion.marca) {
+        if (soloPunto) {
+            boton.setAttribute('aria-label', opcion.etiqueta);
+            boton.title = opcion.etiqueta;
+        }
+
+        if (opcion.marca || soloPunto) {
             const punto = document.createElement('i');
 
-            punto.style.setProperty('--punto-opcion', opcion.marca);
+            if (opcion.marca) punto.style.setProperty('--punto-opcion', opcion.marca);
             punto.setAttribute('aria-hidden', 'true');
             boton.append(punto);
         }
 
-        boton.append(opcion.etiqueta);
+        if (!soloPunto) boton.append(opcion.etiqueta);
         boton.addEventListener('click', () => {
             if (opcion.valor !== actual) alElegir(opcion.valor);
         });
@@ -83,9 +89,10 @@ function botonesDeOpcion(opciones, actual, alElegir) {
  * @param {HTMLElement} contenedor
  * @param {object} d
  * @param {(cambio: object) => Promise<unknown>} guardar
- * @param {{ conPrioridadYColor?: boolean }} [opciones]
+ * @param {{ conPrioridadYColor?: boolean, reactivar?: ((boton: HTMLButtonElement) => void) | null }} [opciones]
+ *   `reactivar`: si viene, un recordatorio ya avisado ofrece "Marcar como no avisado" (recibe el botón para su estado ocupado).
  */
-export function pintarCamposExtra(contenedor, d, guardar, { conPrioridadYColor = false } = {}) {
+export function pintarCamposExtra(contenedor, d, guardar, { conPrioridadYColor = false, reactivar = null } = {}) {
     const conFoco = contenedor.contains(document.activeElement) ? document.activeElement.closest('[data-campo-extra]')?.dataset.campoExtra : null;
     const base = `extra-${++secuencia}`;
     const campos = [];
@@ -132,7 +139,7 @@ export function pintarCamposExtra(contenedor, d, guardar, { conPrioridadYColor =
         if (conPrioridadYColor) {
             const colores = [{ valor: null, etiqueta: 'Sin color' }, ...(d.colores ?? []).map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca }))];
 
-            agregar('color', campo('Color', botonesDeOpcion(colores, d.color ?? null, (valor) => guardar({ color: valor })), `${base}-color`));
+            agregar('color', campo('Color', botonesDeOpcion(colores, d.color ?? null, (valor) => guardar({ color: valor }), true), `${base}-color`));
         }
 
         agregar('materia', campo('Materia', selector(d.destinos ?? [], d.contexto_id, 'Bandeja de entrada',
@@ -153,6 +160,16 @@ export function pintarCamposExtra(contenedor, d, guardar, { conPrioridadYColor =
     if (d.tipo === 'recordatorio') {
         agregar('tarea', campo('Tarea vinculada', selector(d.tareas ?? [], d.tarea_id, 'Sin tarea',
             (valor) => guardar({ tarea_id: valor === null ? null : Number(valor) })), `${base}-tarea`));
+    }
+
+    if (d.tipo === 'recordatorio' && d.avisado && reactivar) {
+        const boton = document.createElement('button');
+
+        boton.type = 'button';
+        boton.className = 'btn btn-sm btn-foco-suave detalle-boton';
+        boton.innerHTML = '<i class="bi bi-bell" aria-hidden="true"></i> Marcar como no avisado';
+        boton.addEventListener('click', () => reactivar(boton));
+        agregar('reactivar', boton);
     }
 
     contenedor.replaceChildren(...campos);

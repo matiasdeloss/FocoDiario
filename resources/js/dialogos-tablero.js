@@ -5,6 +5,7 @@
 // Cada modal es un <dialog data-modal> con un <form data-form-modal>. Se envía con fetch (JSON):
 //  - 422: los errores se pintan dentro del modal, junto a cada campo, sin perder lo escrito.
 //  - éxito: se recarga la página; el servidor deja el aviso "Tarea creada." en la sesión.
+import { aviso } from './avisos.js';
 import { pedirSeguro } from './red.js';
 
 const dialogos = document.querySelectorAll('dialog[data-modal]');
@@ -123,7 +124,7 @@ if (dialogos.length > 0) {
             // Guardado: la página se recarga con el aviso del servidor; el botón queda apagado hasta entonces.
             window.location.reload();
         } catch {
-            mostrarAvisos(dialogo, ['No se pudo guardar. Revisá tu conexión e intentá de nuevo.']);
+            aviso.error('No se pudo guardar. Revisá tu conexión e intentá de nuevo.');
             boton.disabled = false;
         }
     };

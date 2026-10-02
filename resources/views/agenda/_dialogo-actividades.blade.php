@@ -83,7 +83,7 @@
                 <div class="actividad-colores">
                     @foreach (ColorActividad::cases() as $color)
                         <label class="actividad-color {{ $color->clase() }}" title="{{ $color->etiqueta() }}">
-                            <input type="radio" name="color" value="{{ $color->value }}" aria-label="{{ $color->etiqueta() }}" @checked($colorNueva === $color->value)>
+                            <input type="radio" name="color" value="{{ $color->value }}" aria-label="{{ $color->etiqueta() }}" @checked($colorNueva === $color->value || ($colorNueva === '' && $loop->first))>
                             <span class="actividad-color-punto" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
                             <span class="visually-hidden">{{ $color->etiqueta() }}</span>
                         </label>

@@ -1,5 +1,5 @@
 {{-- Contenido de una caja sobre hoja con renglones: texto libre o lista con casillas. Requiere: $tipo ('texto'|'lista'), $contenido, $items, $etiqueta --}}
-<div class="caja-hoja" data-hoja data-tipo="{{ $tipo }}">
+<div class="caja-hoja" data-hoja data-hoja-tipo="{{ $tipo }}">
     @if ($tipo === 'lista')
         <ul class="caja-items" data-items aria-label="{{ $etiqueta }}">
             @foreach ($items as $item)

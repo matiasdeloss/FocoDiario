@@ -4,7 +4,7 @@
  * (autoguardado). Lo usan la hoja del día (PATCH por caja) y las cajas Notas y Pendiente del planner (PUT).
  */
 import {
-    alternarItem, cambiarTextoItem, insertarItemDespues, listaATexto, normalizarItems, quitarItem, textoALista,
+    alternarItem, cambiarTextoItem, insertarItemDespues, listaATexto, normalizarItems, quitarItem, resolverClic, textoALista,
 } from './agenda-logica.js';
 
 const CLASE_ACTIVIDAD = /(^|\s)actividad-[\w-]+/g;
@@ -107,7 +107,7 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
             const etiqueta = articulo.dataset.etiquetaContenido ?? 'Contenido de la caja';
 
             cuerpo.replaceChildren();
-            cuerpo.dataset.tipo = estado.tipo;
+            cuerpo.dataset.hojaTipo = estado.tipo;
 
             if (estado.tipo === 'lista') {
                 const lista = document.createElement('ul');
@@ -179,18 +179,12 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
         };
 
         articulo.addEventListener('click', (evento) => {
-            const tipo = evento.target.closest('[data-tipo]');
+            const clic = resolverClic(evento.target, articulo);
 
-            if (tipo && articulo.contains(tipo)) {
-                api.cambiarTipo(tipo.dataset.tipo);
-
-                return;
-            }
-
-            const boton = evento.target.closest('[data-accion]');
-
-            if (boton && articulo.contains(boton) && acciones[boton.dataset.accion]) {
-                acciones[boton.dataset.accion](boton);
+            if (clic?.clase === 'tipo') {
+                api.cambiarTipo(clic.valor);
+            } else if (clic && acciones[clic.nombre]) {
+                acciones[clic.nombre](clic.elemento);
             }
         });
 

@@ -3,7 +3,7 @@
 @section('titulo', 'Agenda · FocoDiario')
 
 @push('head')
-    @vite(['resources/css/agenda.css', 'resources/js/agenda.js'])
+    @vite(['resources/css/agenda.css', 'resources/js/agenda-planner-grilla.js'])
 @endpush
 
 @section('contenido')
@@ -24,6 +24,11 @@
                         <span class="visually-hidden">Ir a la semana de una fecha</span>
                         <input type="date" class="plan-ir-campo" data-ir-fecha data-url="{{ route('agenda.index') }}" value="{{ $lunes->toDateString() }}" title="Ir a la semana de una fecha">
                     </label>
+                    <form method="POST" action="{{ route('agenda.layout.restablecer', ['semana' => $lunes->toDateString()]) }}" data-tras-guardar>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-foco-suave btn-sm" title="Volver a la disposición de fábrica en esta semana"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Restablecer disposición</button>
+                    </form>
                 </nav>
                 @include('agenda._estado-guardado')
             </div>
@@ -46,55 +51,70 @@
             </div>
         </header>
 
-        <div class="plan-dias">
+        {{-- Cada tarjeta (los siete días y Notas y Pendiente) es un elemento de GridStack: se mueve y se redimensiona como las cajas de la hoja del día. --}}
+        <div class="plan-dias" data-plan-grilla data-url-layout="{{ route('agenda.layout', ['semana' => $lunes->toDateString()]) }}">
             @foreach ($dias as $dia)
-                <article class="plan-tarjeta plan-dia plan-dia-{{ $dia['clave'] }} {{ $dia['esHoy'] ? 'es-hoy' : '' }}">
-                    <header class="plan-dia-cab">
-                        <h2 class="plan-dia-titulo">
-                            <a href="{{ route('agenda.dia', ['fecha' => $dia['fecha']->toDateString()]) }}" class="plan-dia-enlace"
-                               @if ($dia['esHoy']) aria-current="date" @endif>
-                                {{ $dia['nombre'] }}
-                                <span class="plan-dia-numero">{{ $dia['numero'] }}</span>
-                                <span class="visually-hidden">: abrir la hoja del día{{ $dia['esHoy'] ? ' (hoy)' : '' }}</span>
-                            </a>
-                        </h2>
-                    </header>
+                @php $pos = $layout[$dia['clave']]; @endphp
+                <div class="grid-stack-item" gs-id="{{ $dia['clave'] }}" gs-x="{{ $pos['x'] }}" gs-y="{{ $pos['y'] }}" gs-w="{{ $pos['ancho'] }}" gs-h="{{ $pos['alto'] }}" gs-min-w="2" gs-min-h="4">
+                    <div class="grid-stack-item-content">
+                        <article class="plan-tarjeta plan-dia plan-dia-{{ $dia['clave'] }} {{ $dia['esHoy'] ? 'es-hoy' : '' }}">
+                            <header class="plan-dia-cab">
+                                <span class="plan-agarre" data-agarre role="button" tabindex="0" title="Arrastrar para mover"
+                                      aria-label="Mover la tarjeta {{ $dia['nombre'] }}: con las flechas se mueve y con Mayús más flechas cambia el tamaño"><i class="bi bi-grip-vertical" aria-hidden="true"></i></span>
+                                <h2 class="plan-dia-titulo">
+                                    <a href="{{ route('agenda.dia', ['fecha' => $dia['fecha']->toDateString()]) }}" class="plan-dia-enlace"
+                                       @if ($dia['esHoy']) aria-current="date" @endif>
+                                        <span class="plan-dia-nombre">{{ $dia['nombre'] }}</span>
+                                        <span class="plan-dia-numero">{{ $dia['numero'] }}</span>
+                                        <span class="visually-hidden">: abrir la hoja del día{{ $dia['esHoy'] ? ' (hoy)' : '' }}</span>
+                                    </a>
+                                </h2>
+                            </header>
 
-                    @if ($dia['cajas']->isNotEmpty())
-                        <ul class="plan-lineas" data-plan-lineas>
-                            @foreach ($dia['cajas'] as $caja)
-                                @php $items = $caja->tipo === \App\Enums\TipoCaja::Lista ? collect($caja->itemsLista())->filter(fn ($i) => trim($i['texto']) !== '') : collect(); @endphp
-                                <li class="plan-linea {{ $caja->actividad?->colorActividad()?->clase() }} {{ $caja->hecha ? 'es-hecha' : '' }}">
-                                    @if ($caja->hora_inicio)
-                                        <span class="plan-hora">{{ $caja->horaTexto() }}</span>
-                                    @endif
-                                    <span class="plan-linea-titulo">{{ $caja->tituloVisible() }}</span>
-                                    @if ($items->isNotEmpty())
-                                        <span class="plan-cuenta" title="Ítems tildados">{{ $items->where('hecho', true)->count() }}/{{ $items->count() }}</span>
-                                    @endif
-                                    @if ($caja->hecha)
-                                        <span class="visually-hidden">(hecha)</span>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                        <a href="{{ route('agenda.dia', ['fecha' => $dia['fecha']->toDateString()]) }}" class="plan-mas" data-plan-mas hidden
-                           data-dia="{{ $dia['nombre'] }} {{ $dia['numero'] }}"></a>
-                    @else
-                        <p class="visually-hidden">Sin cajas este día.</p>
-                    @endif
-                </article>
+                            {{-- El resto de la tarjeta lleva a la hoja del día (el encabezado queda libre para arrastrar). --}}
+                            <a href="{{ route('agenda.dia', ['fecha' => $dia['fecha']->toDateString()]) }}" class="plan-dia-abrir" tabindex="-1" aria-hidden="true"></a>
+
+                            @if ($dia['cajas']->isNotEmpty())
+                                <ul class="plan-lineas" data-plan-lineas>
+                                    @foreach ($dia['cajas'] as $caja)
+                                        @php $items = $caja->tipo === \App\Enums\TipoCaja::Lista ? collect($caja->itemsLista())->filter(fn ($i) => trim($i['texto']) !== '') : collect(); @endphp
+                                        <li class="plan-linea {{ $caja->actividad?->colorActividad()?->clase() }} {{ $caja->hecha ? 'es-hecha' : '' }}">
+                                            @if ($caja->hora_inicio)
+                                                <span class="plan-hora">{{ $caja->horaTexto() }}</span>
+                                            @endif
+                                            <span class="plan-linea-titulo">{{ $caja->tituloVisible() }}</span>
+                                            @if ($items->isNotEmpty())
+                                                <span class="plan-cuenta" title="Ítems tildados">{{ $items->where('hecho', true)->count() }}/{{ $items->count() }}</span>
+                                            @endif
+                                            @if ($caja->hecha)
+                                                <span class="visually-hidden">(hecha)</span>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <a href="{{ route('agenda.dia', ['fecha' => $dia['fecha']->toDateString()]) }}" class="plan-mas" data-plan-mas hidden
+                                   data-dia="{{ $dia['nombre'] }} {{ $dia['numero'] }}"></a>
+                            @else
+                                <p class="visually-hidden">Sin cajas este día.</p>
+                            @endif
+                        </article>
+                    </div>
+                </div>
+            @endforeach
+
+            @foreach ($zonas as $zona)
+                @php $pos = $layout[$zona->value]; @endphp
+                <div class="grid-stack-item" gs-id="{{ $zona->value }}" gs-x="{{ $pos['x'] }}" gs-y="{{ $pos['y'] }}" gs-w="{{ $pos['ancho'] }}" gs-h="{{ $pos['alto'] }}" gs-min-w="2" gs-min-h="4">
+                    <div class="grid-stack-item-content">
+                        <section class="plan-tarjeta plan-zona" aria-label="{{ $zona->etiqueta() }} de la semana">
+                            @include('agenda._caja-semana', ['zona' => $zona, 'caja' => $semanales[$zona->value], 'lunes' => $lunes])
+                        </section>
+                    </div>
+                </div>
             @endforeach
         </div>
 
-        <section class="plan-tarjeta plan-notas" aria-label="Notas y pendientes de la semana">
-            <div class="plan-notas-columnas">
-                @foreach ($zonas as $zona)
-                    @include('agenda._caja-semana', ['zona' => $zona, 'caja' => $semanales[$zona->value], 'lunes' => $lunes])
-                @endforeach
-            </div>
-            <div class="plan-notas-pie">@include('agenda._estado-guardado')</div>
-        </section>
+        <p class="visually-hidden" role="status" aria-live="polite" id="agenda-anuncio"></p>
     </div>
 
     <template id="agenda-plantilla-item">@include('agenda._item', ['item' => ['texto' => '', 'hecho' => false]])</template>

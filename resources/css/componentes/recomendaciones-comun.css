@@ -1,0 +1,42 @@
+/* ---------- Recomendaciones ---------- */
+.recomendacion {
+    display: flex;
+    gap: var(--foco-espacio-3);
+    padding: var(--foco-espacio-3) 0;
+    border-bottom: 1px solid var(--foco-borde);
+}
+.recomendacion:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.recomendacion-icono {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    border-radius: 50%;
+    background: var(--foco-azul-fondo);
+    color: var(--foco-azul-texto);
+}
+.recomendacion-alerta .recomendacion-icono { background: var(--foco-rojo-fondo); color: var(--foco-rojo-texto); }
+.recomendacion-sugerencia .recomendacion-icono { background: var(--foco-ambar-fondo); color: var(--foco-ambar-texto); }
+.recomendacion-logro .recomendacion-icono { background: var(--foco-verde-fondo); color: var(--foco-verde-texto); }
+
+.recomendacion-cuerpo { min-width: 0; flex: 1; }
+.recomendacion-titulo {
+    font-family: var(--foco-fuente-titulo);
+    font-size: 16px;
+    font-weight: var(--font-heading-weight);
+    font-synthesis: none;
+    margin: 0 0 var(--foco-espacio-1);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--foco-espacio-2);
+}
+.recomendacion-mensaje { margin: 0 0 var(--foco-espacio-2); font-size: var(--foco-texto-sm); line-height: 1.55; color: var(--foco-texto-suave); }
+.recomendacion-fuente { margin: var(--foco-espacio-2) 0 0; font-size: var(--foco-texto-xs); color: var(--foco-texto-meta); }
+.recomendacion-fuente a { color: var(--foco-acento-texto); }
+.recomendacion-fuente a:hover { color: var(--foco-acento-texto-hover); }
+

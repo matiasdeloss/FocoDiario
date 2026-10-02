@@ -8,7 +8,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css', 'resources/js/app.js',
                 'resources/css/hoy.css', 'resources/js/hoy.js',
-                'resources/css/agenda.css', 'resources/js/agenda.js', 'resources/js/agenda-dia.js',
+                'resources/css/agenda.css', 'resources/js/agenda.js', 'resources/js/agenda-dia.js', 'resources/js/agenda-planner-grilla.js',
                 'resources/css/tareas.css', 'resources/js/tareas.js',
                 'resources/css/tablero.css', 'resources/js/tablero.js',
                 'resources/css/notas.css', 'resources/js/notas.js',

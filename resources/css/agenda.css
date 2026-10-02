@@ -95,7 +95,7 @@
     color: var(--color-text);
 }
 .plan-datos dt::after { content: ":"; }
-.plan-datos dd { margin: 0; font-family: var(--font-heading); font-size: 20px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.plan-datos dd { margin: 0; font-family: var(--font-num); font-size: 20px; line-height: 1.2; font-variant-numeric: tabular-nums; }
 
 .plan-leyenda { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; flex: 1 1 260px; min-width: 0; }
 .plan-leyenda-lista { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
@@ -112,41 +112,85 @@
     font-weight: 600;
 }
 
-/* ---------- Los siete días ----------
- * Cuatro filas de media altura: Lunes a Viernes ocupan dos (misma altura y ancho); Sábado y Domingo, una cada uno.
- * Las cajas no crecen con el contenido: lo que no entra se corta y se ofrece "+N más" (agenda-planner.js). */
-.plan-dias {
-    --plan-mitad: 150px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(4, var(--plan-mitad));
-    grid-template-areas:
-        "lunes martes miercoles"
-        "lunes martes miercoles"
-        "jueves viernes sabado"
-        "jueves viernes domingo";
-    gap: 16px;
+/* ---------- Las tarjetas del planner ----------
+ * Los siete días y las cajas Notas y Pendiente son elementos de GridStack (agenda-planner-grilla.js): se mueven y
+ * redimensionan como las cajas de la hoja del día. Sin JS o en pantallas angostas se apilan en una columna.
+ * Las tarjetas no crecen con el contenido: lo que no entra se corta y se ofrece "+N más" (agenda-planner.js). */
+.plan-dias { display: flex; flex-direction: column; gap: 16px; }
+.plan-dias.grid-stack { display: block; }
+.plan-dias .grid-stack-item-content { overflow: hidden; border-radius: 24px; }
+.plan-dias .plan-tarjeta { height: 100%; box-sizing: border-box; }
+.plan-dias .grid-stack-placeholder > .placeholder-content {
+    border-radius: 24px;
+    background-color: var(--color-accent-200);
+    opacity: 0.7;
 }
+.plan-dias .grid-stack-item.ui-draggable-dragging { opacity: 0.92; }
+.plan-dias .plan-dia-cab, .plan-dias .plan-nota-cab { cursor: grab; touch-action: none; }
+.plan-dias .grid-stack-item.ui-draggable-dragging :is(.plan-dia-cab, .plan-nota-cab) { cursor: grabbing; }
 
-.plan-dia-lunes { grid-area: lunes; }
-.plan-dia-martes { grid-area: martes; }
-.plan-dia-miercoles { grid-area: miercoles; }
-.plan-dia-jueves { grid-area: jueves; }
-.plan-dia-viernes { grid-area: viernes; }
-.plan-dia-sabado { grid-area: sabado; }
-.plan-dia-domingo { grid-area: domingo; }
+/* Tirador de tamaño: una esquina discreta, como en la hoja del día. */
+.plan-dias .grid-stack-item > .ui-resizable-se {
+    width: 22px;
+    height: 22px;
+    right: 14px;
+    bottom: 14px;
+    background-image: none;
+    transform: none;
+    cursor: nwse-resize;
+    opacity: 0.85;
+    color: var(--color-text);
+    transition: opacity 150ms var(--agenda-suave);
+}
+.plan-dias .grid-stack-item > .ui-resizable-se::before {
+    content: "";
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    border-bottom-right-radius: 4px;
+}
+.plan-dias .grid-stack-item:hover > .ui-resizable-se, .plan-dias .grid-stack-item > .ui-resizable-se:hover { opacity: 1; }
 
-.plan-dia { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; transition: background-color 150ms var(--agenda-suave); }
-.plan-dia:has(.plan-dia-enlace:hover) { background-color: color-mix(in srgb, var(--color-accent-200) 45%, var(--color-neutral-100)); }
+/* Agarre: lo que se toma para mover la tarjeta (con el mouse o con el teclado). */
+.plan-agarre {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    align-self: center;
+    width: 26px;
+    height: 32px;
+    margin-left: -8px;
+    border-radius: 6px;
+    font-size: 16px;
+    opacity: 0.75;
+    cursor: grab;
+}
+.plan-agarre:hover { opacity: 1; }
+/* El encabezado del día alinea por línea base; ahí el agarre se centra con la línea del nombre (21px × 1.2), no con la base. */
+.plan-dia-cab > .plan-agarre { align-self: flex-start; margin-block: calc((21px * 1.2 - 32px) / 2); }
+
+.plan-dia { display: flex; flex-direction: column; gap: 12px; min-height: 0; min-width: 0; overflow: hidden; transition: background-color 150ms var(--agenda-suave); }
+.plan-dia:has(.plan-dia-abrir:hover, .plan-dia-enlace:hover) { background-color: color-mix(in srgb, var(--color-accent-200) 45%, var(--color-neutral-100)); }
 .plan-dia:has(.plan-dia-enlace:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
-.plan-dia-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.plan-dia-cab { position: relative; z-index: 1; display: flex; align-items: baseline; justify-content: flex-start; gap: 8px; }
 .plan-dia-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; }
 .plan-dia-enlace { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; }
+/* En tarjetas angostas el nombre se recorta con puntos suspensivos y el número del día queda siempre visible. */
+.plan-dia-cab, .plan-dia-titulo, .plan-dia-enlace { min-width: 0; }
+.plan-dia-titulo { flex: 1 1 auto; }
+.plan-dia-enlace { max-width: 100%; }
+.plan-dia-nombre { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-dia-numero { flex: none; }
 .plan-dia-enlace:focus-visible { outline: 0; }
-/* Toda la tarjeta lleva a la hoja del día. */
-.plan-dia-enlace::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-card); }
-.plan-dia-numero { font-family: var(--font-body); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--color-neutral-700); }
+/* El cuerpo de la tarjeta lleva a la hoja del día; el encabezado queda por encima para poder arrastrar. */
+.plan-dia-abrir { position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+.plan-dia-numero { font-family: var(--font-num); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--color-neutral-700); }
 .plan-dia.es-hoy .plan-dia-numero {
     display: inline-grid;
     place-items: center;
@@ -189,27 +233,21 @@
     font-size: 14px;
     line-height: 1.4;
 }
-.plan-hora { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+.plan-hora { flex: none; font-weight: 700; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .plan-linea-titulo { min-width: 0; overflow-wrap: anywhere; }
-.plan-cuenta { margin-left: auto; padding-left: 6px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.plan-cuenta { margin-left: auto; padding-left: 6px; font-size: 11px; font-weight: 600; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .plan-linea.es-hecha { opacity: 0.65; }
 .plan-linea.es-hecha .plan-linea-titulo { text-decoration: line-through; }
 
 /* ---------- Notas y Pendiente de la semana ---------- */
-.plan-notas { display: flex; flex-direction: column; gap: 10px; padding: 22px; }
-.plan-notas-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
-.plan-notas-columnas > .plan-nota { padding: 0 22px 0 0; }
-.plan-notas-columnas > .plan-nota + .plan-nota {
-    padding: 0 0 0 22px;
-    border-left: 1.5px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-}
-.plan-notas-pie { display: flex; justify-content: flex-end; min-height: 20px; }
+.plan-zona { display: flex; flex-direction: column; min-width: 0; overflow: auto; }
 
 .plan-nota { display: flex; flex-direction: column; gap: 10px; }
-.plan-nota-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plan-nota-cab { display: flex; align-items: center; gap: 12px; }
+.plan-nota-cab .plan-nota-titulo { flex: 1 1 auto; min-width: 0; }
 .plan-nota-titulo { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; }
 .plan-nota .caja-texto { height: auto; field-sizing: content; min-height: calc(var(--renglon) * 8); }
-.plan-nota .caja-hoja[data-tipo="lista"] { min-height: calc(var(--renglon) * 8); }
+.plan-nota .caja-hoja[data-hoja-tipo="lista"] { min-height: calc(var(--renglon) * 8); }
 
 .plan-tipo { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-pill); background: var(--color-neutral-200); }
 .plan-tipo button {
@@ -415,7 +453,7 @@
     background: color-mix(in srgb, var(--color-neutral-100) 72%, transparent);
     font-size: 12px;
     font-weight: 700;
-    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num); font-variant-numeric: tabular-nums;
 }
 /* Con hora, las acciones ocupan más y hay que reservarles lugar a los dos lados. */
 .caja-cab:has(.caja-hora:not([hidden])) { --reserva: 172px; }
@@ -451,7 +489,7 @@
 
 /* ---------- Hoja con renglones (texto o lista) ---------- */
 .caja-hoja { position: relative; flex: 1 1 auto; min-height: 0; padding: 0 18px 8px; }
-.caja-hoja[data-tipo="lista"] {
+.caja-hoja[data-hoja-tipo="lista"] {
     overflow-y: auto;
     background-image: linear-gradient(to bottom, transparent calc(var(--renglon) - 1px), var(--agenda-renglon) calc(var(--renglon) - 1px));
     background-size: 100% var(--renglon);
@@ -484,29 +522,32 @@
 
 .caja-items { margin: 0; padding: 0; list-style: none; }
 .caja-item { display: flex; align-items: flex-start; gap: 8px; min-height: var(--renglon); }
+/* Casilla redonda de 20 px, igual al check de Hoy (.hoy-check): mismo borde y mismos colores; la marca es la del SVG de Hoy, centrada con una máscara. Centrada contra el primer renglón. */
 .caja-check {
     flex: none;
     position: relative;
-    width: 18px;
-    height: 18px;
-    margin: 3px 0 0;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    margin: calc((var(--renglon) - 20px) / 2) 0 0;
     appearance: none;
-    border: 1.5px solid var(--color-neutral-600);
-    border-radius: 5px;
+    border: 1.5px solid var(--color-neutral-500);
+    border-radius: 999px;
     background: transparent;
     cursor: pointer;
 }
-.caja-check:checked { background: var(--color-accent-2-600); border-color: var(--color-accent-2-600); }
+.caja-item:hover .caja-check { border-color: var(--color-neutral-700); }
+.caja-check:checked, .caja-item:hover .caja-check:checked { background: var(--color-accent-2-500); border-color: var(--color-accent-2-500); }
 .caja-check:checked::after {
     content: "";
     position: absolute;
-    left: 5px;
-    top: 1px;
-    width: 4px;
-    height: 9px;
-    border: solid var(--color-on-accent);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    inset: 0;
+    margin: auto;
+    width: 12px;
+    height: 12px;
+    background: var(--color-on-accent);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.4 7.3l2.8 2.3L11.4 4.6'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.4 7.3l2.8 2.3L11.4 4.6'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 .caja-item-texto {
     flex: 1 1 auto;
@@ -565,7 +606,7 @@
 .lienzo.es-movil .caja { height: auto; min-height: 200px; }
 .lienzo.es-movil .caja-hoja { flex: none; overflow: visible; }
 .lienzo.es-movil .caja-texto { height: auto; field-sizing: content; min-height: calc(var(--renglon) * 6); overflow: visible; }
-.lienzo.es-movil .caja-hoja[data-tipo="lista"] { min-height: calc(var(--renglon) * 6); }
+.lienzo.es-movil .caja-hoja[data-hoja-tipo="lista"] { min-height: calc(var(--renglon) * 6); }
 .lienzo.es-movil .caja-cab { cursor: default; touch-action: auto; }
 .lienzo.es-movil .caja-agarre { cursor: pointer; }
 .lienzo.es-movil .lienzo-vacio { position: static; padding: 24px 0; }
@@ -645,15 +686,20 @@
     .hoja-derecha, .hoja-barra { justify-content: flex-start; }
     .plan-cab { grid-template-columns: 1fr; }
     .plan-info-caja { grid-column: auto; }
-    .plan-dias { display: flex; flex-direction: column; }
     .plan-dia { overflow: visible; }
     .plan-lineas { flex: none; max-height: 232px; }
-    .plan-notas-columnas { grid-template-columns: 1fr; gap: 20px; }
-    .plan-notas-columnas > .plan-nota, .plan-notas-columnas > .plan-nota + .plan-nota { padding: 0; border-left: 0; }
     .plan-titulo-campo { font-size: 24px; }
     .hoja-titulo { font-size: 28px; }
 
 }
+
+/* Sin cuadrícula (pantallas angostas): las tarjetas se apilan, sin posiciones ni tiradores. */
+.plan-dias.es-movil .grid-stack-item { position: static; width: auto; height: auto; }
+.plan-dias.es-movil .grid-stack-item-content { position: static; inset: auto; overflow: visible; }
+.plan-dias.es-movil .plan-tarjeta { height: auto; }
+.plan-dias.es-movil .plan-zona { overflow: visible; }
+.plan-dias.es-movil .plan-dia-cab, .plan-dias.es-movil .plan-nota-cab { cursor: default; touch-action: auto; }
+.plan-dias.es-movil .plan-agarre { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
     .agenda *, .agenda *::before, .agenda *::after { animation: none !important; transition: none !important; }

@@ -6,7 +6,6 @@
      data-orden="{{ json_encode($columnasOrden->pluck('id')) }}"
      data-etiquetas="{{ json_encode($etiquetasColumnas) }}"
      data-categorias="{{ json_encode($columnasOrden->mapWithKeys(fn ($c) => [$c->id => $c->categoria->value])) }}">
-    <div id="tablero-aviso" class="aviso-foco" role="alert" hidden></div>
     @if ($errors->any())
         <div class="aviso-foco" role="alert">
             @foreach ($errors->all() as $mensajeError)

@@ -5,11 +5,6 @@
     {{-- La cabecera (título y colores) vive dentro del formulario: los colores son parte de lo que se envía. --}}
     @include('hoy._captura-form', ['guardada' => $guardada ?? null, 'valores' => $valores ?? []])
 
-    <div id="nota-rapida-aviso" class="hoy-aviso-caja" role="status" aria-live="polite">
-        @isset($guardada)
-            <div class="hoy-aviso"><i class="bi bi-check2" aria-hidden="true"></i>
-                Nota guardada {{ $guardada->contexto ? 'en ' . $guardada->contexto->rutaCompleta() : 'en la bandeja de entrada' }}.
-            </div>
-        @endisset
-    </div>
+    {{-- Resumen de errores de la captura (lo llena la respuesta HTMX). Las confirmaciones salen como toast. --}}
+    <div id="nota-rapida-aviso" class="hoy-aviso-caja" role="status" aria-live="polite"></div>
 </section>

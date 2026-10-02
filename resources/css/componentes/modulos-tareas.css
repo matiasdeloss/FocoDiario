@@ -1,0 +1,17 @@
+/* ---------- Módulos: tareas, recordatorios y registro ---------- */
+
+/* Aviso en línea (estado de una acción dentro de la página): salvia, el segundo acento.
+   Las confirmaciones y errores de las acciones son avisos flotantes (más abajo); esto queda para paneles de contenido. */
+.aviso-foco {
+    background: var(--foco-salvia-suave);
+    border-radius: var(--foco-radio-sm);
+    color: var(--foco-salvia-texto);
+    font-size: var(--foco-texto-sm);
+    padding: 8px 16px;
+    margin-bottom: var(--foco-espacio-4);
+    animation: foco-entra var(--foco-transicion-entrada) both;
+}
+
+/* Borrado pendiente con Deshacer (deshacer.js): el elemento se oculta hasta que sale el pedido. */
+.es-eliminando { display: none !important; }
+

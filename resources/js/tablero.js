@@ -7,6 +7,7 @@
  * Los cambios se ven al instante, se guardan de a uno (así las respuestas no se pisan) y, si el servidor
  * rechaza uno, la tarjeta vuelve a donde estaba.
  */
+import { aviso } from './avisos.js';
 import { crearSerie } from './hoy-lista-logica.js';
 import { pedirSeguro } from './red.js';
 
@@ -16,16 +17,7 @@ if (tablero) {
     const orden = JSON.parse(tablero.dataset.orden);
     const etiquetas = JSON.parse(tablero.dataset.etiquetas);
     const categorias = JSON.parse(tablero.dataset.categorias);
-    const aviso = document.getElementById('tablero-aviso');
     const serie = crearSerie();
-    let temporizadorAviso;
-
-    const mostrarAviso = (texto) => {
-        aviso.textContent = texto;
-        aviso.hidden = false;
-        clearTimeout(temporizadorAviso);
-        temporizadorAviso = setTimeout(() => { aviso.hidden = true; }, 6000);
-    };
 
     const columna = (id) => tablero.querySelector(`.tablero-columna[data-columna="${id}"]`);
     const columnaDe = (tarjeta) => tarjeta.closest('.tablero-columna')?.dataset.columna;
@@ -139,7 +131,7 @@ if (tablero) {
                 return true;
             } catch {
                 devolver(tarjeta, origen);
-                mostrarAviso(`No se pudo mover "${tarjeta.dataset.titulo}". Volvió a ${etiquetas[origen.columna]}.`);
+                aviso.error(`No se pudo mover "${tarjeta.dataset.titulo}". Volvió a ${etiquetas[origen.columna]}.`);
 
                 return false;
             } finally {

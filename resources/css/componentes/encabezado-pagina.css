@@ -1,0 +1,7 @@
+/* ---------- Encabezado de página ---------- */
+.pagina-titulo { font-size: var(--foco-texto-2xl); letter-spacing: -0.01em; margin-bottom: var(--foco-espacio-1); }
+
+@media (max-width: 575.98px) {
+    .pagina-titulo { font-size: 28px; }
+}
+

@@ -7,30 +7,39 @@ use App\Services\Recomendaciones\CatalogoRecomendaciones;
 use App\Services\Recomendaciones\MotorRecomendaciones;
 use App\Services\Recomendaciones\Recomendacion;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
 
 class RecomendacionController extends Controller
 {
-    public function index(Request $request, MotorRecomendaciones $motor): View
+    /** Ideas del catálogo que se muestran por categoría: la página se mantiene corta. */
+    private const IDEAS_POR_CATEGORIA = 2;
+
+    public function index(MotorRecomendaciones $motor): View
     {
-        $categoria = CategoriaRecomendacion::tryFrom((string) $request->query('categoria'));
+        $generadas = $motor->generar()->values();
 
-        $paraTi = $motor->generar()
-            ->when($categoria, fn ($c) => $c->filter(fn (Recomendacion $r) => $r->categoria === $categoria))
+        // Lo urgente que no pertenece a ninguna categoría va arriba, con el orden de prioridad del motor.
+        $paraTi = $generadas->filter(fn (Recomendacion $r) => $r->categoria === null)->values();
+
+        // Una sección por categoría (orden del enum): primero lo personalizado, luego las ideas del día.
+        // Las ideas rotan por día (semilla = fecha): no cambian al recargar.
+        $fecha = now()->toDateString();
+        $secciones = collect(CategoriaRecomendacion::cases())
+            ->map(function (CategoriaRecomendacion $categoria) use ($generadas, $fecha) {
+                return [
+                    'categoria' => $categoria,
+                    'personales' => $generadas->filter(fn (Recomendacion $r) => $r->categoria === $categoria)->values(),
+                    'ideas' => CatalogoRecomendaciones::delDia($fecha, $categoria)->take(self::IDEAS_POR_CATEGORIA)->values(),
+                ];
+            })
+            ->filter(fn (array $s) => $s['personales']->isNotEmpty() || $s['ideas']->isNotEmpty())
             ->values();
-
-        // Las ideas rotan por día (semilla = fecha): no cambian al recargar. Sin filtro se muestran 8.
-        $ideas = CatalogoRecomendaciones::delDia(now()->toDateString(), $categoria);
-        if (! $categoria) {
-            $ideas = $ideas->take(8)->values();
-        }
 
         return view('recomendaciones.index', [
             'paraTi' => $paraTi,
-            'ideas' => $ideas,
-            'categoria' => $categoria,
-            'categorias' => CategoriaRecomendacion::cases(),
-            'alertas' => $paraTi->filter(fn (Recomendacion $r) => $r->tipo->value === 'alerta')->count(),
+            'secciones' => $secciones,
+            'segunTusDatos' => $generadas->count(),
+            'ideas' => $secciones->sum(fn (array $s) => $s['ideas']->count()),
+            'alertas' => $generadas->filter(fn (Recomendacion $r) => $r->tipo->value === 'alerta')->count(),
         ]);
     }
 }

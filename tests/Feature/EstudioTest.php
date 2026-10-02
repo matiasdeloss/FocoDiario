@@ -44,6 +44,19 @@ class EstudioTest extends TestCase
         ], $cambios);
     }
 
+    public function test_estudio_ofrece_sonidos_en_un_selector_con_boton_probar(): void
+    {
+        $this->get(route('estudio.index'))->assertOk()
+            ->assertSee('Elegí el sonido')
+            ->assertSee('id="p-sonido-tipo"', false)
+            ->assertSee('Campana')
+            ->assertSee('Suave')
+            ->assertSee('Alarma')
+            ->assertSee('Digital')
+            ->assertSee('Marimba')
+            ->assertSee('aria-label="Probar sonido seleccionado"', false);
+    }
+
     public function test_las_tres_pantallas_responden(): void
     {
         $this->get(route('estudio.index'))->assertOk()->assertSee('Iniciar foco');

@@ -1,10 +1,10 @@
 /*
- * Nota rápida de Hoy (tarjeta con aspecto de cuaderno): tipo, chips desplegables (fecha y destino), colores siempre visibles en la cabecera,
+ * Nota rápida de Hoy (tarjeta con aspecto de cuaderno): tipo, chips desplegables (fecha, destino y los detalles de la tarea), colores siempre visibles en la cabecera,
  * atajos de teclado y autoajuste de la hoja. Sin JavaScript el formulario sigue enviándose con los campos a la vista.
  * El formulario se reemplaza entero con HTMX al guardar: los eventos se delegan en el documento y se
  * vuelve a preparar cada formulario nuevo.
  */
-import { chipVisible, etiquetaFecha, fechaEnDias, tipoValido } from './captura-rapida-logica.js';
+import { chipVisible, etiquetaFecha, fechaEnDias, resumenTarea, tipoConColor, tipoValido } from './captura-rapida-logica.js';
 
 const SELECTOR_CAPTURA = '[data-nota-rapida] [data-captura]';
 const CLAVE_TIPO = 'focodiario.captura.tipo';
@@ -95,6 +95,16 @@ function actualizarChips(formulario) {
     chipDe(formulario, 'destino').querySelector('[data-chip-texto]').textContent = textoDestino;
     chipDe(formulario, 'destino').setAttribute('aria-label', `Destino: ${textoDestino}`);
     formulario.querySelector('[data-chip-quitar="destino"]').hidden = !hayDestino;
+
+    const prioridad = campo(formulario, 'prioridad');
+    const resumen = resumenTarea({
+        prioridad: prioridad.value,
+        etiquetaPrioridad: prioridad.selectedOptions[0]?.textContent.trim() ?? '',
+        proyecto: campo(formulario, 'proyecto').value,
+    });
+
+    chipDe(formulario, 'tarea').querySelector('[data-chip-texto]').textContent = resumen || 'Más detalles';
+    chipDe(formulario, 'tarea').setAttribute('aria-label', resumen ? `Más detalles de la tarea: ${resumen}` : 'Más detalles de la tarea');
 }
 
 /** Muestra solo lo que corresponde al tipo elegido; lo escrito en lo oculto se conserva. */
@@ -109,11 +119,11 @@ function aplicarTipo(formulario) {
     actualizarChips(formulario);
 }
 
-/** El color elegido (solo en notas) tiñe el botón Guardar; los campos no cambian de color. */
+/** El color elegido (en notas y tareas) tiñe el botón Guardar; los campos no cambian de color. */
 function teñirGuardar(formulario) {
     const color = campo(formulario, 'color').value;
 
-    if (color && tipoElegido(formulario) === 'nota') formulario.dataset.color = color;
+    if (color && tipoConColor(tipoElegido(formulario))) formulario.dataset.color = color;
     else delete formulario.dataset.color;
 }
 
@@ -129,6 +139,14 @@ function fijarColor(formulario, color) {
 function descartar(formulario) {
     formulario.querySelectorAll('input[type="text"], input[type="date"], input[type="time"], textarea').forEach((entrada) => { entrada.value = ''; });
     campo(formulario, 'contexto_id').value = '';
+    // Prioridad y columna vuelven a sus valores de siempre (el servidor marca cuáles son).
+    ['prioridad', 'columna_id'].forEach((nombre) => {
+        const select = campo(formulario, nombre);
+        const defecto = select && [...select.options].findIndex((opcion) => opcion.dataset.porDefecto === 'true');
+
+        if (select) select.selectedIndex = Math.max(defecto, 0);
+    });
+    actualizarChips(formulario);
     cerrarPaneles(formulario);
     fijarColor(formulario, '');
     ajustarHoja(formulario);
@@ -146,7 +164,7 @@ document.addEventListener('input', (evento) => {
     if (!formulario) return;
 
     if (evento.target.matches('.hoy-cuaderno-hoja')) ajustarHoja(formulario);
-    if (evento.target.matches('[name="fecha"], [name="hora"]')) actualizarChips(formulario);
+    if (evento.target.matches('[name="fecha"], [name="hora"], [name="proyecto"]')) actualizarChips(formulario);
 });
 
 document.addEventListener('change', (evento) => {
@@ -157,7 +175,7 @@ document.addEventListener('change', (evento) => {
     if (evento.target.matches('[data-tipo]')) {
         guardarTipo(tipoElegido(formulario));
         aplicarTipo(formulario);
-    } else if (evento.target.matches('[name="fecha"], [name="hora"], [name="contexto_id"]')) {
+    } else if (evento.target.matches('[name="fecha"], [name="hora"], [name="contexto_id"], [name="prioridad"], [name="proyecto"]')) {
         actualizarChips(formulario);
     }
 });
