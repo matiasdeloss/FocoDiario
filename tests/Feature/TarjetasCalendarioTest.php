@@ -6,6 +6,7 @@ use App\Enums\EstadoTarea;
 use App\Models\Contexto;
 use App\Models\Nota;
 use App\Models\Recordatorio;
+use App\Models\SesionEstudio;
 use App\Models\Tarea;
 use App\Services\Calendario\EventosCalendario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,6 +94,16 @@ class TarjetasCalendarioTest extends TestCase
         $this->assertSame(0, Tarea::count() + Recordatorio::count() + Nota::count());
         $this->deleteJson(route('calendario.tarjetas.destroy', ['tarea', 999]))->assertNotFound();
         $this->deleteJson('/calendario/tarjetas/evento/1')->assertNotFound();
+    }
+
+    public function test_se_elimina_una_sesion_de_estudio_desde_el_calendario(): void
+    {
+        $sesion = SesionEstudio::factory()->create();
+
+        $this->deleteJson(route('calendario.tarjetas.destroy', ['sesion', $sesion->id]))
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('sesiones_estudio', ['id' => $sesion->id]);
     }
 
     public function test_se_asigna_y_se_quita_la_fecha_de_una_nota(): void

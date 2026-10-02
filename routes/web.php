@@ -77,7 +77,7 @@ Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
     Route::patch('calendario/tarjetas/{tipo}/{id}', [TarjetaCalendarioController::class, 'update'])
         ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.update');
     Route::delete('calendario/tarjetas/{tipo}/{id}', [TarjetaCalendarioController::class, 'destroy'])
-        ->whereIn('tipo', ['tarea', 'recordatorio', 'nota'])->whereNumber('id')->name('calendario.tarjetas.destroy');
+        ->whereIn('tipo', ['tarea', 'recordatorio', 'nota', 'sesion'])->whereNumber('id')->name('calendario.tarjetas.destroy');
 
     // ---- Tablero Kanban (vista aparte de Tareas): columnas personalizables ----
     Route::get('tablero', [TableroController::class, 'index'])->name('tablero.index');

@@ -141,7 +141,7 @@
 
         <footer class="detalle-pie" id="detalle-pie">
             <span class="tarj-guardado" id="detalle-guardado" role="status" aria-live="polite"></span>
-            <button type="button" class="btn-icono tarj-borrar" id="detalle-borrar" data-tipos="tarea recordatorio nota" aria-label="Eliminar" title="Eliminar"><i class="bi bi-trash" aria-hidden="true"></i></button>
+            <button type="button" class="btn-icono tarj-borrar" id="detalle-borrar" data-tipos="tarea recordatorio nota sesion" aria-label="Eliminar" title="Eliminar"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </footer>
         <div class="detalle-confirmar" id="detalle-confirmar" role="alertdialog" aria-labelledby="detalle-confirmar-texto" hidden>
             <p id="detalle-confirmar-texto"></p>

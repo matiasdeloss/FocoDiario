@@ -7,10 +7,12 @@ use App\Http\Requests\CrearTarjetaRequest;
 use App\Http\Requests\PaginaTarjetasRequest;
 use App\Models\Nota;
 use App\Models\Recordatorio;
+use App\Models\SesionEstudio;
 use App\Models\Tarea;
 use App\Services\Calendario\DetalleCalendario;
 use App\Services\Calendario\EventosCalendario;
 use App\Services\Calendario\TarjetasCalendario;
+use App\Services\RegistroEstudio;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -61,8 +63,15 @@ class TarjetaCalendarioController extends Controller
         ]);
     }
 
-    public function destroy(string $tipo, int $id): Response
+    public function destroy(string $tipo, int $id, RegistroEstudio $registro): Response
     {
+        if ($tipo === 'sesion') {
+            $sesion = SesionEstudio::findOrFail($id);
+            $registro->borrarSesion($sesion);
+
+            return response()->noContent();
+        }
+
         $this->tarjetas->buscar($tipo, $id)->delete();
 
         return response()->noContent();

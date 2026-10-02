@@ -905,7 +905,7 @@ function iniciar(raiz) {
 
     dBorrar.addEventListener('click', () => {
         if (!abierto?.datos) return;
-        const nombre = dTitulo.value.trim();
+        const nombre = (dTitulo.value || dTituloFijo.textContent || abierto?.datos?.titulo || '').trim();
         dConfirmarTexto.textContent = `¿Eliminar ${ARTICULOS[abierto.tipo]}${nombre ? ` «${nombre}»` : ''}? No se puede deshacer.`;
         dPie.hidden = true;
         dConfirmar.hidden = false;
