@@ -63,13 +63,13 @@ El diseño se adapta a pantallas chicas, con modo claro y oscuro.
 
 - **Modo invitado:** se puede usar sin registrarse. Los datos quedan asociados a ese navegador.
 - **Cuenta:** al crear una cuenta, lo cargado como invitado se transfiere a ella y queda disponible en cualquier dispositivo.
-- **Aislamiento:** cada usuario ve únicamente sus propios datos. Las contraseñas se guardan cifradas con hash.
+- **Aislamiento:** cada usuario ve únicamente sus propios datos. Las contraseñas se guardan como hash, nunca en texto plano.
 
 ## Stack
 
 - **Backend:** Laravel 13 (PHP 8.4)
 - **Frontend:** Blade, HTMX 2, Bootstrap 5, FullCalendar, Gridstack y JavaScript sin framework, compilado con Vite
-- **Base de datos:** PostgreSQL en producción (Neon), SQLite en desarrollo
+- **Base de datos:** PostgreSQL en producción (Neon); en desarrollo, SQLite por defecto o MySQL
 - **Despliegue:** Docker con FrankenPHP en Render
 
 ## Desarrollo local

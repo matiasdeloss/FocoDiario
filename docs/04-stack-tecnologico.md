@@ -3,11 +3,14 @@
 ## Decisión
 | Capa | Elección | Motivo |
 |---|---|---|
-| Backend | Laravel 12 (PHP 8.4) | Ya instalado y usado en `Mis notas`. Migraciones, validación y rutas resueltas. |
-| Base de datos | MySQL, desde Laragon | Laragon aporta solo MySQL (puerto 3306). Su servidor web queda apagado para no chocar con Herd en el puerto 80. |
+| Backend | Laravel 13 (PHP 8.4) | Ya instalado y usado en `Mis notas`. Migraciones, validación y rutas resueltas. Empezó en Laravel 12 y se actualizó. |
+| Base de datos local | MySQL, desde Laragon | Laragon aporta solo MySQL (puerto 3306). Su servidor web queda apagado para no chocar con Herd en el puerto 80. |
+| Base de datos en producción | PostgreSQL en Neon | Plan gratuito persistente y sin tarjeta. Conexión directa (sin pooler) para que corran las migraciones. |
 | Servidor web local | Laravel Herd | Sirve `focodiario.test` con PHP 8.4. Se registra con `herd link`, sin mover archivos. |
+| Publicación | Docker + FrankenPHP en Render | Plan gratuito con auto-deploy desde `main`. El `entrypoint` corre las migraciones al iniciar. |
 | Vistas | Blade + HTMX | Páginas renderizadas en el servidor, con interacciones sin recargar y sin framework de JS. |
 | Estilos | Bootstrap 5 | Mismo criterio que otros proyectos, responsive de entrada. |
+| Calendario y agenda | FullCalendar + Gridstack | Vistas de calendario listas y cajas reubicables en la agenda semanal. |
 | Temporizador | JS vanilla | El Pomodoro corre en el navegador; el servidor solo guarda los ciclos completados. |
 | Build | Vite | Viene con Laravel. |
 | Después | PWA | Instalable en el celular y con notificaciones para recordatorios. |
@@ -60,12 +63,15 @@ Tomadas de `02-requisitos-y-funcionalidades.md`:
 5. [x] Pomodoro (JS vanilla) con registro de ciclos completados, en la vista Estudio.
 6. [x] Registro del día y resumen de horas.
 7. [x] Contextos, notas rápidas y recomendaciones.
-8. [ ] Calendario en Hoy, contexto en las tareas, estadísticas semanales y exportación de datos.
+8. [x] Calendario, agenda semanal y tablero kanban.
+9. [x] Modo invitado, cuentas y datos por usuario.
+10. [x] Publicación en Render con PostgreSQL en Neon.
+11. [ ] Contexto en las tareas, estadísticas semanales y exportación de datos desde la app.
 
 ## Ubicación del proyecto (hecho)
 El código vive en `Proyectos\FocoDiario`. Herd lo sirve en `http://focodiario.test` mediante `herd link focodiario`. La base `focodiario` está en el MySQL de Laragon (usuario `root`, sin contraseña, solo local) y las migraciones base ya corrieron.
 
 ## Pendiente de decidir
-- Cómo se hará el respaldo de la base (exportar a `.sql` o a JSON).
+- Exportación de datos desde la app para cada usuario (CSV o JSON). El respaldo de la base de producción ya está resuelto con un `pg_dump` semanal fuera del repositorio.
 - Si la configuración del Pomodoro, hoy en el navegador (localStorage), pasa a la base de datos.
 - Si el tiempo libre debe seguir registrándose cuando se cierra el navegador (hoy ese intervalo se pierde).

@@ -24,15 +24,20 @@
 - Descansos guiados tras cada Pomodoro (movimiento, sin celular) y plantilla de recuperación.
 - Práctica de recuperación activa: tarjetas de conceptos clave por materia (ligada a repaso espaciado).
 
-## Estado actual (2026-09)
-Construido y con pruebas automáticas (73 de PHPUnit y 13 de la lógica del temporizador):
-- **Hoy:** nota rápida con destino, recomendaciones destacadas, métricas del día, próximas tareas y recordatorios, y acceso a Estudio.
-- **Tareas, Recordatorios y Registro** completos, con HTMX.
-- **Contextos y Notas:** jerarquía entorno / materia / tema y bandeja de entrada (ver `06-inicio-y-notas.md`).
+## Estado actual (2026-10)
+Construido y con pruebas automáticas (393 de PHPUnit y pruebas en Node de la lógica de JavaScript en `tests/js/`):
+- **Hoy:** nota rápida que crea nota, tarea o recordatorio, semana en curso, recordatorios pendientes, tareas abiertas, pomodoro y recomendaciones destacadas.
+- **Agenda:** planificador semanal con cajas por materia o proyecto, listas de verificación y disposición editable.
+- **Calendario:** vistas de mes, semana, día y lista, con bandeja lateral para ubicar lo que no tiene fecha.
+- **Tareas:** lista y tablero kanban con columnas personalizables, prioridad, fecha límite, color y comentario.
+- **Recordatorios y Registro** completos, con HTMX.
+- **Contextos y Notas:** jerarquía entorno / materia / tema, bandeja de entrada, notas con título, color y fijadas (ver `06-inicio-y-notas.md`).
 - **Recomendaciones:** motor de reglas que muestra sugerencias con su fuente; incluye la hora sugerida para dormir y despertar.
-- **Estudio:** temporizador Pomodoro con tiempos editables y presets, registro del descanso y del tiempo libre entre pomodoros, historial con filtros y diez fichas de métodos de estudio con nivel de evidencia.
+- **Estudio:** temporizador Pomodoro con tiempos editables y presets, visible en todas las pantallas mientras corre, registro del descanso y del tiempo libre entre pomodoros, historial con filtros y diez fichas de métodos de estudio con nivel de evidencia.
+- **Cuentas:** modo invitado sin registro, cuentas con login y traspaso de los datos del invitado a la cuenta. Cada usuario ve solo sus datos.
+- **Publicación:** desplegada en Render con base PostgreSQL en Neon (ver `04-stack-tecnologico.md`).
 
-Pendiente de construir: calendario en Hoy, cambio de `tareas.proyecto` por contexto, estadísticas semanales, tarjetas de repaso y exportación de datos.
+Pendiente de construir: cambio de `tareas.proyecto` por contexto, estadísticas semanales, tarjetas de repaso y exportación de datos desde la app.
 
 ## Decisiones de producto
 - **El sueño no se registra a mano.** El sistema recomienda la hora de acostarse y despertar: estima la hora habitual de arranque con el primer bloque de los últimos 7 días (07:00 si no hay datos) y propone dormir 8 horas, dentro del rango que respalda el consenso AASM/SRS (7 horas o más).
@@ -44,7 +49,7 @@ Pendiente de construir: calendario en Hoy, cambio de `tareas.proyecto` por conte
 - Exportar datos.
 
 ## Requisitos no funcionales
-- Uso personal: datos guardados localmente.
+- Uso personal y multiusuario: cada persona ve solo sus datos (al principio se pensó como uso local de una sola persona).
 - Registro rápido: pocos clics.
 - Funciona sin conexión si es posible.
 - Los datos no deben perderse (respaldo/exportación).
