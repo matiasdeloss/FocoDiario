@@ -32,7 +32,7 @@ class FiltroTareasRequest extends FormRequest
             'tipo' => ['nullable', Rule::in(['todo', 'tarea', 'recordatorio'])],
             'estado' => ['nullable', Rule::in(['abiertas', 'hechas'])],
             'prioridad' => ['nullable', Rule::enum(PrioridadTarea::class)],
-            'proyecto' => ['nullable', 'string', 'max:255'],
+            'contexto' => ['nullable', 'integer', 'min:1'],
             'q' => ['nullable', 'string', 'max:100'],
             'vista' => ['nullable', 'in:lista,tablero'],
         ];
@@ -45,7 +45,7 @@ class FiltroTareasRequest extends FormRequest
             'estado.in' => 'El estado del filtro no es válido.',
             'prioridad.enum' => 'La prioridad del filtro no es válida.',
             'vista.in' => 'La vista elegida no es válida.',
-            'proyecto.max' => 'El proyecto del filtro es demasiado largo.',
+            'contexto.integer' => 'El contexto del filtro no es válido.',
             'q.max' => 'La búsqueda es demasiado larga.',
         ];
     }

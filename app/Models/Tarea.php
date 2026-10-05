@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\ColorNota;
+use App\Enums\ColorActividad;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\Concerns\HeredaColorDeContexto;
 use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\TareaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,13 +15,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Collection;
 
-#[Fillable(['titulo', 'descripcion', 'proyecto', 'fecha_limite', 'prioridad', 'color', 'estado', 'columna_id', 'orden'])]
+#[Fillable(['titulo', 'descripcion', 'contexto_id', 'fecha_limite', 'prioridad', 'color', 'estado', 'columna_id', 'orden'])]
 class Tarea extends Model
 {
     /** @use HasFactory<TareaFactory> */
-    use HasFactory, PerteneceAUsuario;
+    use HasFactory, HeredaColorDeContexto, PerteneceAUsuario;
 
     protected function casts(): array
     {
@@ -28,7 +28,7 @@ class Tarea extends Model
             'fecha_limite' => 'date',
             'prioridad' => PrioridadTarea::class,
             'estado' => EstadoTarea::class,
-            'color' => ColorNota::class,
+            'color' => ColorActividad::class,
         ];
     }
 
@@ -71,7 +71,7 @@ class Tarea extends Model
             'url' => route('tareas.update', $this),
             'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
-            'proyecto' => $this->proyecto,
+            'contexto_id' => $this->contexto_id,
             'fecha_limite' => $this->fecha_limite?->format('Y-m-d'),
             'prioridad' => $this->prioridad->value,
             'columna_id' => $this->columna_id,
@@ -84,14 +84,9 @@ class Tarea extends Model
         return $this->belongsTo(ColumnaTablero::class, 'columna_id');
     }
 
-    /**
-     * Nombres de proyecto en uso, sin repetir y en orden alfabético (para filtros y sugerencias).
-     *
-     * @return Collection<int, string>
-     */
-    public static function proyectos(): Collection
+    public function contexto(): BelongsTo
     {
-        return static::query()->whereNotNull('proyecto')->distinct()->orderBy('proyecto')->pluck('proyecto');
+        return $this->belongsTo(Contexto::class);
     }
 
     #[Scope]

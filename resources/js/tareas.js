@@ -250,7 +250,7 @@ function iniciar(raiz) {
 
     lista.querySelectorAll('[data-items]').forEach((items) => observador.observe(items, { childList: true }));
 
-    /* ---------- Menús desplegables (Nueva…, proyecto) ---------- */
+    /* ---------- Menús desplegables (Nueva…, contexto) ---------- */
     const menus = () => [...document.querySelectorAll('details[data-menu]')];
 
     document.addEventListener('click', (evento) => {

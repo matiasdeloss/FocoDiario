@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ColorNota;
+use App\Enums\ColorActividad;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
 use App\Support\ReglasDeUsuario;
@@ -40,14 +40,15 @@ class TareaRequest extends FormRequest
         return [
             'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:5000'],
-            'proyecto' => ['nullable', 'string', 'max:255'],
+            // Contexto de la tarea (entorno, materia, tema o proyecto) del propio usuario.
+            'contexto_id' => ['nullable', 'integer', ReglasDeUsuario::existe('contextos')],
             'fecha_limite' => ['nullable', 'date_format:Y-m-d'],
             'prioridad' => ['required', Rule::enum(PrioridadTarea::class)],
             // El modal manda la columna del tablero (su tipo fija el estado); el formulario clásico manda el estado.
             'columna_id' => ['nullable', 'integer', ReglasDeUsuario::existe('columnas_tablero')],
             'estado' => ['required_without:columna_id', 'nullable', Rule::enum(EstadoTarea::class)],
             // Color de la tarjeta en el tablero; vacío = sin color (crema).
-            'color' => ['nullable', Rule::enum(ColorNota::class)],
+            'color' => ['nullable', Rule::enum(ColorActividad::class)],
         ];
     }
 
@@ -57,7 +58,8 @@ class TareaRequest extends FormRequest
             'titulo.required' => 'Escribí un título para la tarea.',
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
             'descripcion.max' => 'El comentario no puede superar los 5000 caracteres.',
-            'proyecto.max' => 'El proyecto no puede superar los 255 caracteres.',
+            'contexto_id.exists' => 'El contexto elegido no existe.',
+            'contexto_id.integer' => 'El contexto elegido no es válido.',
             'fecha_limite.date_format' => 'La fecha límite no es una fecha válida.',
             'prioridad.required' => 'Elegí una prioridad.',
             'prioridad.enum' => 'La prioridad elegida no es válida.',

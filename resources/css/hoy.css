@@ -326,14 +326,19 @@
 .hoy-chips { flex-wrap: wrap; align-items: center; gap: 8px; }
 
 /* El color elegido (solo para notas) tiñe el botón Guardar; los campos conservan el color de la tarjeta.
-   Los tonos claros llevan texto oscuro y los oscuros texto blanco (contraste mayor a 4,5:1). */
-.hoy-nota-form[data-color="durazno"] .hoy-guardar { --guardar-fondo: var(--color-accent-400); --guardar-texto: var(--color-text); }
-.hoy-nota-form[data-color="salvia"] .hoy-guardar { --guardar-fondo: var(--color-accent-2-400); --guardar-texto: var(--color-text); }
-.hoy-nota-form[data-color="arena"] .hoy-guardar { --guardar-fondo: var(--color-neutral-500); --guardar-texto: var(--color-text); }
-.hoy-nota-form[data-color="terracota"] .hoy-guardar { --guardar-fondo: var(--color-accent-700); --guardar-texto: var(--color-on-acento-fuerte); }
-.hoy-nota-form[data-color="oliva"] .hoy-guardar { --guardar-fondo: var(--color-accent-2-700); --guardar-texto: var(--color-on-acento-fuerte); }
+   Fondo y texto de la paleta de actividades (contraste AA por diseño) y un filete con el acento. */
+.hoy-nota-form[data-color="terracota"] .hoy-guardar { --guardar-fondo: var(--actividad-terracota-fondo); --guardar-texto: var(--actividad-terracota-texto); --guardar-borde: var(--actividad-terracota-acento); }
+.hoy-nota-form[data-color="salvia"] .hoy-guardar { --guardar-fondo: var(--actividad-salvia-fondo); --guardar-texto: var(--actividad-salvia-texto); --guardar-borde: var(--actividad-salvia-acento); }
+.hoy-nota-form[data-color="ocre"] .hoy-guardar { --guardar-fondo: var(--actividad-ocre-fondo); --guardar-texto: var(--actividad-ocre-texto); --guardar-borde: var(--actividad-ocre-acento); }
+.hoy-nota-form[data-color="azul-polvo"] .hoy-guardar { --guardar-fondo: var(--actividad-azul-polvo-fondo); --guardar-texto: var(--actividad-azul-polvo-texto); --guardar-borde: var(--actividad-azul-polvo-acento); }
+.hoy-nota-form[data-color="ciruela"] .hoy-guardar { --guardar-fondo: var(--actividad-ciruela-fondo); --guardar-texto: var(--actividad-ciruela-texto); --guardar-borde: var(--actividad-ciruela-acento); }
+.hoy-nota-form[data-color="rosa"] .hoy-guardar { --guardar-fondo: var(--actividad-rosa-fondo); --guardar-texto: var(--actividad-rosa-texto); --guardar-borde: var(--actividad-rosa-acento); }
+.hoy-nota-form[data-color="oliva"] .hoy-guardar { --guardar-fondo: var(--actividad-oliva-fondo); --guardar-texto: var(--actividad-oliva-texto); --guardar-borde: var(--actividad-oliva-acento); }
+.hoy-nota-form[data-color="arena"] .hoy-guardar { --guardar-fondo: var(--actividad-arena-fondo); --guardar-texto: var(--actividad-arena-texto); --guardar-borde: var(--actividad-arena-acento); }
+.hoy-nota-form[data-color="celeste"] .hoy-guardar { --guardar-fondo: var(--actividad-celeste-fondo); --guardar-texto: var(--actividad-celeste-texto); --guardar-borde: var(--actividad-celeste-acento); }
+.hoy-nota-form[data-color="lavanda"] .hoy-guardar { --guardar-fondo: var(--actividad-lavanda-fondo); --guardar-texto: var(--actividad-lavanda-texto); --guardar-borde: var(--actividad-lavanda-acento); }
 
-.hoy-nota-form[data-color] .hoy-guardar { background: var(--guardar-fondo); color: var(--guardar-texto); }
+.hoy-nota-form[data-color] .hoy-guardar { background: var(--guardar-fondo); color: var(--guardar-texto); box-shadow: inset 0 0 0 1.5px var(--guardar-borde); }
 .hoy-nota-form[data-color] .hoy-guardar:hover:not(:disabled) { background: color-mix(in srgb, var(--guardar-fondo) 88%, black); }
 .hoy-nota-form[data-color] .hoy-guardar:active:not(:disabled) { background: color-mix(in srgb, var(--guardar-fondo) 78%, black); }
 
@@ -410,7 +415,7 @@
 .hoy-campo-fecha { width: 160px; }
 .hoy-campo-hora { width: 120px; }
 .hoy-campo-destino { width: min(280px, 100%); }
-.hoy-campo-tarea-proyecto { width: min(240px, 100%); }
+.hoy-campo-tarea-contexto { width: min(240px, 100%); }
 .hoy-campo-tarea-prioridad { width: 140px; }
 .hoy-campo-tarea-columna { width: min(220px, 100%); }
 .hoy-panel .hoy-entrada { min-height: 40px; background: transparent; border: 1px solid var(--color-neutral-400); }
@@ -449,7 +454,7 @@
 
 /* Selector de color: círculos de 20px; cada área de clic mide 40px con un pseudo-elemento
    (alto: 10px arriba y abajo; ancho: la mitad de la separación a cada lado, sin solaparse). */
-.hoy-colores { --hoy-color-gap: 20px; flex-wrap: nowrap; align-items: center; gap: var(--hoy-color-gap); margin: -8px 0 -8px auto; min-height: 40px; }
+.hoy-colores { --hoy-color-gap: 20px; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--hoy-color-gap); margin: -8px 0 -8px auto; min-height: 40px; }
 
 .hoy-color {
     position: relative;
@@ -464,17 +469,23 @@
 }
 
 .hoy-color::after { content: ""; position: absolute; inset: -10px calc(var(--hoy-color-gap) / -2); }
-.hoy-color[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 3.5px var(--color-neutral-700); }
+.hoy-color[aria-pressed="true"], .hoy-color-ninguno[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 3.5px var(--color-neutral-700); }
 
 @media (max-width: 575.98px) {
     .hoy-colores { --hoy-color-gap: 14px; }
 }
 
-.hoy-color-durazno { --hoy-muestra: var(--color-nota-durazno); }
-.hoy-color-salvia { --hoy-muestra: var(--color-nota-salvia); }
-.hoy-color-arena { --hoy-muestra: var(--color-nota-arena); }
-.hoy-color-terracota { --hoy-muestra: var(--color-nota-terracota); }
-.hoy-color-oliva { --hoy-muestra: var(--color-nota-oliva); }
+.hoy-color-terracota { --hoy-muestra: var(--actividad-terracota-acento); }
+.hoy-color-salvia { --hoy-muestra: var(--actividad-salvia-acento); }
+.hoy-color-ocre { --hoy-muestra: var(--actividad-ocre-acento); }
+.hoy-color-azul-polvo { --hoy-muestra: var(--actividad-azul-polvo-acento); }
+.hoy-color-ciruela { --hoy-muestra: var(--actividad-ciruela-acento); }
+.hoy-color-rosa { --hoy-muestra: var(--actividad-rosa-acento); }
+.hoy-color-oliva { --hoy-muestra: var(--actividad-oliva-acento); }
+.hoy-color-arena { --hoy-muestra: var(--actividad-arena-acento); }
+.hoy-color-celeste { --hoy-muestra: var(--actividad-celeste-acento); }
+.hoy-color-lavanda { --hoy-muestra: var(--actividad-lavanda-acento); }
+.hoy-color-ninguno { --hoy-muestra: transparent; box-shadow: inset 0 0 0 2px var(--color-neutral-400); }
 
 @media (prefers-reduced-motion: no-preference) {
     .hoy-chip-grupo, .hoy-tipo > span, .hoy-cuaderno-titulo { transition: border-color 150ms var(--hoy-suave), background-color 150ms var(--hoy-suave), color 150ms var(--hoy-suave), box-shadow 150ms var(--hoy-suave); }

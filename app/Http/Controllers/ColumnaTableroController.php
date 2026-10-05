@@ -91,7 +91,7 @@ class ColumnaTableroController extends Controller
 
         return $this->respuesta($request, 'Tarjeta añadida.', [
             'id' => $tarea->id,
-            'html' => view('tablero._tarjeta', ['tarea' => $tarea->load('columna'), 'columnasOrden' => ColumnaTablero::ordenadas()->get()])->render(),
+            'html' => view('tablero._tarjeta', ['tarea' => $tarea->load(['columna', 'contexto']), 'columnasOrden' => ColumnaTablero::ordenadas()->get()])->render(),
         ], 201);
     }
 

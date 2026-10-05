@@ -3,7 +3,7 @@
 ## Fase 1: MVP
 | Módulo | Descripción |
 |---|---|
-| Tareas | Crear, editar, completar y borrar tareas. Campos: título, proyecto/materia, fecha límite, prioridad, estado. |
+| Tareas | Crear, editar, completar y borrar tareas. Campos: título, contexto (entorno, materia, tema o proyecto), fecha límite, prioridad, estado. |
 | Recordatorios | Aviso asociado a una fecha/hora, opcionalmente ligado a una tarea. |
 | Pomodoro | Temporizador configurable (por defecto 25 min foco / 5 descanso / pausa larga cada 4). Asociable a una tarea. Ver "Estado actual". |
 | Registro del día | Carga manual de bloques de tiempo con categoría (estudio, proyecto, ocio, descanso, otros), hora de inicio y fin. Los Pomodoros completados se registran solos. |
@@ -37,7 +37,7 @@ Construido y con pruebas automáticas (393 de PHPUnit y pruebas en Node de la l�
 - **Cuentas:** modo invitado sin registro, cuentas con login y traspaso de los datos del invitado a la cuenta. Cada usuario ve solo sus datos.
 - **Publicación:** desplegada en Render con base PostgreSQL en Neon (ver `04-stack-tecnologico.md`).
 
-Pendiente de construir: cambio de `tareas.proyecto` por contexto, estadísticas semanales, tarjetas de repaso y exportación de datos desde la app.
+Pendiente de construir: estadísticas semanales, tarjetas de repaso y exportación de datos desde la app.
 
 ## Decisiones de producto
 - **El sueño no se registra a mano.** El sistema recomienda la hora de acostarse y despertar: estima la hora habitual de arranque con el primer bloque de los últimos 7 días (07:00 si no hay datos) y propone dormir 8 horas, dentro del rango que respalda el consenso AASM/SRS (7 horas o más).
@@ -56,10 +56,10 @@ Pendiente de construir: cambio de `tareas.proyecto` por contexto, estadísticas 
 
 ## Modelo de datos preliminar
 - **Categoría**: nombre, tipo (productiva / ocio / descanso).
-- **Tarea**: título, proyecto, fecha límite, prioridad, estado.
+- **Tarea**: título, contexto (opcional), fecha límite, prioridad, estado.
 - **Recordatorio**: fecha/hora, mensaje, tarea (opcional).
 - **Bloque de tiempo**: inicio, fin, categoría, tarea (opcional), origen (manual / Pomodoro).
-- **Contexto**: nombre, tipo (entorno / materia / tema), contexto padre.
+- **Contexto**: nombre, tipo (entorno / materia / tema / proyecto), contexto padre.
 - **Nota**: contenido, contexto (opcional), fecha (opcional), fijada.
 - **Sesión de estudio**: contexto, tarea, tema, estilo, tiempos elegidos, estado.
 - **Intervalo de estudio**: tipo (foco / descanso / libre), inicio, fin, planificado, completado, bloque de tiempo generado.

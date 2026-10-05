@@ -47,6 +47,11 @@ class Contexto extends Model
         return $this->hasMany(Nota::class);
     }
 
+    public function tareas(): HasMany
+    {
+        return $this->hasMany(Tarea::class);
+    }
+
     public function cajas(): HasMany
     {
         return $this->hasMany(Caja::class);
@@ -128,7 +133,18 @@ class Contexto extends Model
      */
     public static function opciones(): Collection
     {
-        $todos = self::query()->get(['id', 'nombre', 'contexto_padre_id'])->keyBy('id');
+        return self::rutas(self::query()->get(['id', 'nombre', 'contexto_padre_id']));
+    }
+
+    /**
+     * Ruta completa de cada contexto de `$contextos` (que debe incluir a sus padres), ordenadas.
+     *
+     * @param  Collection<int, self>  $contextos
+     * @return Collection<int, string>
+     */
+    private static function rutas(Collection $contextos): Collection
+    {
+        $todos = $contextos->keyBy('id');
 
         return $todos
             ->map(function (self $contexto) use ($todos) {
@@ -145,6 +161,32 @@ class Contexto extends Model
                 return implode(self::SEPARADOR, $partes);
             })
             ->sort(SORT_NATURAL | SORT_FLAG_CASE);
+    }
+
+    /**
+     * Los mismos contextos de opciones() agrupados por tipo, para los selectores de las tareas:
+     * [etiqueta del tipo => [id => ruta completa]], en el orden del enum y sin los tipos vacíos.
+     * Con `$soloConTareas` deja solo los contextos que tienen alguna tarea (para los filtros).
+     *
+     * @return Collection<string, Collection<int, string>>
+     */
+    public static function opcionesPorTipo(bool $soloConTareas = false): Collection
+    {
+        $contextos = self::query()->get(['id', 'nombre', 'tipo', 'contexto_padre_id']);
+        $rutas = self::rutas($contextos);
+
+        if ($soloConTareas) {
+            $conTareas = Tarea::query()->whereNotNull('contexto_id')->distinct()->pluck('contexto_id')->all();
+            $rutas = $rutas->only($conTareas);
+        }
+
+        $tipos = $contextos->pluck('tipo', 'id');
+
+        return collect(TipoContexto::cases())
+            ->mapWithKeys(fn (TipoContexto $tipo) => [
+                $tipo->etiqueta() => $rutas->filter(fn (string $ruta, int $id) => $tipos[$id] === $tipo),
+            ])
+            ->filter(fn (Collection $grupo) => $grupo->isNotEmpty());
     }
 
     /**

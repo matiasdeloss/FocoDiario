@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Arma la lista unificada de Tareas y Recordatorios: filtra, mezcla, agrupa por tiempo y ordena.
- * Los recordatorios no tienen proyecto ni prioridad: si se filtra por alguno de los dos, no aparecen.
+ * Los recordatorios no tienen contexto ni prioridad: si se filtra por alguno de los dos, no aparecen.
  */
 class ListaTareas
 {
@@ -27,7 +27,7 @@ class ListaTareas
     private const COMPLETADAS = 30;
 
     /**
-     * @param  array{tipo?: string|null, estado?: string|null, prioridad?: string|null, proyecto?: string|null, q?: string|null}  $filtros
+     * @param  array{tipo?: string|null, estado?: string|null, prioridad?: string|null, contexto?: int|string|null, q?: string|null}  $filtros
      * @return array{grupos: array<string, Collection<int, ItemLista>>, completadas: Collection<int, ItemLista>, hechasTotal: int}
      */
     public function armar(array $filtros): array
@@ -37,7 +37,7 @@ class ListaTareas
         $hoy = today();
 
         $conTareas = $tipo !== 'recordatorio';
-        $conRecordatorios = $tipo !== 'tarea' && empty($filtros['prioridad']) && empty($filtros['proyecto']);
+        $conRecordatorios = $tipo !== 'tarea' && empty($filtros['prioridad']) && empty($filtros['contexto']);
 
         $abiertos = collect();
         $completadas = collect();
@@ -97,20 +97,16 @@ class ListaTareas
         ];
     }
 
-    public function proyectos(): Collection
-    {
-        return Tarea::proyectos();
-    }
-
     private function tareas(array $filtros): Builder
     {
         return Tarea::query()
+            ->with('contexto')
             ->when($filtros['prioridad'] ?? null, fn ($c, $prioridad) => $c->where('prioridad', $prioridad))
-            ->when($filtros['proyecto'] ?? null, fn ($c, $proyecto) => $c->where('proyecto', $proyecto))
+            ->when($filtros['contexto'] ?? null, fn ($c, $contexto) => $c->where('contexto_id', $contexto))
             ->when($filtros['q'] ?? null, function ($c, $q) {
                 $c->where(fn ($w) => $w->where('titulo', 'like', "%{$q}%")
                     ->orWhere('descripcion', 'like', "%{$q}%")
-                    ->orWhere('proyecto', 'like', "%{$q}%"));
+                    ->orWhereHas('contexto', fn ($contexto) => $contexto->where('nombre', 'like', "%{$q}%")));
             });
     }
 

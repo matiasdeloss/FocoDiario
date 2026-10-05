@@ -170,7 +170,7 @@
 .k-chip .bi { font-size: 11px; }
 .k-chip-punto { flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .k-chip-texto { overflow: hidden; text-overflow: ellipsis; }
-.k-chip-proyecto { max-width: 140px; }
+.k-chip-contexto { max-width: 140px; }
 .k-chip-fecha { background: transparent; padding-inline: 4px; color: var(--color-neutral-700); font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .k-chip-fecha.k-fecha-vencida { background: var(--color-danger-bg); color: var(--color-danger-text); padding-inline: 8px; }
 .k-chip-fecha.k-fecha-hoy { background: var(--color-accent-200); color: var(--color-accent-800); padding-inline: 8px; }

@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\ColorNota;
+use App\Enums\ColorActividad;
+use App\Models\Concerns\HeredaColorDeContexto;
 use App\Models\Concerns\PerteneceAUsuario;
 use Database\Factories\NotaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,7 +18,7 @@ use Illuminate\Support\Str;
 class Nota extends Model
 {
     /** @use HasFactory<NotaFactory> */
-    use HasFactory, PerteneceAUsuario;
+    use HasFactory, HeredaColorDeContexto, PerteneceAUsuario;
 
     protected $table = 'notas';
 
@@ -26,7 +27,7 @@ class Nota extends Model
         return [
             'fecha' => 'date',
             'fijada' => 'boolean',
-            'color' => ColorNota::class,
+            'color' => ColorActividad::class,
         ];
     }
 

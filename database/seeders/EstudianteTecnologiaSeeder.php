@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\ColorActividad;
-use App\Enums\ColorNota;
 use App\Enums\EstadoSesion;
 use App\Enums\EstadoTarea;
 use App\Enums\EstiloEstudio;
@@ -91,8 +90,8 @@ class EstudianteTecnologiaSeeder extends Seeder
         // Otras actividades con color para la agenda.
         $this->m['Gimnasio'] = Contexto::create(['nombre' => 'Gimnasio', 'tipo' => TipoContexto::Tema, 'contexto_padre_id' => $vida->id, 'color' => ColorActividad::Oliva->value]);
         $this->m['Vóley'] = Contexto::create(['nombre' => 'Vóley', 'tipo' => TipoContexto::Tema, 'contexto_padre_id' => $vida->id, 'color' => ColorActividad::Rosa->value]);
-        $this->m['Proyecto personal'] = Contexto::create(['nombre' => 'Portfolio y side projects', 'tipo' => TipoContexto::Tema, 'contexto_padre_id' => $personales->id, 'color' => ColorActividad::Arena->value]);
-        $this->m['Homelab'] = Contexto::create(['nombre' => 'Homelab', 'tipo' => TipoContexto::Tema, 'contexto_padre_id' => $personales->id]);
+        $this->m['Proyecto personal'] = Contexto::create(['nombre' => 'Portfolio y side projects', 'tipo' => TipoContexto::Proyecto, 'contexto_padre_id' => $personales->id, 'color' => ColorActividad::Arena->value]);
+        $this->m['Homelab'] = Contexto::create(['nombre' => 'Homelab', 'tipo' => TipoContexto::Proyecto, 'contexto_padre_id' => $personales->id]);
     }
 
     /* ---------- Tablero de tareas ---------- */
@@ -117,7 +116,7 @@ class EstudianteTecnologiaSeeder extends Seeder
         $M = PrioridadTarea::Media;
         $B = PrioridadTarea::Baja;
 
-        // [título, descripción, proyecto, fecha límite, prioridad, columna, días desde hoy en que se completó]
+        // [título, descripción, contexto, fecha límite, prioridad, columna, días desde hoy en que se completó]
         $tareas = [
             ['TP 3: árbol binario de búsqueda', 'Insertar, buscar y recorrer en orden. Entregar con pruebas unitarias.', 'Programación II', $d(2), $A, 'progreso'],
             ['Estudiar patrones Factory y Observer', 'Leer el capítulo 5 del libro y hacer el ejemplo en Java.', 'Programación II', $d(6), $M, 'pendiente'],
@@ -151,7 +150,7 @@ class EstudianteTecnologiaSeeder extends Seeder
             $tarea = Tarea::create([
                 'titulo' => $t[0],
                 'descripcion' => $t[1],
-                'proyecto' => $t[2],
+                'contexto_id' => $this->m[$t[2] === 'Portfolio y side projects' ? 'Proyecto personal' : $t[2]]->id,
                 'fecha_limite' => $t[3],
                 'prioridad' => $t[4],
                 'columna_id' => $col[$t[5]]->id,
@@ -211,15 +210,15 @@ class EstudianteTecnologiaSeeder extends Seeder
         $f = fn (int $dias) => $this->hoy->copy()->addDays($dias);
 
         $lista = [
-            ['Formas normales, resumen', "1FN: valores atómicos.\n2FN: sin dependencias parciales de la clave.\n3FN: sin dependencias transitivas.\nBCNF: todo determinante es clave candidata.", 'Normalización', $f(-1), true, ColorNota::Durazno],
-            ['Comandos de Git que siempre olvido', "git stash -u\ngit rebase -i HEAD~3\ngit reflog para recuperar commits\ngit bisect start", 'Ingeniería de Software', null, true, ColorNota::Salvia],
-            ['Subnetting rápido', "Hosts = 2^n - 2.\n/24 = 254 hosts, /26 = 62 hosts, /28 = 14 hosts.\nSalto = 256 - octeto de la máscara.", 'Direccionamiento IP', $f(0), false, ColorNota::Arena],
-            ['Ideas para el proyecto integrador', "- App de turnos para la biblioteca.\n- Panel de métricas con Laravel y gráficos.\n- Bot que avisa las fechas de entrega.", 'Ingeniería de Software', null, false, ColorNota::Terracota],
-            ['Clase de Sistemas Operativos', "Round Robin: cuanto pequeño = más cambios de contexto.\nSJF minimiza el tiempo de espera promedio pero puede dejar sin CPU a los procesos largos.", 'Planificación de procesos', $f(-3), false, ColorNota::Oliva],
-            ['Vocabulario de IT', "deploy = despliegue\nbackend = lado del servidor\nthroughput = rendimiento\nlatency = latencia\nbottleneck = cuello de botella", 'Vocabulario de IT', null, false, ColorNota::Durazno],
-            ['Para leer', "Clean Code (caps. 1 a 4).\nDesigning Data-Intensive Applications, cap. 1.\nDocumentación oficial de PostgreSQL sobre índices.", null, null, false, ColorNota::Salvia],
-            ['Recorridos en grafos', "BFS usa cola y encuentra el camino mínimo en grafos sin pesos.\nDFS usa pila o recursión y sirve para detectar ciclos.", 'Grafos', $f(2), false, ColorNota::Arena],
-            ['Checklist del examen de Redes', "- Modelo OSI capa por capa.\n- VLSM.\n- Diferencias TCP y UDP.\n- Tablas de enrutamiento estático.", 'Redes de Computadoras', $f(13), false, ColorNota::Terracota],
+            ['Formas normales, resumen', "1FN: valores atómicos.\n2FN: sin dependencias parciales de la clave.\n3FN: sin dependencias transitivas.\nBCNF: todo determinante es clave candidata.", 'Normalización', $f(-1), true, ColorActividad::Rosa],
+            ['Comandos de Git que siempre olvido', "git stash -u\ngit rebase -i HEAD~3\ngit reflog para recuperar commits\ngit bisect start", 'Ingeniería de Software', null, true, ColorActividad::Salvia],
+            ['Subnetting rápido', "Hosts = 2^n - 2.\n/24 = 254 hosts, /26 = 62 hosts, /28 = 14 hosts.\nSalto = 256 - octeto de la máscara.", 'Direccionamiento IP', $f(0), false, ColorActividad::Arena],
+            ['Ideas para el proyecto integrador', "- App de turnos para la biblioteca.\n- Panel de métricas con Laravel y gráficos.\n- Bot que avisa las fechas de entrega.", 'Ingeniería de Software', null, false, ColorActividad::Terracota],
+            ['Clase de Sistemas Operativos', "Round Robin: cuanto pequeño = más cambios de contexto.\nSJF minimiza el tiempo de espera promedio pero puede dejar sin CPU a los procesos largos.", 'Planificación de procesos', $f(-3), false, ColorActividad::Oliva],
+            ['Vocabulario de IT', "deploy = despliegue\nbackend = lado del servidor\nthroughput = rendimiento\nlatency = latencia\nbottleneck = cuello de botella", 'Vocabulario de IT', null, false, ColorActividad::Rosa],
+            ['Para leer', "Clean Code (caps. 1 a 4).\nDesigning Data-Intensive Applications, cap. 1.\nDocumentación oficial de PostgreSQL sobre índices.", null, null, false, ColorActividad::Salvia],
+            ['Recorridos en grafos', "BFS usa cola y encuentra el camino mínimo en grafos sin pesos.\nDFS usa pila o recursión y sirve para detectar ciclos.", 'Grafos', $f(2), false, ColorActividad::Arena],
+            ['Checklist del examen de Redes', "- Modelo OSI capa por capa.\n- VLSM.\n- Diferencias TCP y UDP.\n- Tablas de enrutamiento estático.", 'Redes de Computadoras', $f(13), false, ColorActividad::Terracota],
         ];
 
         foreach ($lista as [$titulo, $contenido, $contexto, $fecha, $fijada, $color]) {

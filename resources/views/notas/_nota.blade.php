@@ -1,5 +1,7 @@
-{{-- Tarjeta de una nota. Requiere: $nota, $destinos --}}
+{{-- Tarjeta de una nota. Requiere: $nota, $destinos. Opcional: $colores (ColoresDeContexto, para listar sin una consulta por nota). --}}
 @php
+    // Color propio o, si no tiene, el del contexto (o su ancestro). El selector de edición sigue mostrando solo el propio.
+    $colorVisible = $nota->colorVisible($colores ?? null);
     $datosEdicion = [
         'url' => route('notas.update', $nota),
         'titulo' => $nota->titulo,
@@ -18,12 +20,12 @@
         'creada' => $nota->created_at?->translatedFormat('j \d\e F \d\e Y, H:i'),
         'editada' => $nota->updated_at && $nota->updated_at->ne($nota->created_at) ? $nota->updated_at->translatedFormat('j \d\e F \d\e Y, H:i') : null,
         'fijada' => $nota->fijada,
-        'fondo' => $nota->color?->fondo(),
-        'marca' => $nota->color?->marca(),
+        'fondo' => $colorVisible?->fondo(),
+        'marca' => $colorVisible?->marca(),
     ];
 @endphp
-<article id="nota-{{ $nota->id }}" class="nota-item {{ $nota->fijada ? 'nota-fijada' : '' }} {{ $nota->color ? 'nota-con-color' : '' }}"
-         @if ($nota->color) style="--nota-fondo: {{ $nota->color->fondo() }}; --nota-marca: {{ $nota->color->marca() }}" @endif>
+<article id="nota-{{ $nota->id }}" class="nota-item {{ $nota->fijada ? 'nota-fijada' : '' }} {{ $colorVisible ? 'nota-con-color' : '' }}"
+         @if ($colorVisible) style="--nota-fondo: {{ $colorVisible->fondo() }}; --nota-marca: {{ $colorVisible->marca() }}" @endif>
     <div class="nota-acciones">
         <form method="POST" action="{{ route('notas.fijar', $nota) }}"
               hx-patch="{{ route('notas.fijar', $nota) }}" hx-target="#nota-{{ $nota->id }}" hx-swap="outerHTML">

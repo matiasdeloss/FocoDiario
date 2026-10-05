@@ -15,7 +15,7 @@
 
             return route('tareas.index', $datos);
         };
-        $hayFiltros = $filtros['tipo'] !== 'todo' || $filtros['estado'] !== 'abiertas' || $filtros['prioridad'] || $filtros['proyecto'] || $filtros['q'];
+        $hayFiltros = $filtros['tipo'] !== 'todo' || $filtros['estado'] !== 'abiertas' || $filtros['prioridad'] || $filtros['contexto'] || $filtros['q'];
         $grupoTiene = collect($grupos)->contains(fn ($items) => $items->isNotEmpty());
         $hayFilas = $grupoTiene || $completadas->isNotEmpty();
         $abiertas = $resumen['tareas'] + $resumen['recordatorios'];
@@ -73,15 +73,18 @@
                        @if ($filtros['prioridad'] === $prioridad->value) aria-current="true" @endif><span class="t-prio t-prio-{{ $prioridad->value }}" aria-hidden="true"></span> {{ $prioridad->etiqueta() }}</a>
                 @endforeach
             </nav>
-            @if ($proyectos->isNotEmpty())
-                <details class="t-proyectos" data-menu>
-                    <summary class="t-pill" @if ($filtros['proyecto']) aria-current="true" @endif aria-haspopup="menu">
-                        <i class="bi bi-folder2" aria-hidden="true"></i> {{ $filtros['proyecto'] ?? 'Proyecto' }} <i class="bi bi-chevron-down t-nuevo-flecha" aria-hidden="true"></i>
+            @if ($contextosFiltro->isNotEmpty())
+                <details class="t-contextos" data-menu>
+                    <summary class="t-pill" @if ($filtros['contexto']) aria-current="true" @endif aria-haspopup="menu">
+                        <i class="bi bi-folder2" aria-hidden="true"></i> {{ $contextoFiltrado?->nombre ?? 'Contexto' }} <i class="bi bi-chevron-down t-nuevo-flecha" aria-hidden="true"></i>
                     </summary>
                     <div class="t-menu" role="menu">
-                        <a href="{{ $url(['proyecto' => null]) }}" class="t-menu-item" role="menuitem">Todos los proyectos</a>
-                        @foreach ($proyectos as $proyecto)
-                            <a href="{{ $url(['proyecto' => $proyecto]) }}" class="t-menu-item" role="menuitem" @if ($filtros['proyecto'] === $proyecto) aria-current="true" @endif>{{ $proyecto }}</a>
+                        <a href="{{ $url(['contexto' => null]) }}" class="t-menu-item" role="menuitem">Todos los contextos</a>
+                        @foreach ($contextosFiltro as $tipo => $opciones)
+                            <span class="t-menu-grupo" role="presentation">{{ $tipo }}</span>
+                            @foreach ($opciones as $id => $ruta)
+                                <a href="{{ $url(['contexto' => $id]) }}" class="t-menu-item" role="menuitem" @if ((string) $filtros['contexto'] === (string) $id) aria-current="true" @endif>{{ $ruta }}</a>
+                            @endforeach
                         @endforeach
                     </div>
                 </details>
@@ -129,6 +132,6 @@
         </div>
     </div>
 
-    @include('tareas._dialogo-tarea', ['proyectos' => $proyectos])
+    @include('tareas._dialogo-tarea', ['contextos' => $contextos])
     @include('tareas._dialogo-recordatorio')
 @endsection

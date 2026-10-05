@@ -127,7 +127,7 @@
                 <p class="detalle-ayuda" id="detalle-fecha-ayuda" hidden></p>
             </div>
 
-            {{-- El resto de los campos (proyecto, estado, materia, tarea vinculada…) se editan acá mismo (calendario-campos.js). --}}
+            {{-- El resto de los campos (contexto, estado, materia, tarea vinculada…) se editan acá mismo (calendario-campos.js). --}}
             <div class="detalle-mas" id="detalle-mas"></div>
 
             <dl class="detalle-filas" id="detalle-filas"></dl>

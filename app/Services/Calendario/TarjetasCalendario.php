@@ -55,7 +55,7 @@ class TarjetasCalendario
     }
 
     /**
-     * Guarda solo los campos enviados: título y comentario en todas; prioridad, estado y proyecto en tareas;
+     * Guarda solo los campos enviados: título y comentario en todas; prioridad, estado y contexto en tareas;
      * color, materia y fijada en notas; la tarea vinculada en recordatorios.
      *
      * @param  array<string, mixed>  $datos
@@ -95,9 +95,8 @@ class TarjetasCalendario
                 $campos['estado'] = $datos['estado'];
             }
 
-            if (array_key_exists('proyecto', $datos)) {
-                $proyecto = trim((string) $datos['proyecto']);
-                $campos['proyecto'] = $proyecto === '' ? null : $proyecto;
+            if (array_key_exists('contexto_id', $datos)) {
+                $campos['contexto_id'] = $datos['contexto_id'];
             }
         }
 

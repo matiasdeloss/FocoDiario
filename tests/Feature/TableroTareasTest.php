@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
 use App\Models\ColumnaTablero;
+use App\Models\Contexto;
 use App\Models\Tarea;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,20 +29,27 @@ class TableroTareasTest extends TestCase
         $this->assertSame(['Tarea lista'], $columnas[2]['tareas']->pluck('titulo')->all());
     }
 
-    public function test_el_tablero_ofrece_filtros_rapidos_y_preselecciona_el_proyecto_de_la_url(): void
+    public function test_el_tablero_ofrece_filtros_rapidos_y_preselecciona_el_contexto_de_la_url(): void
     {
-        Tarea::factory()->create(['titulo' => 'De tesis', 'proyecto' => 'Tesis', 'prioridad' => 'alta']);
-        Tarea::factory()->create(['titulo' => 'De casa', 'proyecto' => 'Casa']);
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
+        $casa = Contexto::factory()->entorno()->create(['nombre' => 'Casa']);
+        Contexto::factory()->tema()->create(['nombre' => 'Sin tareas']);
+        Tarea::factory()->create(['titulo' => 'De tesis', 'contexto_id' => $tesis->id, 'prioridad' => 'alta']);
+        Tarea::factory()->create(['titulo' => 'De casa', 'contexto_id' => $casa->id]);
 
-        $html = $this->get(route('tablero.index', ['proyecto' => 'Tesis']))->assertOk()->getContent();
+        $html = $this->get(route('tablero.index', ['contexto' => $tesis->id]))->assertOk()->getContent();
 
         $this->assertStringContainsString('data-filtro="q"', $html);
         $this->assertStringContainsString('data-filtro="prioridad"', $html);
-        $this->assertMatchesRegularExpression('/<option value="Tesis"\s+selected>/', $html);
-        // Cada tarjeta lleva lo que el filtro necesita y sus etiquetas de prioridad y proyecto.
-        $this->assertStringContainsString('data-proyecto="Tesis"', $html);
+        $this->assertStringContainsString('data-filtro="contexto"', $html);
+        $this->assertMatchesRegularExpression('/<option value="'.$tesis->id.'"\s+selected\s*>Tesis<\/option>/', $html);
+        // El filtro ofrece solo los contextos que tienen tareas.
+        preg_match('/<select id="k-contexto".*?<\/select>/s', $html, $filtro);
+        $this->assertStringNotContainsString('Sin tareas', $filtro[0]);
+        // Cada tarjeta lleva lo que el filtro necesita y sus etiquetas de prioridad y contexto.
+        $this->assertStringContainsString('data-contexto="'.$tesis->id.'"', $html);
         $this->assertStringContainsString('data-prioridad="alta"', $html);
-        $this->assertStringContainsString('k-chip-proyecto', $html);
+        $this->assertStringContainsString('k-chip-contexto', $html);
     }
 
     public function test_las_tarjetas_muestran_la_fecha_con_su_estado_vencida_u_hoy(): void
@@ -130,7 +138,7 @@ class TableroTareasTest extends TestCase
     public function test_la_vista_de_tablero_de_la_url_vieja_redirige_al_tablero(): void
     {
         $this->get(route('tareas.index', ['vista' => 'tablero']))->assertRedirect(route('tablero.index'));
-        $this->get(route('tareas.index', ['vista' => 'tablero', 'proyecto' => 'Tesis']))->assertRedirect(route('tablero.index', ['proyecto' => 'Tesis']));
+        $this->get(route('tareas.index', ['vista' => 'tablero', 'contexto' => 7]))->assertRedirect(route('tablero.index', ['contexto' => 7]));
     }
 
     public function test_las_completadas_se_limitan_a_las_diez_mas_recientes(): void

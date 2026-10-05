@@ -1,5 +1,5 @@
 {{-- Modal de crear y editar tarea (mejora progresiva: sin JS, los enlaces llevan a las páginas de siempre).
-     Requiere: $columnasOrden, $proyectos. Lo maneja resources/js/dialogos-tablero.js. --}}
+     Requiere: $columnasOrden, $contextos. Lo maneja resources/js/dialogos-tablero.js. --}}
 @php
     $columnaInicial = $columnasOrden->firstWhere('categoria', \App\Enums\EstadoTarea::Pendiente) ?? $columnasOrden->first();
 @endphp
@@ -26,7 +26,7 @@
         </div>
 
         <div class="dialogo-fila">
-            @include('tareas._campo-extra', ['campo' => 'proyecto', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
+            @include('tareas._campo-extra', ['campo' => 'contexto', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
             <div class="dialogo-campo">
                 <label for="tarea-fecha" class="dialogo-etiqueta">Fecha límite <span class="dialogo-opcional">(opcional)</span></label>
                 <input type="date" id="tarea-fecha" name="fecha_limite" class="form-control" aria-describedby="tarea-error-fecha_limite">
@@ -37,12 +37,12 @@
         <fieldset class="dialogo-grupo">
             <legend>Color de la tarjeta <span class="dialogo-opcional">(opcional)</span></legend>
             <div class="paleta-tarjeta">
-                <label class="color-opcion" title="Sin color">
+                <label class="color-opcion" title="Sin color (usa el del contexto)">
                     <input type="radio" name="color" value="" checked>
                     <span class="color-opcion-punto color-opcion-ninguno" aria-hidden="true"></span>
-                    <span class="visually-hidden">Sin color</span>
+                    <span class="visually-hidden">Sin color (usa el del contexto)</span>
                 </label>
-                @foreach (\App\Enums\ColorNota::cases() as $color)
+                @foreach (\App\Enums\ColorActividad::cases() as $color)
                     <label class="color-opcion" title="{{ $color->etiqueta() }}" style="--opcion-fondo: {{ $color->fondo() }}; --opcion-marca: {{ $color->marca() }}">
                         <input type="radio" name="color" value="{{ $color->value }}">
                         <span class="color-opcion-punto" aria-hidden="true"></span>
@@ -50,6 +50,7 @@
                     </label>
                 @endforeach
             </div>
+            @include('partials.pista-color')
             <div class="dialogo-error" data-error="color"></div>
         </fieldset>
 

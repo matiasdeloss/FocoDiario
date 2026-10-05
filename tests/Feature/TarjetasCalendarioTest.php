@@ -282,17 +282,17 @@ class TarjetasCalendarioTest extends TestCase
 
     public function test_editar_completo_en_el_lugar_guarda_los_campos_de_cada_tipo(): void
     {
-        $tarea = Tarea::factory()->create(['proyecto' => null, 'estado' => EstadoTarea::Pendiente, 'fecha_limite' => null]);
+        $tarea = Tarea::factory()->create(['contexto_id' => null, 'estado' => EstadoTarea::Pendiente, 'fecha_limite' => null]);
         $vinculada = Tarea::factory()->create(['titulo' => 'Tarea vinculada']);
         $recordatorio = Recordatorio::factory()->create(['tarea_id' => null, 'recordar_en' => null]);
         $contexto = Contexto::factory()->create(['nombre' => 'Redes']);
-        $nota = Nota::factory()->create(['contexto_id' => null, 'fijada' => false, 'color' => 'salvia']);
+        $nota = Nota::factory()->create(['contexto_id' => null, 'fijada' => false, 'color' => '#728a58']);
 
-        // Tarea: proyecto y estado (el proyecto vacío se guarda como "sin proyecto").
-        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['proyecto' => ' Tesis ', 'estado' => 'en_progreso'])
-            ->assertOk()->assertJsonPath('detalle.proyecto', 'Tesis')->assertJsonPath('detalle.estado', 'en_progreso');
-        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['proyecto' => ''])->assertOk();
-        $this->assertNull($tarea->fresh()->proyecto);
+        // Tarea: contexto y estado (sin contexto se guarda null).
+        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['contexto_id' => $contexto->id, 'estado' => 'en_progreso'])
+            ->assertOk()->assertJsonPath('detalle.contexto_id', $contexto->id)->assertJsonPath('detalle.estado', 'en_progreso');
+        $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['contexto_id' => null])->assertOk();
+        $this->assertNull($tarea->fresh()->contexto_id);
         $this->assertSame(EstadoTarea::EnProgreso, $tarea->fresh()->estado);
 
         // Nota: materia, fijada y sin color.
@@ -305,23 +305,24 @@ class TarjetasCalendarioTest extends TestCase
             ->assertOk()->assertJsonPath('detalle.tarea_id', $vinculada->id);
 
         // Los campos de otro tipo se ignoran.
-        $this->patchJson(route('calendario.tarjetas.update', ['nota', $nota->id]), ['estado' => 'completada', 'proyecto' => 'X'])->assertOk();
+        $this->patchJson(route('calendario.tarjetas.update', ['nota', $nota->id]), ['estado' => 'completada', 'prioridad' => 'alta'])->assertOk();
     }
 
     public function test_el_detalle_trae_las_opciones_para_editar_en_el_lugar(): void
     {
-        Tarea::factory()->create(['proyecto' => 'Tesis']);
-        $tarea = Tarea::factory()->create(['proyecto' => 'Portfolio']);
+        $portfolio = Contexto::factory()->proyecto()->create(['nombre' => 'Portfolio']);
+        $tarea = Tarea::factory()->create(['contexto_id' => $portfolio->id]);
         Contexto::factory()->create(['nombre' => 'Redes']);
         $nota = Nota::factory()->create();
         $recordatorio = Recordatorio::factory()->create(['tarea_id' => $tarea->id]);
 
         $this->getJson(route('calendario.detalle', ['tipo' => 'tarea', 'id' => $tarea->id]))
-            ->assertJsonPath('detalle.proyecto', 'Portfolio')
-            ->assertJsonPath('detalle.proyectos', ['Portfolio', 'Tesis'])
+            ->assertJsonPath('detalle.contexto_id', $portfolio->id)
+            ->assertJsonPath('detalle.destinos.0.etiqueta', 'Portfolio')
+            ->assertJsonPath('detalle.destinos.1.etiqueta', 'Redes')
             ->assertJsonPath('detalle.estados.0', ['valor' => 'pendiente', 'etiqueta' => 'Pendiente']);
         $this->getJson(route('calendario.detalle', ['tipo' => 'nota', 'id' => $nota->id]))
-            ->assertJsonPath('detalle.destinos.0.etiqueta', 'Redes')
+            ->assertJsonPath('detalle.destinos.1.etiqueta', 'Redes')
             ->assertJsonStructure(['detalle' => ['contexto_id', 'fijada', 'colores']]);
         $this->getJson(route('calendario.detalle', ['tipo' => 'recordatorio', 'id' => $recordatorio->id]))
             ->assertJsonStructure(['detalle' => ['tarea_id', 'tareas' => [['valor', 'etiqueta']]]]);
@@ -335,6 +336,6 @@ class TarjetasCalendarioTest extends TestCase
         $this->patchJson(route('calendario.tarjetas.update', ['tarea', $tarea->id]), ['estado' => 'archivada'])
             ->assertJsonValidationErrors(['estado' => 'El estado elegido no es válido.']);
         $this->patchJson(route('calendario.tarjetas.update', ['nota', $nota->id]), ['contexto_id' => 999])
-            ->assertJsonValidationErrors(['contexto_id' => 'La materia elegida ya no existe.']);
+            ->assertJsonValidationErrors(['contexto_id' => 'El contexto elegido ya no existe.']);
     }
 }

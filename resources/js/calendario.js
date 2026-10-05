@@ -325,7 +325,7 @@ function iniciar(raiz) {
         }, 0);
     });
 
-    /** "Editar todo" de una tarjeta: despliega adentro de la misma tarjeta proyecto o materia, prioridad, estado… */
+    /** "Editar todo" de una tarjeta: despliega adentro de la misma tarjeta contexto o materia, prioridad, estado… */
     async function alternarEdicionCompleta(boton) {
         const li = boton.closest('[data-tarjeta]');
         const extra = li.querySelector('[data-extra]');
@@ -641,7 +641,7 @@ function iniciar(raiz) {
         dReactivar.hidden = !(d.tipo === 'recordatorio' && d.avisado);
 
         if (d.tipo === 'nota') {
-            pintarOpciones(dColor, [{ valor: null, etiqueta: 'Sin color' }, ...d.colores.map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca }))], d.color ?? null,
+            pintarOpciones(dColor, [{ valor: null, etiqueta: 'Sin color (usa el del contexto)' }, ...d.colores.map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca }))], d.color ?? null,
                 (valor) => guardarCambio({ color: valor }), false, true);
         }
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
 use App\Models\ColumnaTablero;
+use App\Models\Contexto;
 use App\Models\Tarea;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -72,11 +73,12 @@ class ModalesTareasTest extends TestCase
     public function test_crear_desde_el_modal_usa_la_columna_elegida_y_su_tipo(): void
     {
         $revision = ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]);
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
 
         $this->postJson(route('tareas.store'), [
             'titulo' => 'Desde el modal',
             'descripcion' => 'Detalle',
-            'proyecto' => 'Tesis',
+            'contexto_id' => $tesis->id,
             'fecha_limite' => '2026-11-01',
             'prioridad' => 'alta',
             'columna_id' => $revision->id,
@@ -87,6 +89,7 @@ class ModalesTareasTest extends TestCase
             'columna_id' => $revision->id,
             'estado' => 'en_progreso',
             'prioridad' => 'alta',
+            'contexto_id' => $tesis->id,
         ]);
         $this->assertSame('Tarea creada.', session('estado'));
     }
@@ -120,7 +123,7 @@ class ModalesTareasTest extends TestCase
         $this->patchJson(route('tareas.update', $tarea), [
             'titulo' => 'Nueva',
             'descripcion' => null,
-            'proyecto' => null,
+            'contexto_id' => null,
             'fecha_limite' => null,
             'prioridad' => 'baja',
             'columna_id' => $hecha->id,
@@ -145,12 +148,13 @@ class ModalesTareasTest extends TestCase
 
     public function test_los_datos_del_modal_de_editar_viajan_en_la_tarjeta_y_en_la_fila(): void
     {
-        $tarea = Tarea::factory()->create(['titulo' => 'Con "comillas"', 'proyecto' => 'Casa', 'fecha_limite' => '2026-12-24']);
+        $tarea = Tarea::factory()->create(['titulo' => 'Con "comillas"', 'contexto_id' => Contexto::factory()->tema()->create()->id, 'fecha_limite' => '2026-12-24']);
 
         $datos = $tarea->datosModal();
         $this->assertSame('2026-12-24', $datos['fecha_limite']);
         $this->assertSame(route('tareas.update', $tarea), $datos['url']);
         $this->assertSame($tarea->columna_id, $datos['columna_id']);
+        $this->assertSame($tarea->contexto_id, $datos['contexto_id']);
 
         $this->get(route('tablero.index'))->assertOk()->assertSee('Con &quot;comillas&quot;', false);
         $this->get(route('tareas.index'))->assertOk()->assertSee('Con &quot;comillas&quot;', false);
@@ -221,13 +225,13 @@ class ModalesTareasTest extends TestCase
 
         $this->patchJson(route('tareas.update', $tarea), [
             'titulo' => 'Preparar parcial', 'prioridad' => 'media', 'columna_id' => $tarea->columna_id,
-            'descripcion' => "Repasar grafos\nHacer el TP 3", 'color' => 'salvia',
+            'descripcion' => "Repasar grafos\nHacer el TP 3", 'color' => '#728a58',
         ], $this->modal())->assertOk();
 
         $tarea->refresh();
         $this->assertSame("Repasar grafos\nHacer el TP 3", $tarea->descripcion);
-        $this->assertSame('salvia', $tarea->color->value);
-        $this->assertSame('salvia', $tarea->datosModal()['color']);
+        $this->assertSame('#728a58', $tarea->color->value);
+        $this->assertSame('#728a58', $tarea->datosModal()['color']);
 
         // La tarjeta del tablero muestra el color y el comentario.
         $this->get(route('tablero.index'))
@@ -255,7 +259,7 @@ class ModalesTareasTest extends TestCase
     {
         $this->get(route('tablero.index'))
             ->assertSee('name="color" value="" checked', false)
-            ->assertSee('name="color" value="salvia"', false)
+            ->assertSee('name="color" value="#728a58"', false)
             ->assertSee('Agregá un comentario', false);
     }
 }

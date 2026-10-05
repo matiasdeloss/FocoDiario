@@ -2,7 +2,7 @@
 
 namespace App\Services\Calendario;
 
-use App\Enums\ColorNota;
+use App\Enums\ColorActividad;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
 use App\Models\Contexto;
@@ -44,7 +44,7 @@ class DetalleCalendario
     {
         $tarea->loadMissing('columna');
         $completada = $tarea->estado === EstadoTarea::Completada;
-        // Proyecto y estado se editan en el panel: el resumen solo agrega la columna del tablero si tiene otro nombre.
+        // Contexto y estado se editan en el panel: el resumen solo agrega la columna del tablero si tiene otro nombre.
         $filas = [];
         $columna = $tarea->columna?->nombre;
 
@@ -62,8 +62,8 @@ class DetalleCalendario
             'estado' => $tarea->estado->value,
             'estados' => collect(EstadoTarea::cases())
                 ->map(fn (EstadoTarea $e) => ['valor' => $e->value, 'etiqueta' => $e->etiqueta()])->all(),
-            'proyecto' => $tarea->proyecto,
-            'proyectos' => Tarea::proyectos()->all(),
+            'contexto_id' => $tarea->contexto_id,
+            'destinos' => Contexto::opciones()->map(fn (string $ruta, int $id) => ['valor' => $id, 'etiqueta' => $ruta])->values()->all(),
             'vencida' => $tarea->estaVencida(),
             'etiqueta_fecha' => 'Fecha límite',
             'ayuda_fecha' => $completada ? 'Las tareas completadas no se pueden reubicar.' : null,
@@ -119,7 +119,7 @@ class DetalleCalendario
             'contexto_id' => $nota->contexto_id,
             'destinos' => Contexto::opciones()->map(fn (string $ruta, int $id) => ['valor' => $id, 'etiqueta' => $ruta])->values()->all(),
             'fijada' => $nota->fijada,
-            'colores' => collect(ColorNota::cases())->map(fn (ColorNota $c) => [
+            'colores' => collect(ColorActividad::cases())->map(fn (ColorActividad $c) => [
                 'valor' => $c->value, 'etiqueta' => $c->etiqueta(), 'fondo' => $c->fondo(), 'marca' => $c->marca(),
             ])->all(),
             'filas' => [], // la materia se elige en el panel

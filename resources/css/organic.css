@@ -69,12 +69,6 @@
     --color-accent-boton: #a75b27;
     --color-accent-boton-hover: #8c491a;
     --color-accent-boton-activo: #643312;
-    /* Marca de los colores de nota y tarea (ColorNota): tonos bien distintos entre sí en ambos temas. */
-    --color-nota-durazno: var(--color-accent-400);
-    --color-nota-terracota: var(--color-accent-600);
-    --color-nota-salvia: var(--color-accent-2-400);
-    --color-nota-oliva: var(--color-accent-2-600);
-    --color-nota-arena: var(--color-neutral-500);
     --radius-card: 18px;
     --radius-pill: 999px;
     --radius-control: 8px;
@@ -163,11 +157,6 @@
         --color-neutral-800: #e1d9cc;
         --color-neutral-900: #efe7da;
         --color-velo: #000000;
-        --color-nota-durazno: #ecb696;
-        --color-nota-terracota: #c26d34;
-        --color-nota-salvia: #aebf92;
-        --color-nota-oliva: #8c934a;
-        --color-nota-arena: #9a928a;
         --foco-borde: #3a3633;
 
         --color-accent-100: #3c2e26;
@@ -220,9 +209,9 @@
         --actividad-salvia-fondo: #3b3f30; --actividad-salvia-acento: #879c71; --actividad-salvia-texto: #ced6c5;
         --actividad-ocre-fondo: #4b3c1f; --actividad-ocre-acento: #b6923e; --actividad-ocre-texto: #e1d2b0;
         --actividad-azul-polvo-fondo: #363e45; --actividad-azul-polvo-acento: #7798b1; --actividad-azul-polvo-texto: #c7d5df;
-        --actividad-ciruela-fondo: #432f37; --actividad-ciruela-acento: #9f6988; --actividad-ciruela-texto: #d7c1ce;
+        --actividad-ciruela-fondo: #4a3340; --actividad-ciruela-acento: #9f6988; --actividad-ciruela-texto: #d7c1ce;
         --actividad-rosa-fondo: #513539; --actividad-rosa-acento: #c97e8e; --actividad-rosa-texto: #e9cad0;
-        --actividad-oliva-fondo: #3d3c23; --actividad-oliva-acento: #8c934a; --actividad-oliva-texto: #d0d3b4;
+        --actividad-oliva-fondo: #44432a; --actividad-oliva-acento: #8c934a; --actividad-oliva-texto: #d0d3b4;
         --actividad-arena-fondo: #463d2d; --actividad-arena-acento: #a9966a; --actividad-arena-texto: #dcd4c2;
         --actividad-celeste-fondo: #2c4042; --actividad-celeste-acento: #589faa; --actividad-celeste-texto: #bad7dc;
         --actividad-lavanda-fondo: #403a4a; --actividad-lavanda-acento: #968cc0; --actividad-lavanda-texto: #d4d0e5;
@@ -248,11 +237,6 @@
     --color-neutral-800: #e1d9cc;
     --color-neutral-900: #efe7da;
     --color-velo: #000000;
-    --color-nota-durazno: #ecb696;
-    --color-nota-terracota: #c26d34;
-    --color-nota-salvia: #aebf92;
-    --color-nota-oliva: #8c934a;
-    --color-nota-arena: #9a928a;
     --foco-borde: #3a3633;
 
     --color-accent-100: #3c2e26;
@@ -305,9 +289,9 @@
     --actividad-salvia-fondo: #3b3f30; --actividad-salvia-acento: #879c71; --actividad-salvia-texto: #ced6c5;
     --actividad-ocre-fondo: #4b3c1f; --actividad-ocre-acento: #b6923e; --actividad-ocre-texto: #e1d2b0;
     --actividad-azul-polvo-fondo: #363e45; --actividad-azul-polvo-acento: #7798b1; --actividad-azul-polvo-texto: #c7d5df;
-    --actividad-ciruela-fondo: #432f37; --actividad-ciruela-acento: #9f6988; --actividad-ciruela-texto: #d7c1ce;
+    --actividad-ciruela-fondo: #4a3340; --actividad-ciruela-acento: #9f6988; --actividad-ciruela-texto: #d7c1ce;
     --actividad-rosa-fondo: #513539; --actividad-rosa-acento: #c97e8e; --actividad-rosa-texto: #e9cad0;
-    --actividad-oliva-fondo: #3d3c23; --actividad-oliva-acento: #8c934a; --actividad-oliva-texto: #d0d3b4;
+    --actividad-oliva-fondo: #44432a; --actividad-oliva-acento: #8c934a; --actividad-oliva-texto: #d0d3b4;
     --actividad-arena-fondo: #463d2d; --actividad-arena-acento: #a9966a; --actividad-arena-texto: #dcd4c2;
     --actividad-celeste-fondo: #2c4042; --actividad-celeste-acento: #589faa; --actividad-celeste-texto: #bad7dc;
     --actividad-lavanda-fondo: #403a4a; --actividad-lavanda-acento: #968cc0; --actividad-lavanda-texto: #d4d0e5;

@@ -218,7 +218,7 @@ class EventosCalendario
                 'prioridadEtiqueta' => $tarea->prioridad->etiqueta(),
                 'estado' => $tarea->estado->value,
                 'estadoEtiqueta' => $tarea->estado->etiqueta(),
-                'proyecto' => $tarea->proyecto,
+                'contextoId' => $tarea->contexto_id,
                 'vencida' => $vencida,
                 'completada' => $completada,
                 'tarjeta' => $this->tarjetas->datos($tarea),

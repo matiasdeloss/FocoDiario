@@ -17,13 +17,13 @@ Cuando alguien entra, ¿qué necesita ver primero? Respuesta:
 | Resumen del día | Las métricas actuales (tareas abiertas, horas aprovechadas, recordatorios). Pasan a segundo plano. | ya existe |
 
 ## Notas con destino
-Una nota puede ir a un contexto: una materia, un tema o un entorno (carrera, vida cotidiana, proyectos personales).
+Una nota puede ir a un contexto: una materia, un tema, un proyecto o un entorno (carrera, vida cotidiana, proyectos personales). Las tareas usan los mismos contextos.
 
 **Modelo propuesto:** una sola tabla `contextos` con jerarquía, en vez de tres tablas.
-- `contextos`: `nombre`, `tipo` (entorno / materia / tema), `contexto_padre_id` opcional, `color` opcional.
+- `contextos`: `nombre`, `tipo` (entorno / materia / tema / proyecto), `contexto_padre_id` opcional, `color` opcional.
   - Ejemplo: Entorno "Carrera" → Materia "Programación 2" → Tema "Punteros".
 - `notas`: `contenido`, `contexto_id` opcional (sin destino = bandeja de entrada), `fecha` opcional (para que aparezca en el calendario), `fijada` opcional.
-- Las tareas y los bloques de tiempo podrían usar el mismo `contexto_id`, así el registro de horas se agrupa por materia. Hoy `tareas.proyecto` es texto libre: se reemplazaría por `contexto_id` en una migración nueva.
+- Las tareas ya usan el mismo `contexto_id` (hecho: la migración convirtió el texto libre `tareas.proyecto` en contextos de tipo proyecto, o reutilizó el contexto del mismo nombre). Los bloques de tiempo podrían usarlo después, para agrupar el registro de horas por materia.
 
 **Por qué una sola tabla:** los niveles pueden cambiar (a veces basta con Entorno → Materia) y agregar un tipo nuevo no exige otra tabla ni otras pantallas.
 
@@ -42,7 +42,7 @@ No se afirma que un estilo sea mejor que otro: se registra cuál se usó y con q
 2. [x] Contextos y notas rápidas (migración, modelo, campo en Inicio).
 3. [x] Pomodoro y selector de estilos, con registro de bloques (vista Estudio).
 4. [ ] Calendario en Inicio con tareas, recordatorios y notas.
-5. [ ] Reemplazar `tareas.proyecto` por `contexto_id`.
+5. [x] Reemplazar `tareas.proyecto` por `contexto_id` (con `proyecto` como cuarto tipo de contexto).
 
 ## Preguntas abiertas
 - ¿El calendario es mensual, semanal, o se alterna? (sugerencia: semanal por defecto en celular, mensual en pantallas grandes).

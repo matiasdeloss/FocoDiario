@@ -40,9 +40,9 @@
     <fieldset class="mb-4">
         <legend class="form-label">Color <span class="text-secondary fw-normal">(opcional)</span></legend>
         <div class="paleta-actividades">
-            <label class="paleta-opcion paleta-sin-color">
+            <label class="paleta-opcion paleta-sin-color" title="Sin color (usa el del contexto padre)">
                 <input type="radio" name="color" value="" @checked($colorActual === '')>
-                <span class="paleta-nombre">Sin color</span>
+                <span class="paleta-nombre">Sin color (usa el del contexto padre)</span>
             </label>
             @foreach (\App\Enums\ColorActividad::cases() as $color)
                 <label class="paleta-opcion {{ $color->clase() }}">

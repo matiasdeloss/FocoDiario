@@ -18,8 +18,9 @@ class DetalleCalendarioTest extends TestCase
 
     public function test_detalle_de_una_tarea(): void
     {
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
         $tarea = Tarea::factory()->create([
-            'titulo' => 'Entregar informe', 'descripcion' => 'Con anexos', 'proyecto' => 'Tesis',
+            'titulo' => 'Entregar informe', 'descripcion' => 'Con anexos', 'contexto_id' => $tesis->id,
             'prioridad' => 'alta', 'fecha_limite' => '2026-10-10',
         ]);
 
@@ -31,8 +32,9 @@ class DetalleCalendarioTest extends TestCase
             ->assertJsonPath('detalle.prioridad', 'alta')
             ->assertJsonPath('detalle.fecha', '2026-10-10')
             ->assertJsonPath('detalle.completada', false)
-            // Proyecto y estado se editan en el panel (no se repiten en el resumen de solo lectura).
-            ->assertJsonPath('detalle.proyecto', 'Tesis')
+            // Contexto y estado se editan en el panel (no se repiten en el resumen de solo lectura).
+            ->assertJsonPath('detalle.contexto_id', $tesis->id)
+            ->assertJsonPath('detalle.destinos.0.etiqueta', 'Tesis')
             ->assertJsonPath('detalle.filas', [])
             ->assertJsonCount(3, 'detalle.prioridades');
     }
@@ -89,10 +91,10 @@ class DetalleCalendarioTest extends TestCase
             ->assertJsonPath('detalle.filas.0.valor', 'Ya avisó el 05/10/2026 a las 09:31');
 
         $materia = Contexto::factory()->create(['nombre' => 'Álgebra']);
-        $nota = Nota::factory()->create(['titulo' => 'Apuntes', 'contenido' => 'Vectores', 'contexto_id' => $materia->id, 'fecha' => '2026-10-06', 'color' => 'salvia']);
+        $nota = Nota::factory()->create(['titulo' => 'Apuntes', 'contenido' => 'Vectores', 'contexto_id' => $materia->id, 'fecha' => '2026-10-06', 'color' => '#728a58']);
         $this->getJson(route('calendario.detalle', ['tipo' => 'nota', 'id' => $nota->id]))
             ->assertOk()
-            ->assertJsonPath('detalle.color', 'salvia')
+            ->assertJsonPath('detalle.color', '#728a58')
             ->assertJsonPath('detalle.comentario', 'Vectores')
             ->assertJsonPath('detalle.contexto_id', $materia->id)
             ->assertJsonPath('detalle.filas', []);
@@ -133,11 +135,11 @@ class DetalleCalendarioTest extends TestCase
 
     public function test_se_cambia_el_color_de_una_nota_y_se_valida(): void
     {
-        $nota = Nota::factory()->create(['color' => 'durazno']);
+        $nota = Nota::factory()->create(['color' => '#c0677a']);
         $url = route('calendario.tarjetas.update', ['tipo' => 'nota', 'id' => $nota->id]);
 
-        $this->patchJson($url, ['color' => 'oliva'])->assertOk()->assertJsonPath('detalle.color', 'oliva');
-        $this->assertSame('oliva', $nota->fresh()->color->value);
+        $this->patchJson($url, ['color' => '#78802a'])->assertOk()->assertJsonPath('detalle.color', '#78802a');
+        $this->assertSame('#78802a', $nota->fresh()->color->value);
 
         $this->patchJson($url, ['color' => 'fucsia'])->assertUnprocessable()->assertJsonValidationErrors('color');
         $this->patchJson(route('calendario.tarjetas.update', ['tipo' => 'tarea', 'id' => Tarea::factory()->create()->id]), ['prioridad' => 'urgente'])

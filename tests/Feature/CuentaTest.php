@@ -187,7 +187,7 @@ class CuentaTest extends TestCase
 
             return [
                 Nota::factory()->create(['titulo' => 'Nota del invitado', 'contexto_id' => $carrera->id]),
-                Tarea::factory()->create(['estado' => EstadoTarea::Pendiente]),
+                Tarea::factory()->create(['estado' => EstadoTarea::Pendiente, 'contexto_id' => $carrera->id]),
                 $carrera,
                 Contexto::factory()->create(['nombre' => 'Programación', 'contexto_padre_id' => $carrera->id]),
                 ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]),
@@ -205,6 +205,9 @@ class CuentaTest extends TestCase
         $this->assertSame($cuenta->id, Nota::find($nota->id)?->user_id);
         $this->assertSame(['Carrera', 'Carrera (invitado)'], Contexto::whereNull('contexto_padre_id')->orderBy('id')->pluck('nombre')->all());
         $this->assertSame($carrera->id, Contexto::find($hija->id)->contexto_padre_id);
+        // La tarea del invitado sigue apuntando a su contexto (que se renombró, pero conserva el id).
+        $this->assertSame($carrera->id, Tarea::find($tarea->id)->contexto_id);
+        $this->assertSame('Carrera (invitado)', Tarea::find($tarea->id)->contexto->nombre);
 
         // Columnas: las de fábrica se unieron; "Revisión" se agregó al final.
         $this->assertSame(['Pendiente', 'En progreso', 'Completada', 'Revisión'], ColumnaTablero::ordenadas()->pluck('nombre')->all());

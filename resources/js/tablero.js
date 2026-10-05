@@ -1,6 +1,6 @@
 /*
  * Tablero Kanban: arrastrar y soltar nativo (entre columnas y dentro de una columna, con el orden guardado),
- * botones de mover, alta rápida al pie de la columna y filtros por texto, proyecto y prioridad.
+ * botones de mover, alta rápida al pie de la columna y filtros por texto, contexto y prioridad.
  * Se carga solo en esta pantalla (ver tablero/index.blade.php). Los modales viven en dialogos-tablero.js.
  * Sin JS, todo funciona con formularios comunes. Las columnas son personalizables (data-columna = id).
  *
@@ -25,11 +25,11 @@ if (tablero) {
 
     /* ---------- Filtros ---------- */
     const barra = document.querySelector('[data-filtros]');
-    const filtros = { q: '', proyecto: barra?.querySelector('[data-filtro="proyecto"]')?.value ?? '', prioridad: '' };
-    const hayFiltros = () => filtros.q !== '' || filtros.proyecto !== '' || filtros.prioridad !== '';
+    const filtros = { q: '', contexto: barra?.querySelector('[data-filtro="contexto"]')?.value ?? '', prioridad: '' };
+    const hayFiltros = () => filtros.q !== '' || filtros.contexto !== '' || filtros.prioridad !== '';
 
     const coincide = (tarjeta) => (filtros.q === '' || tarjeta.dataset.buscar.includes(filtros.q))
-        && (filtros.proyecto === '' || tarjeta.dataset.proyecto === filtros.proyecto)
+        && (filtros.contexto === '' || tarjeta.dataset.contexto === filtros.contexto)
         && (filtros.prioridad === '' || tarjeta.dataset.prioridad === filtros.prioridad);
 
     /** Contadores, estados vacíos y resumen según las tarjetas que hay y las que dejan pasar los filtros. */

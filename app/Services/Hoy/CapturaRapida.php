@@ -23,7 +23,7 @@ class CapturaRapida
     }
 
     /**
-     * @param  array{tipo: string, titulo: string, descripcion?: ?string, fecha?: ?string, hora?: ?string, contexto_id?: ?int, color?: ?string, proyecto?: ?string, prioridad?: ?string, columna_id?: ?int}  $datos
+     * @param  array{tipo: string, titulo: string, descripcion?: ?string, fecha?: ?string, hora?: ?string, contexto_id?: ?int, color?: ?string, tarea_contexto_id?: ?int, prioridad?: ?string, columna_id?: ?int}  $datos
      */
     public function crear(array $datos): Model
     {
@@ -34,7 +34,7 @@ class CapturaRapida
             'tarea' => Tarea::create([
                 'titulo' => $datos['titulo'],
                 'descripcion' => $descripcion,
-                'proyecto' => filled($datos['proyecto'] ?? null) ? $datos['proyecto'] : null,
+                'contexto_id' => $datos['tarea_contexto_id'] ?? null,
                 'prioridad' => PrioridadTarea::tryFrom((string) ($datos['prioridad'] ?? '')) ?? PrioridadTarea::Media,
                 // Sin columna elegida, pendiente; con columna, el estado lo fija la categoría de esa columna (Tarea::booted).
                 'estado' => EstadoTarea::Pendiente,

@@ -42,12 +42,12 @@ export function chipVisible(paraTipos, tipo) {
     return paraTipos.split(' ').includes(tipo);
 }
 
-/** Resumen del chip "Más detalles" de la tarea: la prioridad si no es la media y el proyecto. Vacío si no hay nada que destacar. */
-export function resumenTarea({ prioridad = '', etiquetaPrioridad = '', proyecto = '' } = {}) {
+/** Resumen del chip "Más detalles" de la tarea: la prioridad si no es la media y el contexto. Vacío si no hay nada que destacar. */
+export function resumenTarea({ prioridad = '', etiquetaPrioridad = '', contexto = '' } = {}) {
     const partes = [];
 
     if (prioridad !== '' && prioridad !== 'media' && etiquetaPrioridad !== '') partes.push(etiquetaPrioridad);
-    if (proyecto.trim() !== '') partes.push(proyecto.trim());
+    if (contexto.trim() !== '') partes.push(contexto.trim());
 
     return partes.join(' · ');
 }

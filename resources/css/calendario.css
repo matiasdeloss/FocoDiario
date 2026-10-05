@@ -644,9 +644,11 @@
 .filtro-chip[class*="tipo-"]:has(input:checked) { background: var(--tipo-fondo); color: var(--tipo-texto); }
 
 /* ---------- Campos editables en el lugar (calendario-campos.js) ---------- */
-/* Grilla de dos columnas: proyecto y estado van de a pares; lo demás (prioridad, color, materia —rutas largas—, fijada, tarea vinculada) a lo ancho. */
+/* Grilla de dos columnas; lo que tiene rutas largas (contexto, materia), prioridad, color, fijada y tarea vinculada van a lo ancho. */
 .detalle-mas, .tarj-extra { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; align-items: end; }
 .detalle-mas > [data-campo-extra="prioridad"],
+.detalle-mas > [data-campo-extra="contexto"],
+.tarj-extra > [data-campo-extra="contexto"],
 .detalle-mas > [data-campo-extra="color"],
 .detalle-mas > [data-campo-extra="tarea"],
 .detalle-mas > [data-campo-extra="materia"],

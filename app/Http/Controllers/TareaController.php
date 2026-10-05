@@ -8,6 +8,7 @@ use App\Http\Requests\CambiarEstadoTareaRequest;
 use App\Http\Requests\FiltroTareasRequest;
 use App\Http\Requests\TareaRequest;
 use App\Models\ColumnaTablero;
+use App\Models\Contexto;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
 use App\Services\Hoy\ListasHoy;
@@ -29,21 +30,23 @@ class TareaController extends Controller
         $filtros = $request->validated();
 
         if (($filtros['vista'] ?? 'lista') === 'tablero') {
-            return redirect()->route('tablero.index', array_filter(['proyecto' => $filtros['proyecto'] ?? null]));
+            return redirect()->route('tablero.index', array_filter(['contexto' => $filtros['contexto'] ?? null]));
         }
 
         $columnasOrden = ColumnaTablero::ordenadas()->get();
 
         return view('tareas.index', $lista->armar($filtros) + [
             'resumen' => $lista->resumen(),
-            'proyectos' => $lista->proyectos(),
+            'contextosFiltro' => Contexto::opcionesPorTipo(soloConTareas: true),
+            'contextos' => Contexto::opcionesPorTipo(),
+            'contextoFiltrado' => isset($filtros['contexto']) ? Contexto::find($filtros['contexto']) : null,
             'columnasOrden' => $columnasOrden,
             'tareasAbiertas' => Tarea::abiertas()->orWhereIn('id', Recordatorio::whereNotNull('tarea_id')->select('tarea_id'))->orderBy('titulo')->get(['id', 'titulo']),
             'filtros' => [
                 'tipo' => $filtros['tipo'] ?? 'todo',
                 'estado' => $filtros['estado'] ?? 'abiertas',
                 'prioridad' => $filtros['prioridad'] ?? null,
-                'proyecto' => $filtros['proyecto'] ?? null,
+                'contexto' => $filtros['contexto'] ?? null,
                 'q' => $filtros['q'] ?? null,
             ],
             'hoy' => today(),
@@ -158,7 +161,7 @@ class TareaController extends Controller
             'tarea' => $tarea,
             'prioridades' => PrioridadTarea::cases(),
             'estados' => EstadoTarea::cases(),
-            'proyectos' => Tarea::proyectos(),
+            'contextos' => Contexto::opcionesPorTipo(),
         ];
     }
 }

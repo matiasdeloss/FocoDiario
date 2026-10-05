@@ -35,7 +35,7 @@ class CapturaRapidaTest extends TestCase
         $this->assertStringContainsString('name="descripcion"', $html);
         $this->assertSame(3, substr_count($html, 'data-tipo'));
         $this->assertMatchesRegularExpression('/value="nota"\s+checked/', $html);
-        $this->assertSame(5, substr_count($html, 'data-color-nota='));
+        $this->assertSame(11, substr_count($html, 'data-color-nota='));
         // Ya no hay contador de caracteres ni botón Limpiar.
         $this->assertStringNotContainsString('data-nota-contador', $html);
         $this->assertStringNotContainsString('data-nota-limpiar', $html);
@@ -74,8 +74,8 @@ class CapturaRapidaTest extends TestCase
         $pie = substr($html, $inicioPie);
 
         $this->assertStringContainsString('Nota rápida', $cabecera);
-        $this->assertSame(5, substr_count($cabecera, 'data-color-nota='));
-        $this->assertSame(5, substr_count($cabecera, 'aria-pressed="false"'));
+        $this->assertSame(11, substr_count($cabecera, 'data-color-nota='));
+        $this->assertSame(10, substr_count($cabecera, 'aria-pressed="false"'));
         $this->assertStringContainsString('El color se guarda en las notas y las tareas', $cabecera);
         $this->assertSame(0, substr_count($pie, 'data-color-nota='));
         $this->assertStringNotContainsString('data-chip-punto', $html);
@@ -84,11 +84,11 @@ class CapturaRapidaTest extends TestCase
     public function test_el_selector_de_color_esta_para_los_tres_tipos_y_conserva_el_elegido(): void
     {
         foreach (['nota', 'tarea', 'recordatorio'] as $tipo) {
-            $html = $this->capturar(['tipo' => $tipo, 'titulo' => '', 'color' => 'oliva'])->getContent();
+            $html = $this->capturar(['tipo' => $tipo, 'titulo' => '', 'color' => '#78802a'])->getContent();
 
-            $this->assertSame(5, substr_count($html, 'data-color-nota='), $tipo);
+            $this->assertSame(11, substr_count($html, 'data-color-nota='), $tipo);
             $this->assertSame(1, substr_count($html, 'aria-pressed="true"'), $tipo);
-            $this->assertMatchesRegularExpression('/data-color-nota="oliva"\s+aria-label="Color oliva"\s+aria-pressed="true"/', $html);
+            $this->assertMatchesRegularExpression('/data-color-nota="#78802a"\s+data-color-clave="oliva"\s+aria-label="Color oliva"\s+title="Oliva"\s+aria-pressed="true"/', $html);
         }
     }
 
@@ -130,11 +130,11 @@ class CapturaRapidaTest extends TestCase
         $contexto = Contexto::factory()->create(['nombre' => 'Álgebra']);
         Carbon::setTestNow('2026-09-30 10:00');
 
-        $html = $this->capturar(['tipo' => 'nota', 'titulo' => '', 'fecha' => '2026-10-01', 'contexto_id' => $contexto->id, 'color' => 'salvia'])->getContent();
+        $html = $this->capturar(['tipo' => 'nota', 'titulo' => '', 'fecha' => '2026-10-01', 'contexto_id' => $contexto->id, 'color' => '#728a58'])->getContent();
 
         $this->assertStringContainsString('aria-label="Fecha: Mañana"', $html);
         $this->assertStringContainsString('aria-label="Destino: Álgebra"', $html);
-        $this->assertMatchesRegularExpression('/data-color-nota="salvia"\s+aria-label="Color salvia"\s+aria-pressed="true"/', $html);
+        $this->assertMatchesRegularExpression('/data-color-nota="#728a58"\s+data-color-clave="salvia"\s+aria-label="Color salvia"\s+title="Salvia"\s+aria-pressed="true"/', $html);
         $this->assertStringContainsString('data-color="salvia"', $html);
         $this->assertMatchesRegularExpression('/<option value="'.$contexto->id.'"\s+selected/', $html);
 
@@ -200,14 +200,14 @@ class CapturaRapidaTest extends TestCase
 
         $this->capturar([
             'tipo' => 'nota', 'titulo' => 'Matrices', 'descripcion' => 'Repasar determinantes',
-            'contexto_id' => $contexto->id, 'color' => 'salvia', 'fecha' => '2026-10-10',
+            'contexto_id' => $contexto->id, 'color' => '#728a58', 'fecha' => '2026-10-10',
         ])->assertOk()->assertAvisoHtmx('Nota guardada en Álgebra.');
 
         $nota = Nota::firstOrFail();
         $this->assertSame('Matrices', $nota->titulo);
         $this->assertSame('Repasar determinantes', $nota->contenido);
         $this->assertSame($contexto->id, $nota->contexto_id);
-        $this->assertSame('salvia', $nota->color->value);
+        $this->assertSame('#728a58', $nota->color->value);
         $this->assertSame('2026-10-10', $nota->fecha->toDateString());
         $this->assertSame([0, 0, 1], $this->totales());
     }
@@ -233,16 +233,18 @@ class CapturaRapidaTest extends TestCase
     public function test_el_formulario_ofrece_los_campos_de_la_tarea_con_los_mismos_nombres_que_el_modal(): void
     {
         $columna = ColumnaTablero::create(['nombre' => 'En revisión', 'categoria' => 'en_progreso', 'posicion' => 9]);
-        Tarea::factory()->create(['proyecto' => 'Tesis']);
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
 
         $html = $this->get(route('hoy'))->assertOk()->getContent();
 
-        // Capturando una tarea se ve el panel con proyecto, prioridad y columna (ids con prefijo propio: no chocan con el modal).
+        // Capturando una tarea se ve el panel con contexto, prioridad y columna (ids con prefijo propio: no chocan con el modal).
         $this->assertStringContainsString('id="nota-rapida-panel-tarea"', $html);
         $this->assertStringContainsString('data-chip="tarea"', $html);
         $this->assertMatchesRegularExpression('/id="nota-rapida-panel-tarea"[^>]*data-para="tarea"/', $html);
-        $this->assertStringContainsString('id="nota-rapida-tarea-proyecto"', $html);
-        $this->assertStringContainsString('<option value="Tesis">', $html);
+        $this->assertStringContainsString('id="nota-rapida-tarea-contexto"', $html);
+        $this->assertStringContainsString('name="tarea_contexto_id"', $html);
+        $this->assertStringContainsString('<optgroup label="Proyecto">', $html);
+        $this->assertStringContainsString('<option value="'.$tesis->id.'" >Tesis</option>', $html);
         $this->assertStringContainsString('id="nota-rapida-tarea-prioridad"', $html);
         $this->assertStringContainsString('id="nota-rapida-tarea-columna"', $html);
         $this->assertStringContainsString('>En revisión', $html);
@@ -251,34 +253,35 @@ class CapturaRapidaTest extends TestCase
         $this->assertMatchesRegularExpression('/id="nota-rapida-panel-tarea"[^>]*data-oculto/', $html);
 
         // Los ids del formulario y los del modal de tareas son distintos.
-        $this->assertStringNotContainsString('id="tarea-proyecto"', $html);
+        $this->assertStringNotContainsString('id="tarea-contexto"', $html);
     }
 
-    public function test_crea_una_tarea_con_prioridad_proyecto_columna_y_color(): void
+    public function test_crea_una_tarea_con_prioridad_contexto_columna_y_color(): void
     {
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
         $columna = ColumnaTablero::create(['nombre' => 'En revisión', 'categoria' => 'en_progreso', 'posicion' => 9]);
 
         $this->capturar([
             'tipo' => 'tarea', 'titulo' => 'Entregar informe', 'descripcion' => 'Con anexos', 'fecha' => '2026-10-20',
-            'proyecto' => 'Tesis', 'prioridad' => 'alta', 'columna_id' => $columna->id, 'color' => 'salvia',
+            'tarea_contexto_id' => $tesis->id, 'prioridad' => 'alta', 'columna_id' => $columna->id, 'color' => '#728a58',
         ])->assertOk()->assertAvisoHtmx('Tarea creada.');
 
         $tarea = Tarea::firstOrFail();
-        $this->assertSame('Tesis', $tarea->proyecto);
+        $this->assertSame($tesis->id, $tarea->contexto_id);
         $this->assertSame('alta', $tarea->prioridad->value);
         $this->assertSame($columna->id, $tarea->columna_id);
         $this->assertSame('en_progreso', $tarea->estado->value);
-        $this->assertSame('salvia', $tarea->color->value);
+        $this->assertSame('#728a58', $tarea->color->value);
         $this->assertSame('2026-10-20', $tarea->fecha_limite->toDateString());
         $this->assertSame('Con anexos', $tarea->descripcion);
     }
 
     public function test_una_tarea_sin_los_campos_extra_conserva_los_valores_de_siempre(): void
     {
-        $this->capturar(['tipo' => 'tarea', 'titulo' => 'Simple', 'proyecto' => '', 'prioridad' => '', 'columna_id' => '', 'color' => ''])->assertOk()->assertAvisoHtmx('Tarea creada.');
+        $this->capturar(['tipo' => 'tarea', 'titulo' => 'Simple', 'tarea_contexto_id' => '', 'prioridad' => '', 'columna_id' => '', 'color' => ''])->assertOk()->assertAvisoHtmx('Tarea creada.');
 
         $tarea = Tarea::firstOrFail();
-        $this->assertNull($tarea->proyecto);
+        $this->assertNull($tarea->contexto_id);
         $this->assertSame('media', $tarea->prioridad->value);
         $this->assertSame('pendiente', $tarea->estado->value);
         $this->assertNull($tarea->color);
@@ -286,7 +289,7 @@ class CapturaRapidaTest extends TestCase
 
     public function test_los_campos_de_la_tarea_se_ignoran_en_notas_y_recordatorios(): void
     {
-        $extra = ['proyecto' => 'Tesis', 'prioridad' => 'alta', 'columna_id' => 999];
+        $extra = ['tarea_contexto_id' => 999, 'prioridad' => 'alta', 'columna_id' => 999];
 
         $this->capturar(['tipo' => 'nota', 'titulo' => 'Una nota', ...$extra])->assertOk()->assertAvisoHtmx('Nota guardada en la bandeja de entrada.');
         $this->capturar(['tipo' => 'recordatorio', 'titulo' => 'Un aviso', ...$extra])->assertOk()->assertAvisoHtmx('Recordatorio creado, sin fecha: queda por ubicar.');
@@ -297,11 +300,11 @@ class CapturaRapidaTest extends TestCase
     public function test_valida_los_campos_de_la_tarea_y_conserva_lo_escrito(): void
     {
         $respuesta = $this->capturar([
-            'tipo' => 'tarea', 'titulo' => 'Con errores', 'proyecto' => str_repeat('p', 256), 'prioridad' => 'urgente', 'columna_id' => 999,
+            'tipo' => 'tarea', 'titulo' => 'Con errores', 'tarea_contexto_id' => 999, 'prioridad' => 'urgente', 'columna_id' => 999,
         ]);
 
         $respuesta->assertOk()
-            ->assertSee('El proyecto no puede superar los 255 caracteres.')
+            ->assertSee('El contexto elegido no existe.')
             ->assertSee('La prioridad elegida no es válida.')
             ->assertSee('La columna elegida no existe.')
             ->assertSee('Revisá los campos marcados.');
@@ -311,15 +314,16 @@ class CapturaRapidaTest extends TestCase
         $this->assertMatchesRegularExpression('/hoy-panel es-abierto"\s+id="nota-rapida-panel-tarea"/', $respuesta->getContent());
     }
 
-    public function test_el_error_de_otro_campo_conserva_proyecto_prioridad_y_columna(): void
+    public function test_el_error_de_otro_campo_conserva_contexto_prioridad_y_columna(): void
     {
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
         $columna = ColumnaTablero::create(['nombre' => 'En revisión', 'categoria' => 'en_progreso', 'posicion' => 9]);
 
         $html = $this->capturar([
-            'tipo' => 'tarea', 'titulo' => '', 'proyecto' => 'Tesis', 'prioridad' => 'baja', 'columna_id' => $columna->id, 'color' => 'oliva',
+            'tipo' => 'tarea', 'titulo' => '', 'tarea_contexto_id' => $tesis->id, 'prioridad' => 'baja', 'columna_id' => $columna->id, 'color' => '#78802a',
         ])->getContent();
 
-        $this->assertMatchesRegularExpression('/name="proyecto"[^>]*value="Tesis"/', $html);
+        $this->assertMatchesRegularExpression('/<option value="'.$tesis->id.'"[^>]*selected/', $html);
         $this->assertMatchesRegularExpression('/<option value="baja"[^>]*selected/', $html);
         $this->assertMatchesRegularExpression('/<option value="'.$columna->id.'"[^>]*selected/', $html);
         $this->assertStringContainsString('data-color="oliva"', $html);
@@ -328,11 +332,20 @@ class CapturaRapidaTest extends TestCase
 
     public function test_el_color_tambien_se_guarda_en_las_tareas_y_se_valida(): void
     {
-        $this->capturar(['tipo' => 'tarea', 'titulo' => 'Coloreada', 'color' => 'terracota'])->assertOk()->assertAvisoHtmx('Tarea creada.');
-        $this->assertSame('terracota', Tarea::firstOrFail()->color->value);
+        $this->capturar(['tipo' => 'tarea', 'titulo' => 'Coloreada', 'color' => '#c0663a'])->assertOk()->assertAvisoHtmx('Tarea creada.');
+        $this->assertSame('#c0663a', Tarea::firstOrFail()->color->value);
 
         $this->capturar(['tipo' => 'tarea', 'titulo' => 'Mala', 'color' => 'fucsia'])->assertSee('El color elegido no es válido.');
         $this->assertSame(1, Tarea::count());
+    }
+
+    public function test_no_se_puede_usar_el_contexto_de_otro_usuario_en_una_tarea(): void
+    {
+        $ajeno = Contexto::factory()->create(['nombre' => 'Ajeno']);
+        Contexto::withoutGlobalScopes()->whereKey($ajeno->id)->update(['user_id' => User::factory()->create()->id]);
+
+        $this->capturar(['tipo' => 'tarea', 'titulo' => 'Robo', 'tarea_contexto_id' => $ajeno->id])->assertSee('El contexto elegido no existe.');
+        $this->assertSame(0, Tarea::count());
     }
 
     public function test_no_se_puede_usar_la_columna_de_otro_usuario(): void
@@ -344,10 +357,10 @@ class CapturaRapidaTest extends TestCase
         $this->assertSame(0, Tarea::count());
     }
 
-    public function test_la_nota_rapida_no_hace_consultas_por_cada_proyecto_ni_columna(): void
+    public function test_la_nota_rapida_no_hace_consultas_por_cada_contexto_ni_columna(): void
     {
         foreach (range(1, 8) as $i) {
-            Tarea::factory()->create(['proyecto' => "Proyecto $i"]);
+            Tarea::factory()->create(['contexto_id' => Contexto::factory()->proyecto()->create()->id]);
             ColumnaTablero::create(['nombre' => "Columna $i", 'categoria' => 'en_progreso', 'posicion' => 10 + $i]);
         }
 
@@ -356,7 +369,8 @@ class CapturaRapidaTest extends TestCase
         $consultas = collect(\DB::getQueryLog())->pluck('query');
 
         $this->assertSame(1, $consultas->filter(fn ($q) => str_contains($q, 'from "columnas_tablero"') || str_contains($q, 'from `columnas_tablero`'))->count());
-        $this->assertSame(1, $consultas->filter(fn ($q) => str_contains($q, 'distinct') && str_contains($q, 'proyecto'))->count());
+        // Los contextos (destino de la nota y contexto de la tarea) se piden de a uno por render, no uno por contexto.
+        $this->assertLessThanOrEqual(2, $consultas->filter(fn ($q) => str_contains($q, 'from "contextos"') || str_contains($q, 'from `contextos`'))->count());
     }
 
     public function test_titulo_vacio_devuelve_el_formulario_con_el_error_y_lo_escrito(): void

@@ -6,6 +6,7 @@ use App\Enums\TipoContexto;
 use App\Http\Requests\ContextoRequest;
 use App\Models\Contexto;
 use App\Support\Aviso;
+use App\Support\ColoresDeContexto;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class ContextoController extends Controller
 {
     public function index(): View
     {
-        return view('contextos.index', ['arbol' => Contexto::arbol()]);
+        return view('contextos.index', ['arbol' => Contexto::arbol(), 'colores' => ColoresDeContexto::delUsuario()]);
     }
 
     public function create(Request $request): View

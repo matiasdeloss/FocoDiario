@@ -1,6 +1,6 @@
-{{-- Formulario de captura rápida, con aspecto de cuaderno (se reemplaza a sí mismo con HTMX). Requiere: $destinos. Opcionales: $valores (lo escrito), $guardada, $recienGuardado, $proyectos y $columnasOrden (campos de la tarea; los pone el composer si faltan). --}}
+{{-- Formulario de captura rápida, con aspecto de cuaderno (se reemplaza a sí mismo con HTMX). Requiere: $destinos. Opcionales: $valores (lo escrito), $guardada, $recienGuardado, $contextosTarea y $columnasOrden (campos de la tarea; los pone el composer si faltan). --}}
 @php
-    use App\Enums\ColorNota;
+    use App\Enums\ColorActividad;
     use App\Enums\PrioridadTarea;
     use App\Services\Hoy\CapturaRapida;
 
@@ -13,18 +13,22 @@
     $fecha = $valores['fecha'] ?? '';
     $hora = $valores['hora'] ?? '';
     $contextoElegido = $valores['contexto_id'] ?? ($guardada ?? null)?->contexto_id ?? null;
-    $colorElegido = ColorNota::tryFrom((string) ($valores['color'] ?? ''));
+    $colorElegido = ColorActividad::tryFrom((string) ($valores['color'] ?? ''));
     $errorDescripcion = $errors->first('descripcion') ?: $errors->first('contenido');
     $enfocarTitulo = ! empty($recienGuardado) || ! empty($guardada) || $errors->has('titulo');
 
     // Lo que muestra cada chip cuando tiene valor.
     $textoFecha = CapturaRapida::etiquetaFecha($fecha, $tipo === 'recordatorio' ? $hora : null);
-    // Campos propios de la tarea (los mismos del modal de tareas): proyecto, prioridad y columna.
-    $proyectoElegido = $valores['proyecto'] ?? '';
+    // Campos propios de la tarea (los mismos del modal de tareas): contexto, prioridad y columna.
+    $contextoTareaElegido = $valores['tarea_contexto_id'] ?? '';
+    $nombreContextoTarea = null;
+    foreach ($contextosTarea as $grupo) {
+        $nombreContextoTarea ??= $grupo[$contextoTareaElegido] ?? null;
+    }
     $prioridadElegida = PrioridadTarea::tryFrom((string) ($valores['prioridad'] ?? ''));
     $textoTarea = collect([
         $prioridadElegida && $prioridadElegida !== PrioridadTarea::Media ? $prioridadElegida->etiqueta() : null,
-        $proyectoElegido !== '' ? $proyectoElegido : null,
+        $nombreContextoTarea,
     ])->filter()->implode(' · ');
     $hayDestino = $contextoElegido !== null && $contextoElegido !== '' && isset($destinos[$contextoElegido]);
     $textoDestino = $hayDestino ? $destinos[$contextoElegido] : 'Bandeja de entrada';
@@ -33,7 +37,7 @@
     $abierto = [
         'fecha' => $errors->has('fecha') || $errors->has('hora'),
         'destino' => $errors->has('contexto_id'),
-        'tarea' => $errors->hasAny(['proyecto', 'prioridad', 'columna_id']),
+        'tarea' => $errors->hasAny(['tarea_contexto_id', 'prioridad', 'columna_id']),
     ];
     $para = ['fecha' => 'tarea recordatorio nota', 'destino' => 'nota', 'tarea' => 'tarea'];
     $oculto = fn (string $clave) => ! in_array($tipo, explode(' ', $para[$clave]), true);
@@ -41,7 +45,7 @@
 <form id="nota-rapida-form" method="POST" action="{{ route('hoy.captura') }}" novalidate class="hoy-nota-form" data-captura
       @if (! empty($recienGuardado) || ! empty($guardada)) data-recien-guardado @endif
       @if (! empty($valores['tipo'])) data-tipo-servidor @endif
-      @if (in_array($tipo, ['nota', 'tarea'], true) && $colorElegido) data-color="{{ $colorElegido->value }}" @endif
+      @if (in_array($tipo, ['nota', 'tarea'], true) && $colorElegido) data-color="{{ $colorElegido->clave() }}" @endif
       hx-post="{{ route('hoy.captura') }}" hx-target="this" hx-swap="outerHTML">
     @csrf
     <input type="hidden" name="color" value="{{ $colorElegido?->value }}" data-nota-color-valor>
@@ -51,9 +55,11 @@
         <h2 class="hoy-tarjeta-titulo" id="nota-rapida-titulo">Nota rápida</h2>
         <div class="hoy-colores hoy-solo-js" role="group" aria-label="Color de la nota o la tarea" aria-describedby="nota-rapida-color-ayuda"
              title="El color se guarda en las notas y las tareas">
-            @foreach (ColorNota::cases() as $color)
-                <button type="button" class="hoy-color hoy-color-{{ $color->value }}" data-color-nota="{{ $color->value }}"
-                        aria-label="Color {{ mb_strtolower($color->etiqueta()) }}" aria-pressed="{{ $colorElegido === $color ? 'true' : 'false' }}"></button>
+            <button type="button" class="hoy-color hoy-color-ninguno" data-color-nota="" data-color-clave=""
+                    aria-label="Sin color (usa el del contexto)" title="Sin color (usa el del contexto)" aria-pressed="{{ $colorElegido === null ? 'true' : 'false' }}"></button>
+            @foreach (ColorActividad::cases() as $color)
+                <button type="button" class="hoy-color hoy-color-{{ $color->clave() }}" data-color-nota="{{ $color->value }}" data-color-clave="{{ $color->clave() }}"
+                        aria-label="Color {{ mb_strtolower($color->etiqueta()) }}" title="{{ $color->etiqueta() }}" aria-pressed="{{ $colorElegido === $color ? 'true' : 'false' }}"></button>
             @endforeach
             <span class="hoy-solo-lector" id="nota-rapida-color-ayuda">El color se guarda en las notas y las tareas.</span>
         </div>
@@ -109,7 +115,7 @@
                 </button>
                 <button type="button" class="hoy-chip-x" data-chip-quitar="destino" aria-label="Volver a la bandeja de entrada" @unless ($hayDestino) hidden @endunless><i class="bi bi-x" aria-hidden="true"></i></button>
             </span>
-            {{-- Más detalles de la tarea: proyecto, prioridad y columna --}}
+            {{-- Más detalles de la tarea: contexto, prioridad y columna --}}
             <span class="hoy-chip-grupo {{ $abierto['tarea'] ? 'es-error' : '' }}" data-chip-grupo="tarea" data-para="{{ $para['tarea'] }}" @if ($oculto('tarea')) data-oculto @endif>
                 <button type="button" class="hoy-chip" data-chip="tarea" aria-expanded="{{ $abierto['tarea'] ? 'true' : 'false' }}" aria-controls="nota-rapida-panel-tarea"
                         aria-label="Más detalles de la tarea{{ $textoTarea !== '' ? ': ' . $textoTarea : '' }}">
@@ -164,7 +170,7 @@
         {{-- Los mismos campos propios que el modal de tareas (partial compartido, con otro prefijo de ids). --}}
         <div class="hoy-panel {{ $abierto['tarea'] ? 'es-abierto' : '' }}" id="nota-rapida-panel-tarea" data-panel="tarea" role="group" aria-label="Más detalles de la tarea" data-para="{{ $para['tarea'] }}" @if ($oculto('tarea')) data-oculto @endif>
             <div class="hoy-panel-campos">
-                @include('tareas._campo-extra', ['campo' => 'proyecto', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $proyectoElegido])
+                @include('tareas._campo-extra', ['campo' => 'contexto', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $contextoTareaElegido, 'contextos' => $contextosTarea])
                 @include('tareas._campo-extra', ['campo' => 'prioridad', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $valores['prioridad'] ?? null])
                 @if ($columnasOrden->isNotEmpty())
                     @include('tareas._campo-extra', ['campo' => 'columna', 'prefijo' => 'nota-rapida-tarea', 'estilo' => 'hoy', 'valor' => $valores['columna_id'] ?? null])

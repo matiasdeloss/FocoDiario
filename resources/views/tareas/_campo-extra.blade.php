@@ -1,9 +1,10 @@
-{{-- Campo propio de una tarea (proyecto, prioridad o columna), compartido por el modal de tareas y la nota rápida de Hoy.
-     Requiere: $campo ('proyecto' | 'prioridad' | 'columna'), $prefijo (prefijo de los ids: así no chocan si conviven en la página),
-     $estilo ('dialogo' | 'hoy'). Opcionales: $valor (lo elegido), $proyectos, $columnasOrden. --}}
+{{-- Campo propio de una tarea (contexto, prioridad o columna), compartido por el modal de tareas y la nota rápida de Hoy.
+     Requiere: $campo ('contexto' | 'prioridad' | 'columna'), $prefijo (prefijo de los ids: así no chocan si conviven en la página),
+     $estilo ('dialogo' | 'hoy'). Opcionales: $valor (lo elegido), $contextos (agrupados por tipo, como Contexto::opcionesPorTipo()), $columnasOrden.
+     El contexto viaja como contexto_id en el modal y como tarea_contexto_id en la nota rápida (ahí contexto_id es el destino de la nota). --}}
 @php
     $enDialogo = $estilo === 'dialogo';
-    $nombre = ['proyecto' => 'proyecto', 'prioridad' => 'prioridad', 'columna' => 'columna_id'][$campo];
+    $nombre = ['contexto' => $enDialogo ? 'contexto_id' : 'tarea_contexto_id', 'prioridad' => 'prioridad', 'columna' => 'columna_id'][$campo];
     $id = $prefijo.'-'.$campo;
     $idError = $prefijo.'-error-'.$nombre;
     $mensaje = $enDialogo ? null : $errors->first($nombre);
@@ -11,21 +12,16 @@
     $columnaInicial = $campo === 'columna'
         ? ($columnasOrden->firstWhere('categoria', \App\Enums\EstadoTarea::Pendiente) ?? $columnasOrden->first())
         : null;
-    $claseControl = ($campo === 'proyecto' ? 'form-control' : 'form-select');
-    $claseControl = $enDialogo ? $claseControl : 'hoy-entrada'.($mensaje ? ' es-invalido' : '');
+    $claseControl = $enDialogo ? 'form-select' : 'hoy-entrada'.($mensaje ? ' es-invalido' : '');
 @endphp
 <div class="{{ $enDialogo ? 'dialogo-campo' : 'hoy-campo hoy-campo-tarea hoy-campo-tarea-'.$campo }}">
     @switch($campo)
-        @case('proyecto')
-            <label for="{{ $id }}" class="{{ $enDialogo ? 'dialogo-etiqueta' : '' }}">Proyecto @if ($enDialogo)<span class="dialogo-opcional">(opcional)</span>@endif</label>
-            <input type="text" id="{{ $id }}" name="proyecto" class="{{ $claseControl }}" maxlength="255" list="{{ $prefijo }}-lista-proyectos" autocomplete="off"
-                   @unless ($enDialogo) value="{{ $valor }}" @endunless
-                   @if ($mensaje) aria-invalid="true" @endif aria-describedby="{{ $idError }}">
-            <datalist id="{{ $prefijo }}-lista-proyectos">
-                @foreach ($proyectos as $proyecto)
-                    <option value="{{ $proyecto }}">
-                @endforeach
-            </datalist>
+        @case('contexto')
+            <label for="{{ $id }}" class="{{ $enDialogo ? 'dialogo-etiqueta' : '' }}">Contexto @if ($enDialogo)<span class="dialogo-opcional">(opcional)</span>@endif</label>
+            <select id="{{ $id }}" name="{{ $nombre }}" class="{{ $claseControl }}" @if ($mensaje) aria-invalid="true" @endif aria-describedby="{{ $idError }}">
+                <option value="">Sin contexto</option>
+                @include('tareas._opciones-contexto', ['grupos' => $contextos, 'elegido' => $enDialogo ? null : $valor, 'conColor' => $enDialogo, 'colores' => $colores ?? null])
+            </select>
             @break
         @case('prioridad')
             <label for="{{ $id }}" class="{{ $enDialogo ? 'dialogo-etiqueta' : '' }}">Prioridad</label>

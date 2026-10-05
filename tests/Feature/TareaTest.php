@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
+use App\Models\Contexto;
 use App\Models\Tarea;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,10 +13,12 @@ class TareaTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_el_listado_se_muestra_y_filtra_por_estado_y_proyecto(): void
+    public function test_el_listado_se_muestra_y_filtra_por_estado_y_contexto(): void
     {
-        Tarea::factory()->create(['titulo' => 'Tarea A', 'proyecto' => 'Tesis', 'estado' => EstadoTarea::Pendiente]);
-        Tarea::factory()->create(['titulo' => 'Tarea B', 'proyecto' => 'Casa', 'estado' => EstadoTarea::Completada]);
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
+        $casa = Contexto::factory()->entorno()->create(['nombre' => 'Casa']);
+        Tarea::factory()->create(['titulo' => 'Tarea A', 'contexto_id' => $tesis->id, 'estado' => EstadoTarea::Pendiente]);
+        Tarea::factory()->create(['titulo' => 'Tarea B', 'contexto_id' => $casa->id, 'estado' => EstadoTarea::Completada]);
 
         $this->get(route('tareas.index'))->assertOk()->assertSee('aria-label="Tarea A"', false)->assertSee('aria-label="Tarea B"', false);
 
@@ -25,21 +29,56 @@ class TareaTest extends TestCase
         $this->get(route('tareas.index', ['estado' => 'completada']))
             ->assertOk()->assertSee('aria-label="Tarea B"', false)->assertDontSee('aria-label="Tarea A"', false);
 
-        $this->get(route('tareas.index', ['proyecto' => 'Tesis']))
+        $this->get(route('tareas.index', ['contexto' => $tesis->id]))
             ->assertOk()->assertSee('aria-label="Tarea A"', false)->assertDontSee('aria-label="Tarea B"', false);
     }
 
     public function test_se_puede_crear_una_tarea(): void
     {
+        $facultad = Contexto::factory()->create(['nombre' => 'Facultad']);
+
         $this->post(route('tareas.store'), [
             'titulo' => 'Estudiar Laravel',
-            'proyecto' => 'Facultad',
+            'contexto_id' => $facultad->id,
             'fecha_limite' => '2026-10-15',
             'prioridad' => 'alta',
             'estado' => 'pendiente',
         ])->assertRedirect(route('tareas.index'));
 
-        $this->assertDatabaseHas('tareas', ['titulo' => 'Estudiar Laravel', 'prioridad' => 'alta']);
+        $this->assertDatabaseHas('tareas', ['titulo' => 'Estudiar Laravel', 'prioridad' => 'alta', 'contexto_id' => $facultad->id]);
+    }
+
+    public function test_no_se_puede_asignar_el_contexto_de_otro_usuario(): void
+    {
+        $ajeno = Contexto::factory()->create(['nombre' => 'Ajeno']);
+        Contexto::withoutGlobalScopes()->whereKey($ajeno->id)->update(['user_id' => User::factory()->create()->id]);
+
+        $this->from(route('tareas.create'))
+            ->post(route('tareas.store'), ['titulo' => 'X', 'contexto_id' => $ajeno->id, 'prioridad' => 'media', 'estado' => 'pendiente'])
+            ->assertRedirect(route('tareas.create'))
+            ->assertSessionHasErrors('contexto_id');
+        $this->assertDatabaseCount('tareas', 0);
+
+        $tarea = Tarea::factory()->create();
+        $this->patch(route('tareas.update', $tarea), ['titulo' => 'X', 'contexto_id' => $ajeno->id, 'prioridad' => 'media', 'estado' => 'pendiente'])
+            ->assertSessionHasErrors('contexto_id');
+        $this->assertNull($tarea->fresh()->contexto_id);
+    }
+
+    public function test_el_formulario_ofrece_los_cuatro_tipos_de_contexto_y_la_tarea_guarda_el_elegido(): void
+    {
+        foreach (['entorno', 'materia', 'tema', 'proyecto'] as $tipo) {
+            Contexto::factory()->state(['tipo' => $tipo, 'nombre' => "Uno de {$tipo}"])->create();
+        }
+
+        $this->get(route('tareas.create'))->assertOk()
+            ->assertSee('<optgroup label="Entorno">', false)->assertSee('<optgroup label="Materia">', false)
+            ->assertSee('<optgroup label="Tema">', false)->assertSee('<optgroup label="Proyecto">', false)
+            ->assertSee('Uno de proyecto');
+
+        $tarea = Tarea::factory()->create(['contexto_id' => Contexto::where('tipo', 'proyecto')->value('id')]);
+        $html = $this->get(route('tareas.edit', $tarea))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<option value="'.$tarea->contexto_id.'"\s+selected\s*>Uno de proyecto<\/option>/', $html);
     }
 
     public function test_la_creacion_se_valida_con_mensajes_en_espanol(): void

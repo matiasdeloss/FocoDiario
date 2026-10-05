@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FiltroNotasRequest;
 use App\Http\Requests\MoverNotaRequest;
 use App\Http\Requests\NotaRequest;
-use App\Enums\ColorNota;
+use App\Enums\ColorActividad;
 use App\Models\Contexto;
 use App\Models\Nota;
 use App\Support\Aviso;
+use App\Support\ColoresDeContexto;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +24,7 @@ class NotaController extends Controller
         $datos = $request->validated();
         $filtro = $datos['contexto'] ?? null;
         $busqueda = trim((string) ($datos['q'] ?? ''));
-        $color = isset($datos['color']) ? ColorNota::tryFrom($datos['color']) : null;
+        $color = isset($datos['color']) ? ColorActividad::tryFrom($datos['color']) : null;
         $soloFijadas = (bool) ($datos['fijadas'] ?? false);
         $contextoFiltro = null;
 
@@ -58,6 +59,7 @@ class NotaController extends Controller
 
         return view('notas.index', [
             'notas' => $notas->get(),
+            'colores' => ColoresDeContexto::delUsuario(),
             'destinos' => $destinos,
             'filtro' => $filtro,
             'contextoFiltro' => $contextoFiltro,

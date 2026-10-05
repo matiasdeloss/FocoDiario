@@ -18,13 +18,15 @@
         $tarea->fecha_limite->eq($hoyTarjeta->copy()->addDay()) => 'Mañana',
         default => rtrim($tarea->fecha_limite->locale('es')->isoFormat($tarea->fecha_limite->year === $hoyTarjeta->year ? 'D MMM' : 'D MMM YYYY'), '.'),
     };
+    // Color propio o, si no tiene, el del contexto (o su ancestro): $colores viene del listado para no consultar por tarjeta.
+    $colorVisible = $tarea->colorVisible($colores ?? null);
 @endphp
 {{-- Un clic en la tarjeta (fuera de sus botones) abre el modal para editarla: comentario, color, etc. (tablero.js). --}}
-<article class="tarea-tarjeta prioridad-{{ $tarea->prioridad->value }} @if ($tarea->color) con-color @endif" id="tarea-{{ $tarea->id }}" draggable="true"
-         @if ($tarea->color) style="--tarjeta-fondo: {{ $tarea->color->fondo() }}; --tarjeta-marca: {{ $tarea->color->marca() }}" @endif
+<article class="tarea-tarjeta prioridad-{{ $tarea->prioridad->value }} @if ($colorVisible) con-color @endif" id="tarea-{{ $tarea->id }}" draggable="true"
+         @if ($colorVisible) style="--tarjeta-fondo: {{ $colorVisible->fondo() }}; --tarjeta-marca: {{ $colorVisible->marca() }}" @endif
          data-id="{{ $tarea->id }}" data-estado="{{ $tarea->estado->value }}" data-titulo="{{ $tarea->titulo }}"
-         data-prioridad="{{ $tarea->prioridad->value }}" data-proyecto="{{ $tarea->proyecto }}"
-         data-buscar="{{ mb_strtolower($tarea->titulo.' '.$tarea->proyecto) }}"
+         data-prioridad="{{ $tarea->prioridad->value }}" data-contexto="{{ $tarea->contexto_id }}"
+         data-buscar="{{ mb_strtolower($tarea->titulo.' '.$tarea->contexto?->nombre) }}"
          @if ($estadoFecha === 'vencida') data-pasada="1" @endif>
     <div class="tarea-titulo {{ $completada ? 'texto-tachado' : 'fw-medium' }}" data-titulo-texto>{{ $tarea->titulo }}</div>
     @if (filled($tarea->descripcion))
@@ -32,8 +34,8 @@
     @endif
     <div class="tarea-meta">
         <span class="k-chip badge-prioridad-{{ $tarea->prioridad->value }}" title="Prioridad {{ mb_strtolower($tarea->prioridad->etiqueta()) }}"><span class="k-chip-punto" aria-hidden="true"></span>{{ $tarea->prioridad->etiqueta() }}</span>
-        @if ($tarea->proyecto)
-            <span class="k-chip k-chip-proyecto"><i class="bi bi-folder2" aria-hidden="true"></i><span class="k-chip-texto">{{ $tarea->proyecto }}</span></span>
+        @if ($tarea->contexto)
+            <span class="k-chip k-chip-contexto" title="{{ $tarea->contexto->tipo->etiqueta() }}"><i class="bi bi-folder2" aria-hidden="true"></i><span class="k-chip-texto">{{ $tarea->contexto->nombre }}</span></span>
         @endif
         @if ($tarea->fecha_limite)
             <span class="k-chip k-chip-fecha k-fecha-{{ $estadoFecha }}" title="Fecha límite: {{ $tarea->fecha_limite->locale('es')->isoFormat('dddd D [de] MMMM') }}">

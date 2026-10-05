@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
+use App\Models\Contexto;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,10 +51,12 @@ class TareasUnificadasTest extends TestCase
         $this->assertSame(['tareas' => 1, 'recordatorios' => 1, 'vencidas' => 2], $resumen);
     }
 
-    public function test_los_filtros_de_tipo_estado_prioridad_y_proyecto(): void
+    public function test_los_filtros_de_tipo_estado_prioridad_y_contexto(): void
     {
-        Tarea::factory()->create(['titulo' => 'Alta tesis', 'prioridad' => 'alta', 'proyecto' => 'Tesis']);
-        Tarea::factory()->create(['titulo' => 'Baja casa', 'prioridad' => 'baja', 'proyecto' => 'Casa']);
+        $tesis = Contexto::factory()->proyecto()->create(['nombre' => 'Tesis']);
+        $casa = Contexto::factory()->entorno()->create(['nombre' => 'Casa']);
+        Tarea::factory()->create(['titulo' => 'Alta tesis', 'prioridad' => 'alta', 'contexto_id' => $tesis->id]);
+        Tarea::factory()->create(['titulo' => 'Baja casa', 'prioridad' => 'baja', 'contexto_id' => $casa->id]);
         Tarea::factory()->create(['titulo' => 'Vieja hecha', 'estado' => EstadoTarea::Completada]);
         Recordatorio::factory()->create(['tarea_id' => null, 'mensaje' => 'Un recordatorio']);
 
@@ -64,10 +67,10 @@ class TareasUnificadasTest extends TestCase
         $this->get(route('tareas.index', ['estado' => 'hechas']))->assertOk()
             ->assertSee($this->fila('Vieja hecha'), false)->assertDontSee($this->fila('Alta tesis'), false);
 
-        // Prioridad y proyecto son de las tareas: los recordatorios no entran.
+        // Prioridad y contexto son de las tareas: los recordatorios no entran.
         $this->get(route('tareas.index', ['prioridad' => 'alta']))->assertOk()
             ->assertSee($this->fila('Alta tesis'), false)->assertDontSee($this->fila('Baja casa'), false)->assertDontSee($this->fila('Un recordatorio'), false);
-        $this->get(route('tareas.index', ['proyecto' => 'Casa']))->assertOk()
+        $this->get(route('tareas.index', ['contexto' => $casa->id]))->assertOk()
             ->assertSee($this->fila('Baja casa'), false)->assertDontSee($this->fila('Alta tesis'), false);
 
         $this->get(route('tareas.index', ['tipo' => 'otro']))->assertSessionHasErrors('tipo');

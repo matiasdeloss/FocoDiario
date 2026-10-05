@@ -33,6 +33,29 @@
 .arbol-fila:last-child { border-bottom: 0; }
 .arbol-nombre { display: flex; flex-wrap: wrap; align-items: center; gap: var(--foco-espacio-2); min-width: 0; }
 .arbol-color { width: 0.75rem; height: 0.75rem; border-radius: 50%; flex: none; }
+.arbol-color.es-heredado { opacity: 0.55; }
+
+/* Explicación de los contextos: qué son y qué significa cada tipo */
+.contextos-ayuda { margin-bottom: var(--foco-espacio-4); padding: 0 28px; }
+.contextos-ayuda summary {
+    display: flex; align-items: center; gap: var(--foco-espacio-2);
+    min-height: 48px; cursor: pointer; font-weight: 600; list-style: none;
+}
+.contextos-ayuda summary::-webkit-details-marker { display: none; }
+.contextos-ayuda summary::before {
+    content: ""; flex: none; width: 0.5rem; height: 0.5rem;
+    border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg); transition: transform 150ms;
+}
+.contextos-ayuda[open] summary::before { transform: rotate(45deg); }
+.contextos-ayuda summary:focus-visible { outline: 2px solid var(--foco-acento); outline-offset: 2px; border-radius: var(--radius-sm, 6px); }
+.contextos-ayuda[open] { padding-bottom: var(--foco-espacio-4); }
+.contextos-ayuda p { margin: 0 0 var(--foco-espacio-3); color: var(--foco-texto-suave); }
+@media (prefers-reduced-motion: reduce) { .contextos-ayuda summary::before { transition: none; } }
+.contextos-tipos { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--foco-espacio-3); margin: 0; }
+.contextos-tipos dt { margin-bottom: 2px; }
+.contextos-tipos dd { margin: 0; font-size: 0.875rem; color: var(--foco-texto-suave); }
+@media (max-width: 575.98px) { .contextos-ayuda { padding-inline: var(--foco-espacio-4); } }
 
 @media (prefers-reduced-motion: reduce) {
     .nota-rapida-aviso { animation: foco-aviso-sale 400ms ease 3s forwards; }

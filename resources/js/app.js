@@ -5,6 +5,7 @@ import './dialogos-tablero.js';
 import './pomodoro-widget.js';
 import './entrada-scroll.js';
 import './tema.js';
+import './color-heredado.js';
 import { aviso, escucharAvisosDelServidor, prepararAvisosFlash } from './avisos.js';
 import { activarFormulariosConConfirmacion, confirmar } from './confirmar.js';
 import { activarCuenta } from './cuenta.js';

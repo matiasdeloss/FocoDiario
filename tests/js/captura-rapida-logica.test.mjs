@@ -43,11 +43,11 @@ prueba('chipVisible y tipoValido', () => {
     assert.equal(tipoValido(null), 'nota');
 });
 
-prueba('resumenTarea: prioridad distinta de media y proyecto', () => {
-    assert.equal(resumenTarea({ prioridad: 'media', etiquetaPrioridad: 'Media', proyecto: '' }), '');
-    assert.equal(resumenTarea({ prioridad: 'alta', etiquetaPrioridad: 'Alta', proyecto: '' }), 'Alta');
-    assert.equal(resumenTarea({ prioridad: 'alta', etiquetaPrioridad: 'Alta', proyecto: ' Tesis ' }), 'Alta · Tesis');
-    assert.equal(resumenTarea({ proyecto: 'Tesis' }), 'Tesis');
+prueba('resumenTarea: prioridad distinta de media y contexto', () => {
+    assert.equal(resumenTarea({ prioridad: 'media', etiquetaPrioridad: 'Media', contexto: '' }), '');
+    assert.equal(resumenTarea({ prioridad: 'alta', etiquetaPrioridad: 'Alta', contexto: '' }), 'Alta');
+    assert.equal(resumenTarea({ prioridad: 'alta', etiquetaPrioridad: 'Alta', contexto: ' Tesis ' }), 'Alta · Tesis');
+    assert.equal(resumenTarea({ contexto: 'Tesis' }), 'Tesis');
     assert.equal(resumenTarea(), '');
 });
 

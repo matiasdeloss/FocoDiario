@@ -42,10 +42,10 @@
 .t-buscar input::placeholder { color: var(--color-neutral-600); }
 .t-buscar input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
-/* Menús desplegables (Nueva… y proyecto): details nativo con panel flotante */
-.t-nuevo, .t-proyectos { position: relative; }
-.t-nuevo > summary, .t-proyectos > summary { list-style: none; cursor: pointer; }
-.t-nuevo > summary::-webkit-details-marker, .t-proyectos > summary::-webkit-details-marker { display: none; }
+/* Menús desplegables (Nueva… y contexto): details nativo con panel flotante */
+.t-nuevo, .t-contextos { position: relative; }
+.t-nuevo > summary, .t-contextos > summary { list-style: none; cursor: pointer; }
+.t-nuevo > summary::-webkit-details-marker, .t-contextos > summary::-webkit-details-marker { display: none; }
 .t-nuevo-flecha { font-size: 10px; transition: transform 150ms; }
 details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
 .t-menu {
@@ -75,6 +75,7 @@ details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
     font-size: 14px;
     text-decoration: none;
 }
+.t-menu-grupo { padding: 6px 12px 2px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-neutral-700); }
 .t-menu-item:hover { background: var(--color-neutral-200); color: var(--color-text); }
 .t-menu-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 .t-menu-item[aria-current="true"] { font-weight: 600; background: var(--color-accent-200); color: var(--color-accent-800); }
@@ -233,7 +234,7 @@ details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
 /* En pantallas anchas los datos de la derecha entran en las columnas de la fila */
 .t-meta { display: contents; }
 .t-tipo { grid-column: 3; grid-row: 1; }
-.t-proyecto { grid-column: 4; grid-row: 1; }
+.t-contexto { grid-column: 4; grid-row: 1; }
 .t-fecha { grid-column: 5; grid-row: 1; }
 .t-acciones { grid-column: 6; grid-row: 1; }
 
@@ -250,7 +251,7 @@ details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
     font-weight: 600;
     line-height: 1.6;
 }
-.t-proyecto {
+.t-contexto {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -258,7 +259,7 @@ details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
     font-size: 12px;
     color: var(--color-neutral-800);
 }
-.t-proyecto-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t-contexto-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .t-fecha { justify-self: end; font-size: 12px; color: var(--color-neutral-700); white-space: nowrap; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .t-fecha.es-vencida { color: var(--color-danger-text); font-weight: 600; }
 .t-fila.es-hecha .t-fecha.es-vencida { color: inherit; font-weight: inherit; }
@@ -287,7 +288,7 @@ details[open] > summary > .t-nuevo-flecha { transform: rotate(180deg); }
     .t-cuerpo { grid-column: 2; grid-row: 1; }
     .t-acciones { grid-column: 3; grid-row: 1; }
     .t-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; grid-column: 2 / -1; grid-row: 2; padding-bottom: 4px; }
-    .t-tipo, .t-proyecto, .t-fecha { grid-column: auto; grid-row: auto; justify-self: auto; }
+    .t-tipo, .t-contexto, .t-fecha { grid-column: auto; grid-row: auto; justify-self: auto; }
     .t-buscar { flex: 1 1 100%; width: auto; }
     .t-cab-acciones { width: 100%; }
     .t-cab-acciones .btn { flex: 1 1 auto; }

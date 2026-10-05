@@ -1,6 +1,7 @@
 {{-- Campos compartidos por el modal y las páginas de crear/editar nota.
      Requiere: $nota, $destinos, $p (prefijo de ids). En el modal los valores los pone notas.js. --}}
 @php($colorActual = old('color', $nota->color?->value ?? ''))
+@php($coloresCtx = $colores ?? \App\Support\ColoresDeContexto::delUsuario())
 <div>
     <label for="{{ $p }}-titulo" class="dialogo-etiqueta">Título <span class="dialogo-opcional">(opcional)</span></label>
     <input type="text" id="{{ $p }}-titulo" name="titulo" value="{{ old('titulo', $nota->titulo) }}" maxlength="255" autocomplete="off"
@@ -21,7 +22,9 @@
         <select id="{{ $p }}-contexto" name="contexto_id" class="form-select @error('contexto_id') is-invalid @enderror" aria-describedby="{{ $p }}-error-contexto_id">
             <option value="">Bandeja de entrada</option>
             @foreach ($destinos as $id => $ruta)
-                <option value="{{ $id }}" @selected((string) old('contexto_id', $nota->contexto_id) === (string) $id)>{{ $ruta }}</option>
+                @php($heredado = $coloresCtx->visible($id))
+                <option value="{{ $id }}" @selected((string) old('contexto_id', $nota->contexto_id) === (string) $id)
+                        @if ($heredado) data-color-heredado="{{ $heredado->color->clave() }}" data-color-origen="{{ $heredado->origen }}" @endif>{{ $ruta }}</option>
             @endforeach
         </select>
         <div class="dialogo-error" id="{{ $p }}-error-contexto_id" data-error="contexto_id">@error('contexto_id'){{ $message }}@enderror</div>
@@ -37,12 +40,12 @@
 <fieldset class="dialogo-grupo">
     <legend>Color</legend>
     <div class="notas-colores">
-        <label class="nota-color" title="Sin color">
+        <label class="nota-color" title="Sin color (usa el del contexto)">
             <input type="radio" name="color" value="" @checked($colorActual === '')>
             <span class="nota-color-punto nota-color-ninguno" aria-hidden="true"></span>
-            <span class="visually-hidden">Sin color</span>
+            <span class="visually-hidden">Sin color (usa el del contexto)</span>
         </label>
-        @foreach (\App\Enums\ColorNota::cases() as $c)
+        @foreach (\App\Enums\ColorActividad::cases() as $c)
             <label class="nota-color" title="{{ $c->etiqueta() }}" style="--nota-fondo: {{ $c->fondo() }}; --nota-marca: {{ $c->marca() }}">
                 <input type="radio" name="color" value="{{ $c->value }}" @checked($colorActual === $c->value)>
                 <span class="nota-color-punto" aria-hidden="true"></span>
@@ -50,6 +53,7 @@
             </label>
         @endforeach
     </div>
+    @include('partials.pista-color', ['visible' => $colorActual === '' && $nota->contexto_id !== null ? $coloresCtx->visible((int) old('contexto_id', $nota->contexto_id)) : null])
     <div class="dialogo-error" data-error="color">@error('color'){{ $message }}@enderror</div>
 </fieldset>
 

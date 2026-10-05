@@ -166,11 +166,11 @@ class NotaTest extends TestCase
 
     public function test_se_filtran_las_notas_por_busqueda_color_y_fijadas(): void
     {
-        Nota::factory()->create(['titulo' => 'Vectores', 'contenido' => 'Producto escalar', 'color' => 'salvia', 'fijada' => true]);
-        Nota::factory()->create(['titulo' => 'Compras', 'contenido' => 'Leche', 'color' => 'durazno', 'fijada' => false]);
+        Nota::factory()->create(['titulo' => 'Vectores', 'contenido' => 'Producto escalar', 'color' => '#728a58', 'fijada' => true]);
+        Nota::factory()->create(['titulo' => 'Compras', 'contenido' => 'Leche', 'color' => '#c0677a', 'fijada' => false]);
 
         $this->get(route('notas.index', ['q' => 'escalar']))->assertOk()->assertSee('Vectores')->assertDontSee('Compras');
-        $this->get(route('notas.index', ['color' => 'durazno']))->assertOk()->assertSee('Compras')->assertDontSee('Vectores');
+        $this->get(route('notas.index', ['color' => '#c0677a']))->assertOk()->assertSee('Compras')->assertDontSee('Vectores');
         $this->get(route('notas.index', ['fijadas' => 1]))->assertOk()->assertSee('Vectores')->assertDontSee('Compras');
         $this->get(route('notas.index', ['q' => 'nada']))->assertOk()->assertSee('Ninguna nota coincide');
         $this->get(route('notas.index', ['color' => 'violeta']))->assertSessionHasErrors('color');
@@ -181,7 +181,7 @@ class NotaTest extends TestCase
         $this->postJson(route('notas.store'), ['titulo' => '', 'contenido' => ''])
             ->assertStatus(422)->assertJsonValidationErrors('contenido');
 
-        $this->postJson(route('notas.store'), ['titulo' => 'Idea', 'contenido' => 'Texto', 'color' => 'oliva', 'fijada' => '1'])
+        $this->postJson(route('notas.store'), ['titulo' => 'Idea', 'contenido' => 'Texto', 'color' => '#78802a', 'fijada' => '1'])
             ->assertOk()->assertJson(['ok' => true]);
         $nota = Nota::firstOrFail();
         $this->assertTrue($nota->fijada);

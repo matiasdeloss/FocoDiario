@@ -13,7 +13,7 @@
 @endphp
 <li id="{{ $tipo }}-{{ $modelo->id }}" class="t-fila tipo-{{ $tipo }} {{ $hecha ? 'es-hecha' : '' }}"
     data-tipo="{{ $tipo }}" data-id="{{ $modelo->id }}" data-momento="{{ $grupo }}" data-orden="{{ $item->cuando?->getTimestamp() }}"
-    data-buscar="{{ mb_strtolower($item->titulo.' '.$item->proyecto.' '.$item->detalle) }}">
+    data-buscar="{{ mb_strtolower($item->titulo.' '.$item->contexto.' '.$item->detalle) }}">
     <form method="POST" action="{{ $hecha ? $urlDeshacer : $urlHecho }}" class="t-check-form">
         @csrf
         @method('PATCH')
@@ -36,10 +36,10 @@
     <div class="t-meta">
         <span class="t-tipo"><span class="t-punto" aria-hidden="true"></span>{{ $esTarea ? 'Tarea' : 'Recordatorio' }}</span>
         @if ($esTarea)
-            <span class="t-proyecto" title="Prioridad {{ mb_strtolower($modelo->prioridad->etiqueta()) }}">
+            <span class="t-contexto" title="Prioridad {{ mb_strtolower($modelo->prioridad->etiqueta()) }}">
                 <span class="t-prio t-prio-{{ $item->prioridad }}" aria-hidden="true"></span>
                 <span class="visually-hidden">Prioridad {{ mb_strtolower($modelo->prioridad->etiqueta()) }}.</span>
-                @if ($item->proyecto)<span class="t-proyecto-nombre">{{ $item->proyecto }}</span>@endif
+                @if ($item->contexto)<span class="t-contexto-nombre">{{ $item->contexto }}</span>@endif
             </span>
         @endif
         @if ($etiquetaFecha !== '')

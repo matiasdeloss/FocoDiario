@@ -1,4 +1,4 @@
-{{-- Formulario compartido de crear y editar tarea. Requiere: $tarea, $prioridades, $estados, $proyectos, $accion, $metodo --}}
+{{-- Formulario compartido de crear y editar tarea. Requiere: $tarea, $prioridades, $estados, $contextos, $accion, $metodo --}}
 <form method="POST" action="{{ $accion }}" novalidate>
     @csrf
     @if ($metodo !== 'POST')
@@ -21,15 +21,12 @@
 
     <div class="row g-3 mb-3">
         <div class="col-md-6">
-            <label for="proyecto" class="form-label">Proyecto <span class="text-secondary fw-normal">(opcional)</span></label>
-            <input type="text" id="proyecto" name="proyecto" value="{{ old('proyecto', $tarea->proyecto) }}"
-                   class="form-control @error('proyecto') is-invalid @enderror" maxlength="255" list="lista-proyectos">
-            <datalist id="lista-proyectos">
-                @foreach ($proyectos as $proyecto)
-                    <option value="{{ $proyecto }}">
-                @endforeach
-            </datalist>
-            @error('proyecto') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <label for="contexto_id" class="form-label">Contexto <span class="text-secondary fw-normal">(opcional)</span></label>
+            <select id="contexto_id" name="contexto_id" class="form-select @error('contexto_id') is-invalid @enderror">
+                <option value="">Sin contexto</option>
+                @include('tareas._opciones-contexto', ['grupos' => $contextos, 'elegido' => old('contexto_id', $tarea->contexto_id)])
+            </select>
+            @error('contexto_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-6">
             <label for="fecha_limite" class="form-label">Fecha límite <span class="text-secondary fw-normal">(opcional)</span></label>

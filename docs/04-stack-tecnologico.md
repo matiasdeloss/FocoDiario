@@ -38,17 +38,17 @@ FocoDiario/
 ## Entidades iniciales
 Tomadas de `02-requisitos-y-funcionalidades.md`:
 - `categorias`: nombre, tipo (productiva / ocio / descanso).
-- `tareas`: título, proyecto, fecha límite, prioridad, estado.
+- `tareas`: título, contexto opcional, fecha límite, prioridad, estado.
 - `recordatorios`: fecha y hora, mensaje, tarea opcional.
 - `bloques_tiempo`: inicio, fin, categoría, tarea opcional, origen (manual / pomodoro), concentración (1 a 5, fase 3).
-- `contextos`: nombre, tipo, contexto padre, color.
+- `contextos`: nombre, tipo (entorno / materia / tema / proyecto), contexto padre, color.
 - `notas`: contenido, contexto opcional, fecha opcional, fijada.
 - `sesiones_estudio` e `intervalos_estudio`: sesiones de Pomodoro y sus fases (foco, descanso, tiempo libre).
 - (`dias` se creó y luego se eliminó: el sueño no se registra a mano.)
 
 ## Pantallas del MVP
 1. Hoy: nota rápida, recomendaciones, métricas, próximas tareas y recordatorios.
-2. Tareas: lista y alta, con filtros por proyecto y estado.
+2. Tareas: lista y alta, con filtros por contexto y estado.
 3. Recordatorios.
 4. Registro del día: bloques y resumen de horas.
 5. Notas y Contextos.
@@ -66,7 +66,8 @@ Tomadas de `02-requisitos-y-funcionalidades.md`:
 8. [x] Calendario, agenda semanal y tablero kanban.
 9. [x] Modo invitado, cuentas y datos por usuario.
 10. [x] Publicación en Render con PostgreSQL en Neon.
-11. [ ] Contexto en las tareas, estadísticas semanales y exportación de datos desde la app.
+11. [x] Contexto en las tareas (reemplaza el texto libre `proyecto`; cuarto tipo de contexto `proyecto`).
+12. [ ] Estadísticas semanales y exportación de datos desde la app.
 
 ## Ubicación del proyecto (hecho)
 El código vive en `Proyectos\FocoDiario`. Herd lo sirve en `http://focodiario.test` mediante `herd link focodiario`. La base `focodiario` está en el MySQL de Laragon (usuario `root`, sin contraseña, solo local) y las migraciones base ya corrieron.

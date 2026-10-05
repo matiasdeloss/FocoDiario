@@ -21,6 +21,27 @@ class ContextoTest extends TestCase
             ->assertOk()->assertSeeInOrder(['Carrera', 'Programación 2']);
     }
 
+    public function test_la_vista_explica_para_que_sirven_los_contextos_y_cada_tipo(): void
+    {
+        // También sin contextos: el estado vacío ayuda a empezar y la explicación va abierta.
+        $vacio = $this->get(route('contextos.index'))->assertOk()
+            ->assertSee('¿Para qué sirven los contextos?')
+            ->assertSee('agrupa tus notas, tareas, sesiones de estudio y actividades de la agenda')
+            ->assertSeeInOrder(['Entorno', 'Materia', 'Tema', 'Proyecto'])
+            ->assertSee('Un área grande de tu vida')
+            ->assertSee('Algo con un objetivo y un final')
+            ->assertSee('Todavía no hay contextos. Creá el primero')
+            ->getContent();
+        $this->assertMatchesRegularExpression('/<details class="tarjeta contextos-ayuda"\s+open\s*>\s*<summary>/', $vacio);
+
+        // Con contextos va cerrada: no ocupa lugar, pero se puede abrir.
+        Contexto::factory()->create(['nombre' => 'Programación 2']);
+        $lleno = $this->get(route('contextos.index'))->assertOk()
+            ->assertSee('¿Para qué sirven los contextos?')->assertDontSee('Todavía no hay contextos')->getContent();
+        $this->assertDoesNotMatchRegularExpression('/<details class="tarjeta contextos-ayuda"\s+open/', $lleno);
+        $this->assertMatchesRegularExpression('/<details class="tarjeta contextos-ayuda"\s*>\s*<summary>/', $lleno);
+    }
+
     public function test_se_crea_un_contexto_con_padre_opcional(): void
     {
         $carrera = Contexto::factory()->entorno()->create(['nombre' => 'Carrera']);
@@ -30,6 +51,17 @@ class ContextoTest extends TestCase
         ])->assertRedirect(route('contextos.index'));
 
         $this->assertDatabaseHas('contextos', ['nombre' => 'Programación 2', 'contexto_padre_id' => $carrera->id]);
+    }
+
+    public function test_se_crea_un_contexto_de_tipo_proyecto(): void
+    {
+        $this->get(route('contextos.create'))->assertOk()->assertSee('<option value="proyecto"', false);
+
+        $this->post(route('contextos.store'), ['nombre' => 'Tesis', 'tipo' => 'proyecto'])
+            ->assertRedirect(route('contextos.index'));
+
+        $this->assertDatabaseHas('contextos', ['nombre' => 'Tesis', 'tipo' => 'proyecto', 'contexto_padre_id' => null]);
+        $this->get(route('contextos.index'))->assertOk()->assertSee('Proyecto');
     }
 
     public function test_el_nombre_es_unico_dentro_del_mismo_padre(): void

@@ -51,6 +51,18 @@ enum ColorActividad: string
         return 'actividad-'.$this->clave();
     }
 
+    /** Tono suave de fondo (variable CSS de organic.css, con su versión oscura) para teñir una nota o una tarjeta. */
+    public function fondo(): string
+    {
+        return 'var(--actividad-'.$this->clave().'-fondo)';
+    }
+
+    /** Tono de acento para la marca de una nota o una tarjeta. */
+    public function marca(): string
+    {
+        return 'var(--actividad-'.$this->clave().'-acento)';
+    }
+
     /** @return list<string> */
     public static function valores(): array
     {

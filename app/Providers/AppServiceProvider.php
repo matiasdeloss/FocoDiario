@@ -29,11 +29,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // El formulario de captura (también cuando HTMX lo devuelve solo) ofrece los campos propios de la tarea:
-        // proyectos en uso y columnas del tablero, una consulta cada uno por render.
+        // contextos y columnas del tablero, una consulta cada uno por render.
         View::composer('hoy._captura-form', function ($vista) {
             $datos = $vista->getData();
             $vista->with([
-                'proyectos' => $datos['proyectos'] ?? Tarea::proyectos(),
+                'contextosTarea' => $datos['contextosTarea'] ?? Contexto::opcionesPorTipo(),
                 'columnasOrden' => $datos['columnasOrden'] ?? ColumnaTablero::ordenadas()->get(),
             ]);
         });

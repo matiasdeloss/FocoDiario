@@ -1,10 +1,10 @@
 /*
  * Campos de "Editar completo" del calendario, que se editan en el lugar (sin ir a otra pantalla):
- *  - tarea: proyecto, prioridad y estado;
+ *  - tarea: contexto, prioridad y estado;
  *  - nota: materia, color y fijada;
  *  - recordatorio: tarea vinculada.
  * Los usa el panel de detalle (que ya muestra prioridad y color por su cuenta) y cada tarjeta del panel "Por ubicar".
- * Se dibujan en una grilla de dos columnas: proyecto y estado van de a pares; el resto, a lo ancho.
+ * Se dibujan en una grilla de dos columnas: el estado va de a pares; el resto, a lo ancho.
  * `guardar(cambio)` manda el cambio al servidor; quien llama vuelve a pintar con los datos que devuelve.
  */
 
@@ -106,38 +106,15 @@ export function pintarCamposExtra(contenedor, d, guardar, { conPrioridadYColor =
             agregar('prioridad', campo('Prioridad', botonesDeOpcion(d.prioridades ?? [], d.prioridad, (valor) => guardar({ prioridad: valor })), `${base}-prioridad`));
         }
 
-        const proyecto = document.createElement('input');
-        const lista = document.createElement('datalist');
-
-        lista.id = `${base}-proyectos`;
-        (d.proyectos ?? []).forEach((nombre) => lista.append(new Option(nombre)));
-        proyecto.type = 'text';
-        proyecto.className = 'form-control form-control-sm';
-        proyecto.maxLength = 255;
-        proyecto.placeholder = 'Sin proyecto';
-        proyecto.value = d.proyecto ?? '';
-        proyecto.setAttribute('list', lista.id);
-        proyecto.autocomplete = 'off';
-        proyecto.addEventListener('change', () => {
-            const valor = proyecto.value.trim();
-
-            if (valor !== (d.proyecto ?? '')) guardar({ proyecto: valor === '' ? null : valor });
-        });
-        proyecto.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); proyecto.blur(); }
-        });
-
-        const envoltura = campo('Proyecto', proyecto, `${base}-proyecto`);
-
-        envoltura.append(lista);
-        agregar('proyecto', envoltura);
+        agregar('contexto', campo('Contexto', selector(d.destinos ?? [], d.contexto_id, 'Sin contexto',
+            (valor) => guardar({ contexto_id: valor === null ? null : Number(valor) })), `${base}-contexto`));
 
         agregar('estado', campo('Estado', selector(d.estados ?? [], d.estado, null, (valor) => guardar({ estado: valor })), `${base}-estado`));
     }
 
     if (d.tipo === 'nota') {
         if (conPrioridadYColor) {
-            const colores = [{ valor: null, etiqueta: 'Sin color' }, ...(d.colores ?? []).map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca }))];
+            const colores = [{ valor: null, etiqueta: 'Sin color (usa el del contexto)' }, ...(d.colores ?? []).map((c) => ({ valor: c.valor, etiqueta: c.etiqueta, marca: c.marca }))];
 
             agregar('color', campo('Color', botonesDeOpcion(colores, d.color ?? null, (valor) => guardar({ color: valor }), true), `${base}-color`));
         }

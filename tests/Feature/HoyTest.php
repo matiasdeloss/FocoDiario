@@ -93,21 +93,21 @@ class HoyTest extends TestCase
                 'contenido' => 'Repasar matrices',
                 'contexto_id' => $contexto->id,
                 'fecha' => '2026-10-10',
-                'color' => 'salvia',
+                'color' => '#728a58',
                 'origen' => 'hoy',
             ])
             ->assertOk()
             ->assertAvisoHtmx('Nota guardada en Álgebra.')
             ->assertDontSee('Repasar matrices');
 
-        $this->assertDatabaseHas('notas', ['contenido' => 'Repasar matrices', 'contexto_id' => $contexto->id, 'color' => 'salvia']);
+        $this->assertDatabaseHas('notas', ['contenido' => 'Repasar matrices', 'contexto_id' => $contexto->id, 'color' => '#728a58']);
     }
 
-    public function test_la_nota_rapida_ofrece_cinco_colores_sin_contador(): void
+    public function test_la_nota_rapida_ofrece_sin_color_y_diez_colores_sin_contador(): void
     {
         $html = $this->get(route('hoy'))->assertOk()->assertDontSee('0 caracteres')->getContent();
 
-        $this->assertSame(5, substr_count($html, 'data-color-nota='));
+        $this->assertSame(11, substr_count($html, 'data-color-nota='));
         $this->assertStringContainsString('aria-label="Color de la nota o la tarea"', $html);
     }
 
@@ -127,18 +127,18 @@ class HoyTest extends TestCase
         $this->post(route('notas.store'), ['contenido' => 'Sin color', 'origen' => 'hoy'])->assertRedirect(route('hoy'));
         $this->assertNull(Nota::firstOrFail()->color);
 
-        Nota::factory()->create(['contenido' => 'Con color', 'color' => 'terracota']);
+        Nota::factory()->create(['contenido' => 'Con color', 'color' => '#c0663a']);
 
         $this->get(route('notas.index'))->assertOk()->assertSee('Terracota');
     }
 
     public function test_editar_una_nota_no_borra_su_color(): void
     {
-        $nota = Nota::factory()->create(['contenido' => 'Vieja', 'color' => 'oliva']);
+        $nota = Nota::factory()->create(['contenido' => 'Vieja', 'color' => '#78802a']);
 
         $this->put(route('notas.update', $nota), ['contenido' => 'Nueva'])->assertRedirect(route('notas.index'));
 
-        $this->assertSame('oliva', $nota->fresh()->color->value);
+        $this->assertSame('#78802a', $nota->fresh()->color->value);
     }
 
     public function test_alta_rapida_de_tarea_con_json_usa_prioridad_media_y_pendiente(): void

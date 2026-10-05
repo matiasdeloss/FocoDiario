@@ -16,7 +16,7 @@ final class ItemLista
         public readonly bool $hecha,
         public readonly ?Carbon $cuando,
         public readonly bool $conHora,
-        public readonly ?string $proyecto,
+        public readonly ?string $contexto,
         public readonly ?string $prioridad,
         public readonly ?string $detalle,
     ) {}
@@ -30,7 +30,7 @@ final class ItemLista
             $tarea->estado->value === 'completada',
             $tarea->fecha_limite?->copy()->startOfDay(),
             false,
-            $tarea->proyecto,
+            $tarea->contexto?->nombre,
             $tarea->prioridad->value,
             null,
         );

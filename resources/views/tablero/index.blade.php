@@ -23,12 +23,10 @@
                         <label for="k-buscar" class="visually-hidden">Buscar tarjetas</label>
                         <input type="search" id="k-buscar" placeholder="Buscar…" maxlength="100" autocomplete="off" data-filtro="q">
                     </div>
-                    <label for="k-proyecto" class="visually-hidden">Filtrar por proyecto</label>
-                    <select id="k-proyecto" class="form-select k-select" data-filtro="proyecto">
-                        <option value="">Todos los proyectos</option>
-                        @foreach ($proyectos as $proyecto)
-                            <option value="{{ $proyecto }}" @selected($proyectoInicial === $proyecto)>{{ $proyecto }}</option>
-                        @endforeach
+                    <label for="k-contexto" class="visually-hidden">Filtrar por contexto</label>
+                    <select id="k-contexto" class="form-select k-select" data-filtro="contexto">
+                        <option value="">Todos los contextos</option>
+                        @include('tareas._opciones-contexto', ['grupos' => $contextosFiltro, 'elegido' => $contextoInicial])
                     </select>
                     <label for="k-prioridad" class="visually-hidden">Filtrar por prioridad</label>
                     <select id="k-prioridad" class="form-select k-select" data-filtro="prioridad">
@@ -48,6 +46,6 @@
         @include('tablero._columnas')
     </div>
 
-    @include('tareas._dialogo-tarea', ['proyectos' => $proyectos])
+    @include('tareas._dialogo-tarea', ['contextos' => $contextos])
     @include('tablero._dialogos-columna')
 @endsection

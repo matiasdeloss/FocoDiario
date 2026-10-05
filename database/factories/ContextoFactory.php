@@ -26,6 +26,11 @@ class ContextoFactory extends Factory
         return $this->state(['tipo' => TipoContexto::Entorno]);
     }
 
+    public function proyecto(): static
+    {
+        return $this->state(['tipo' => TipoContexto::Proyecto]);
+    }
+
     public function tema(): static
     {
         return $this->state(['tipo' => TipoContexto::Tema]);

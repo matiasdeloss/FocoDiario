@@ -97,10 +97,11 @@ function actualizarChips(formulario) {
     formulario.querySelector('[data-chip-quitar="destino"]').hidden = !hayDestino;
 
     const prioridad = campo(formulario, 'prioridad');
+    const contextoTarea = campo(formulario, 'tarea_contexto_id');
     const resumen = resumenTarea({
         prioridad: prioridad.value,
         etiquetaPrioridad: prioridad.selectedOptions[0]?.textContent.trim() ?? '',
-        proyecto: campo(formulario, 'proyecto').value,
+        contexto: contextoTarea.value === '' ? '' : contextoTarea.selectedOptions[0]?.textContent.trim() ?? '',
     });
 
     chipDe(formulario, 'tarea').querySelector('[data-chip-texto]').textContent = resumen || 'Más detalles';
@@ -123,7 +124,9 @@ function aplicarTipo(formulario) {
 function teñirGuardar(formulario) {
     const color = campo(formulario, 'color').value;
 
-    if (color && tipoConColor(tipoElegido(formulario))) formulario.dataset.color = color;
+    const clave = formulario.querySelector(`[data-color-nota="${color}"]`)?.dataset.colorClave;
+
+    if (color && clave && tipoConColor(tipoElegido(formulario))) formulario.dataset.color = clave;
     else delete formulario.dataset.color;
 }
 
@@ -139,6 +142,7 @@ function fijarColor(formulario, color) {
 function descartar(formulario) {
     formulario.querySelectorAll('input[type="text"], input[type="date"], input[type="time"], textarea').forEach((entrada) => { entrada.value = ''; });
     campo(formulario, 'contexto_id').value = '';
+    campo(formulario, 'tarea_contexto_id').value = '';
     // Prioridad y columna vuelven a sus valores de siempre (el servidor marca cuáles son).
     ['prioridad', 'columna_id'].forEach((nombre) => {
         const select = campo(formulario, nombre);
@@ -164,7 +168,7 @@ document.addEventListener('input', (evento) => {
     if (!formulario) return;
 
     if (evento.target.matches('.hoy-cuaderno-hoja')) ajustarHoja(formulario);
-    if (evento.target.matches('[name="fecha"], [name="hora"], [name="proyecto"]')) actualizarChips(formulario);
+    if (evento.target.matches('[name="fecha"], [name="hora"]')) actualizarChips(formulario);
 });
 
 document.addEventListener('change', (evento) => {
@@ -175,7 +179,7 @@ document.addEventListener('change', (evento) => {
     if (evento.target.matches('[data-tipo]')) {
         guardarTipo(tipoElegido(formulario));
         aplicarTipo(formulario);
-    } else if (evento.target.matches('[name="fecha"], [name="hora"], [name="contexto_id"], [name="prioridad"], [name="proyecto"]')) {
+    } else if (evento.target.matches('[name="fecha"], [name="hora"], [name="contexto_id"], [name="prioridad"], [name="tarea_contexto_id"]')) {
         actualizarChips(formulario);
     }
 });
