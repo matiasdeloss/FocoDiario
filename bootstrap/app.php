@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Render termina HTTPS en su proxy: confiar en X-Forwarded-* para generar URLs https.
+        $middleware->trustProxies(at: '*');
         $middleware->web(append: [CabecerasSeguridad::class]);
         // El invitado tiene que existir antes de autenticar y de buscar los modelos de la URL (que se filtran por usuario).
         $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: IdentificarInvitado::class);
