@@ -135,8 +135,8 @@
 .tarea-tarjeta[hidden] { display: none; }
 .tarea-tarjeta:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 12%, transparent), var(--shadow-sm); }
 .tarea-tarjeta:active { cursor: grabbing; }
-.tarea-tarjeta.con-color { box-shadow: inset 4px 0 0 var(--tarjeta-marca), 0 0 0 1px color-mix(in srgb, var(--tarjeta-marca) 25%, transparent); }
-.tarea-tarjeta.con-color:hover { box-shadow: inset 4px 0 0 var(--tarjeta-marca), 0 0 0 1px color-mix(in srgb, var(--tarjeta-marca) 40%, transparent), var(--shadow-sm); }
+.tarea-tarjeta.con-color { box-shadow: 0 0 0 1px color-mix(in srgb, var(--tarjeta-marca) 25%, transparent); }
+.tarea-tarjeta.con-color:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--tarjeta-marca) 40%, transparent), var(--shadow-sm); }
 /* Adelanto del comentario: dos renglones como mucho. */
 .tarea-comentario {
     display: flex;
