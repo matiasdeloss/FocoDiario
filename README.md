@@ -25,7 +25,7 @@ Está pensada para estudiantes y para cualquiera que quiera ver en qué se le va
 ## Funcionalidades
 
 ### Hoy
-La jornada de un vistazo: una nota rápida para anotar al vuelo (como nota, tarea o recordatorio), la semana en curso, los recordatorios pendientes, las tareas abiertas y un pomodoro integrado.
+La jornada de un vistazo: una nota rápida (como nota, tarea o recordatorio), la semana en curso, los recordatorios pendientes, las tareas abiertas y un pomodoro integrado.
 
 ### Agenda
 Planificador semanal con bloques por materia o proyecto, listas de verificación y colores para distinguir cada actividad.
