@@ -26,7 +26,7 @@ class ContextoTest extends TestCase
         // También sin contextos: el estado vacío ayuda a empezar y la explicación va abierta.
         $vacio = $this->get(route('contextos.index'))->assertOk()
             ->assertSee('¿Para qué sirven los contextos?')
-            ->assertSee('agrupa tus notas, tareas, sesiones de estudio y actividades de la agenda')
+            ->assertSee('agrupa tus notas, tareas, sesiones de estudio y cajas de la agenda')
             ->assertSeeInOrder(['Entorno', 'Materia', 'Tema', 'Proyecto'])
             ->assertSee('Un área grande de tu vida')
             ->assertSee('Algo con un objetivo y un final')

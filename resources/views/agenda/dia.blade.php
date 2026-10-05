@@ -7,7 +7,7 @@
 @endpush
 
 @section('contenido')
-    <div class="agenda hoja" data-actividades="{{ json_encode($actividades->mapWithKeys(fn ($a) => [$a->id => $a->colorActividad()?->clase()])->filter(), JSON_UNESCAPED_UNICODE) }}">
+    <div class="agenda hoja" data-contextos="{{ json_encode($colores->clases(), JSON_UNESCAPED_UNICODE) }}">
         <header class="hoja-cab">
             <div class="hoja-izquierda">
                 <a href="{{ route('agenda.index', ['semana' => $lunes->toDateString()]) }}" class="btn btn-foco-suave hoja-suave"><i class="bi bi-arrow-left" aria-hidden="true"></i> Planner semanal</a>
@@ -27,7 +27,7 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="ver-tildadas" data-interruptor="tildadas" checked>
                         <label class="form-check-label" for="ver-tildadas">Mostrar tildadas</label>
                     </div>
-                    <button type="button" class="btn btn-foco-suave hoja-suave" data-abrir-dialogo="dialogo-actividades"><i class="bi bi-palette" aria-hidden="true"></i> Actividades</button>
+                    <a href="{{ route('contextos.index') }}" class="btn btn-foco-suave hoja-suave"><i class="bi bi-palette" aria-hidden="true"></i> Contextos</a>
                     <button type="button" class="btn btn-foco" data-nueva-caja><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva caja</button>
                     @include('agenda._estado-guardado')
                 </div>
@@ -54,5 +54,4 @@
 
     <template id="agenda-plantilla-item">@include('agenda._item', ['item' => ['texto' => '', 'hecho' => false]])</template>
     @include('agenda._dialogo-caja')
-    @include('agenda._dialogo-actividades')
 @endsection

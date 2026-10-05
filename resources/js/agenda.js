@@ -1,6 +1,6 @@
 /*
  * Agenda: parte común del planner semanal y de la hoja del día (entrada aparte de Vite, ver vite.config.js).
- * Aquí: cajas de Notas y Pendiente, salto a una fecha, ventana de actividades. GridStack solo se carga en la hoja del día (agenda-dia.js).
+ * Aquí: cajas de Notas y Pendiente, salto a una fecha. GridStack solo se carga en la hoja del día (agenda-dia.js).
  */
 import { editor, guardador } from './agenda-contexto.js';
 import { lunesDe } from './agenda-logica.js';
@@ -29,10 +29,7 @@ document.addEventListener('click', (evento) => {
     }
 });
 
-// Un error de validación en una actividad vuelve a abrir la ventana con el mensaje.
-document.querySelectorAll('dialog[data-abrir]').forEach((dialogo) => dialogo.showModal());
-
-// Los cambios pendientes se mandan antes de recargar la página con un formulario (actividades).
+// Los cambios pendientes se mandan antes de recargar la página con un formulario (restablecer la disposición).
 document.addEventListener('submit', async (evento) => {
     const formulario = evento.target;
 

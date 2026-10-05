@@ -1,6 +1,7 @@
-{{-- Caja de la hoja del día, como elemento de GridStack. Requiere: $caja (con la relación actividad) --}}
+{{-- Caja de la hoja del día, como elemento de GridStack. Requiere: $caja. Opcional: $colores (App\Support\ColoresDeContexto, para no consultar por caja) --}}
 @php
-    $clase = $caja->actividad?->colorActividad()?->clase();
+    // Color efectivo del contexto de la caja: el propio o el del ancestro más cercano con color.
+    $clase = ($colores ?? \App\Support\ColoresDeContexto::delUsuario())->clase($caja->contexto_id);
     $items = $caja->itemsLista();
     // Una lista vacía muestra un primer renglón para empezar a escribir.
     if ($caja->tipo === \App\Enums\TipoCaja::Lista && $items === []) {

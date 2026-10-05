@@ -7,7 +7,7 @@
 @endpush
 
 @section('contenido')
-    <div class="agenda plan" data-actividades="{{ json_encode($actividades->mapWithKeys(fn ($a) => [$a->id => $a->colorActividad()?->clase()])->filter(), JSON_UNESCAPED_UNICODE) }}">
+    <div class="agenda plan" data-contextos="{{ json_encode($colores->clases(), JSON_UNESCAPED_UNICODE) }}">
         <header class="plan-cab">
             <div class="plan-tarjeta plan-titulo-caja">
                 <h1 class="plan-titulo">
@@ -39,14 +39,15 @@
                     <div><dt>Mes</dt><dd>{{ $etiquetaMes }}</dd></div>
                 </dl>
                 <div class="plan-leyenda">
-                    <ul class="plan-leyenda-lista" aria-label="Actividades y sus colores">
-                        @forelse ($actividades as $actividad)
-                            <li class="plan-chip {{ $actividad->colorActividad()?->clase() }}"><span class="paleta-punto" aria-hidden="true"></span>{{ $actividad->nombre }}</li>
+                    {{-- Los contextos que usan las cajas de esta semana, con su color (propio o heredado del contexto padre). --}}
+                    <ul class="plan-leyenda-lista" aria-label="Contextos de la semana y sus colores">
+                        @forelse ($leyenda as $contexto)
+                            <li class="plan-chip {{ $contexto['clase'] }}"><span class="paleta-punto" aria-hidden="true"></span>{{ $contexto['nombre'] }}</li>
                         @empty
-                            <li class="plan-leyenda-vacia">Creá tus actividades para darle color a las cajas.</li>
+                            <li class="plan-leyenda-vacia">Asignale un contexto a las cajas para verlas con su color.</li>
                         @endforelse
                     </ul>
-                    <button type="button" class="btn btn-foco-suave btn-sm" data-abrir-dialogo="dialogo-actividades"><i class="bi bi-palette" aria-hidden="true"></i> Actividades</button>
+                    <a href="{{ route('contextos.index') }}" class="btn btn-foco-suave btn-sm"><i class="bi bi-palette" aria-hidden="true"></i> Contextos</a>
                 </div>
             </div>
         </header>
@@ -78,7 +79,7 @@
                                 <ul class="plan-lineas" data-plan-lineas>
                                     @foreach ($dia['cajas'] as $caja)
                                         @php $items = $caja->tipo === \App\Enums\TipoCaja::Lista ? collect($caja->itemsLista())->filter(fn ($i) => trim($i['texto']) !== '') : collect(); @endphp
-                                        <li class="plan-linea {{ $caja->actividad?->colorActividad()?->clase() }} {{ $caja->hecha ? 'es-hecha' : '' }}">
+                                        <li class="plan-linea {{ $colores->clase($caja->contexto_id) }} {{ $caja->hecha ? 'es-hecha' : '' }}">
                                             @if ($caja->hora_inicio)
                                                 <span class="plan-hora">{{ $caja->horaTexto() }}</span>
                                             @endif
@@ -118,5 +119,4 @@
     </div>
 
     <template id="agenda-plantilla-item">@include('agenda._item', ['item' => ['texto' => '', 'hecho' => false]])</template>
-    @include('agenda._dialogo-actividades')
 @endsection

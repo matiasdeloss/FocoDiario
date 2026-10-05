@@ -9,6 +9,7 @@ use App\Models\Recordatorio;
 use App\Models\SesionEstudio;
 use App\Models\Tarea;
 use Illuminate\Support\Carbon;
+use App\Support\ColoresDeContexto;
 
 /**
  * Arma los eventos del calendario (formato de FullCalendar) y los conteos
@@ -102,14 +103,16 @@ class EventosCalendario
         if (in_array('planner', $tipos, true)) {
             // Solo cajas de un día (las de zona semanal no tienen fecha y quedan fuera).
             $cajas = Caja::query()
-                ->with('actividad')
+                ->with('contexto:id,nombre,color')
                 ->entreFechas($desde, $hasta->copy()->subDay())
                 ->orderBy('fecha')
                 ->enOrdenDePlanner()
                 ->get();
 
+            $colores = ColoresDeContexto::delUsuario();
+
             foreach ($cajas as $caja) {
-                $eventos[] = $this->eventoPlanner($caja);
+                $eventos[] = $this->eventoPlanner($caja, $colores);
             }
         }
 
@@ -117,11 +120,11 @@ class EventosCalendario
     }
 
     /** Evento de una caja del planner: con hora si la tiene (fin = hora_fin o inicio + 1 h), si no de todo el día. */
-    public function eventoPlanner(Caja $caja): array
+    public function eventoPlanner(Caja $caja, ?ColoresDeContexto $colores = null): array
     {
         $dia = $caja->fecha->toDateString();
         $conHora = $caja->hora_inicio !== null;
-        $color = $caja->actividad?->colorActividad();
+        $clase = ($colores ?? ColoresDeContexto::delUsuario())->clase($caja->contexto_id);
 
         $evento = [
             'id' => 'planner-'.$caja->id,
@@ -130,12 +133,12 @@ class EventosCalendario
             'allDay' => ! $conHora,
             'editable' => true,
             'durationEditable' => $conHora,
-            'classNames' => array_values(array_filter(['ev-tipo-planner', $caja->hecha ? 'ev-hecho' : null, $color?->clase()])),
+            'classNames' => array_values(array_filter(['ev-tipo-planner', $caja->hecha ? 'ev-hecho' : null, $clase])),
             'extendedProps' => [
                 'tipo' => 'planner',
                 'plannerId' => $caja->id,
                 'tieneFin' => $conHora && $caja->hora_fin !== null,
-                'actividad' => $caja->actividad?->nombre,
+                'contexto' => $caja->contexto?->nombre,
                 'urlDia' => route('agenda.dia', ['fecha' => $dia]),
             ],
         ];

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\CalendarioController;
@@ -107,7 +106,4 @@ Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
     Route::post('agenda/cajas', [CajaController::class, 'store'])->name('agenda.cajas.store');
     Route::patch('agenda/cajas/{caja}', [CajaController::class, 'update'])->name('agenda.cajas.update');
     Route::delete('agenda/cajas/{caja}', [CajaController::class, 'destroy'])->name('agenda.cajas.destroy');
-    Route::post('agenda/actividades', [ActividadController::class, 'store'])->name('agenda.actividades.store');
-    Route::patch('agenda/actividades/{actividad}', [ActividadController::class, 'update'])->name('agenda.actividades.update');
-    Route::delete('agenda/actividades/{actividad}', [ActividadController::class, 'destroy'])->name('agenda.actividades.destroy');
 });

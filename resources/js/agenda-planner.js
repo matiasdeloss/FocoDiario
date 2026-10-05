@@ -65,7 +65,7 @@ function ajustarDia(lineas) {
     }
 
     mas.textContent = `+${ocultos} más`;
-    mas.setAttribute('aria-label', `Ver ${ocultos} ${ocultos === 1 ? 'actividad más' : 'actividades más'} del ${mas.dataset.dia}: abrir la hoja del día`);
+    mas.setAttribute('aria-label', `Ver ${ocultos} ${ocultos === 1 ? 'caja más' : 'cajas más'} del ${mas.dataset.dia}: abrir la hoja del día`);
 }
 
 const listas = [...document.querySelectorAll('[data-plan-lineas]')];

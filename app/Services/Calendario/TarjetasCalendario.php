@@ -4,9 +4,11 @@ namespace App\Services\Calendario;
 
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\Contexto;
 use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
+use App\Support\ColoresDeContexto;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -125,8 +127,41 @@ class TarjetasCalendario
         return Carbon::parse($valor);
     }
 
+    /**
+     * Lo que el panel necesita para mostrar el contexto de cada tarjeta (ruta completa y color efectivo de todos los
+     * contextos): se arma una vez y se reutiliza en toda la lista, sin una consulta por tarjeta.
+     *
+     * @return array{rutas: Collection<int, string>, colores: ColoresDeContexto}
+     */
+    public function contextosDelPanel(): array
+    {
+        return ['rutas' => Contexto::opciones(), 'colores' => ColoresDeContexto::delUsuario()];
+    }
+
+    /**
+     * Con `$contextos` (ver contextosDelPanel) agrega el contexto de la tarjeta: tareas y notas lo tienen, los recordatorios no.
+     *
+     * @param  array{rutas: Collection<int, string>, colores: ColoresDeContexto}|null  $contextos
+     * @return array<string, mixed>
+     */
+    public function datos(Model $tarjeta, ?array $contextos = null): array
+    {
+        $datos = $this->datosBase($tarjeta);
+
+        if ($contextos !== null) {
+            $id = $tarjeta instanceof Tarea || $tarjeta instanceof Nota ? $tarjeta->contexto_id : null;
+            $datos['contexto'] = $id === null || ! $contextos['rutas']->has($id) ? null : [
+                'nombre' => $tarjeta->contexto?->nombre,
+                'ruta' => $contextos['rutas'][$id],
+                'clase' => $contextos['colores']->clase($id),
+            ];
+        }
+
+        return $datos;
+    }
+
     /** @return array<string, mixed> */
-    public function datos(Model $tarjeta): array
+    private function datosBase(Model $tarjeta): array
     {
         return match (true) {
             $tarjeta instanceof Tarea => [
@@ -163,9 +198,9 @@ class TarjetasCalendario
     }
 
     /** HTML de una tarjeta del panel. */
-    public function html(Model $tarjeta, bool $nueva = false): string
+    public function html(Model $tarjeta, bool $nueva = false, ?array $contextos = null): string
     {
-        return view('calendario._tarjeta', ['t' => $this->datos($tarjeta), 'nueva' => $nueva])->render();
+        return view('calendario._tarjeta', ['t' => $this->datos($tarjeta, $contextos ?? $this->contextosDelPanel()), 'nueva' => $nueva])->render();
     }
 
     /**
@@ -178,9 +213,9 @@ class TarjetasCalendario
     public function pagina(string $tipo, array $excluir = []): Collection
     {
         $consulta = match ($tipo) {
-            'tarea' => Tarea::abiertas()->whereNull('fecha_limite'),
+            'tarea' => Tarea::abiertas()->with('contexto:id,nombre')->whereNull('fecha_limite'),
             'recordatorio' => Recordatorio::pendientes()->sinFecha(),
-            'nota' => Nota::whereNull('fecha'),
+            'nota' => Nota::with('contexto:id,nombre')->whereNull('fecha'),
         };
 
         return $consulta
@@ -200,11 +235,12 @@ class TarjetasCalendario
     {
         $tarjetas = collect();
         $hayMas = [];
+        $contextos = $this->contextosDelPanel();
 
         foreach (self::TIPOS as $tipo) {
             $filas = $this->pagina($tipo);
             $hayMas[$tipo] = $filas->count() > self::POR_PAGINA;
-            $tarjetas = $tarjetas->concat($filas->take(self::POR_PAGINA)->map(fn (Model $m) => $this->datos($m)));
+            $tarjetas = $tarjetas->concat($filas->take(self::POR_PAGINA)->map(fn (Model $m) => $this->datos($m, $contextos)));
         }
 
         return [

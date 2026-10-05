@@ -32,6 +32,31 @@ final class ColoresDeContexto
         return $this->visible($contextoId)?->color;
     }
 
+    /** Clase CSS (actividad-{clave}, que define --caja-fondo/-acento/-texto) del color efectivo; null si no tiene. */
+    public function clase(?int $contextoId): ?string
+    {
+        return $this->para($contextoId)?->clase();
+    }
+
+    /**
+     * Clase CSS del color efectivo de cada contexto que tiene uno ([id => clase]); la usa el editor de cajas
+     * para teñir una caja en cuanto se le asigna un contexto, sin pedir nada al servidor.
+     *
+     * @return array<int, string>
+     */
+    public function clases(): array
+    {
+        $clases = [];
+
+        foreach (array_keys($this->contextos) as $id) {
+            if (($clase = $this->clase($id)) !== null) {
+                $clases[$id] = $clase;
+            }
+        }
+
+        return $clases;
+    }
+
     /** Lo mismo con su origen: propio si lo tiene el propio contexto; si no, el nombre del ancestro del que viene. */
     public function visible(?int $contextoId): ?ColorVisible
     {

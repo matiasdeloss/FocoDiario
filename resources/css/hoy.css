@@ -471,8 +471,11 @@
 .hoy-color::after { content: ""; position: absolute; inset: -10px calc(var(--hoy-color-gap) / -2); }
 .hoy-color[aria-pressed="true"], .hoy-color-ninguno[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--color-neutral-100), 0 0 0 3.5px var(--color-neutral-700); }
 
+/* Celular angosto: los 11 círculos van en su propia fila debajo del título (sin márgenes negativos que los suban sobre él),
+   con áreas de clic de 32px (círculo de 20px + 6px de área a cada lado). */
 @media (max-width: 575.98px) {
-    .hoy-colores { --hoy-color-gap: 14px; }
+    .hoy-colores { --hoy-color-gap: 12px; flex: 1 1 100%; justify-content: flex-start; margin: 0; min-height: 0; }
+    .hoy-color::after { inset: -6px calc(var(--hoy-color-gap) / -2); }
 }
 
 .hoy-color-terracota { --hoy-muestra: var(--actividad-terracota-acento); }

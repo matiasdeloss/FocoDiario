@@ -426,6 +426,7 @@ function iniciar(raiz) {
                 lista.scrollTop = 0;
                 li.scrollIntoView({ block: 'nearest' });
                 li.querySelector('[data-campo="titulo"]').focus();
+                if (respuesta.mensaje) aviso.exito(respuesta.mensaje);
             } catch (error) {
                 mostrarAviso(error.message);
             } finally {
@@ -1074,7 +1075,7 @@ function iniciar(raiz) {
                 if (props.completada) partes.push('completada');
                 if (props.vencida) partes.push('vencida');
             } else if (props.tipo === 'planner') {
-                partes.push(props.actividad ? `planner semanal, ${props.actividad}` : 'planner semanal');
+                partes.push(props.contexto ? `planner semanal, ${props.contexto}` : 'planner semanal');
             } else if (props.tipo === 'recordatorio' && props.avisado) {
                 partes.push('ya avisado');
             } else if (props.tipo === 'sesion') {

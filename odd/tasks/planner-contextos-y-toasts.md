@@ -22,10 +22,11 @@
 
 ## Tareas
 
-- [ ] P1 — Renombrar "actividad" a "contexto" en toda la interfaz del planner y la agenda — ruta: delegada
-- [ ] P2 — La caja admite cualquier contexto y usa su color efectivo — ruta: delegada
-- [ ] P3 — Toast de confirmación al agregar tarjeta en "Por ubicar" — ruta: delegada
-- [ ] P4 — Tests, revisión visual y documentación — ruta: delegada + verificación inline
+- [x] P1 — Renombrar "actividad" a "contexto" en toda la interfaz del planner y la agenda — ruta: delegada — hecho: textos, avisos, validaciones y aria sin "actividad"; rutas, controlador, request y diálogo de actividades eliminados (se gestiona en Contextos); `Caja::actividad()` -> `contexto()`; `data-contextos`, `dc-contexto`
+- [x] P2 — La caja admite cualquier contexto y usa su color efectivo — ruta: delegada — hecho: el diálogo de caja usa el selector común de contextos (optgroups, cualquier tipo, solo los propios); color efectivo vía `ColoresDeContexto` en hoja, planner, calendario; leyenda = contextos usados esa semana
+- [x] P3 — Toast de confirmación al agregar tarjeta en "Por ubicar" — ruta: delegada — hecho: el POST de tarjeta sin fecha devuelve `mensaje` y calendario.js muestra `aviso.exito`
+- [x] P4 — Tests, revisión visual y documentación — ruta: delegada + verificación inline — hecho: AgendaContextosTest (copy, validación, tipos, color efectivo, leyenda) + tests de Por ubicar; `php artisan test` 423/423, `npm test` 22/22, build OK
+- [x] P5 — Las tarjetas de "Por ubicar" del calendario muestran su contexto (pedido del usuario 2026-10-05) — ruta: delegada — hecho: nombre del contexto con punto de color efectivo y ruta en el title (tareas y notas; recordatorios no tienen contexto); `contextosDelPanel()` una vez por lista; 2 tests nuevos
 
 ## Relacionado
 

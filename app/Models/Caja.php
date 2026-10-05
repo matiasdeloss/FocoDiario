@@ -56,7 +56,7 @@ class Caja extends Model
         ];
     }
 
-    public function actividad(): BelongsTo
+    public function contexto(): BelongsTo
     {
         return $this->belongsTo(Contexto::class, 'contexto_id');
     }

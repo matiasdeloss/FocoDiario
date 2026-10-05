@@ -18,6 +18,59 @@ class TarjetasCalendarioTest extends TestCase
 
     private const RANGO = ['start' => '2026-10-01T00:00:00', 'end' => '2026-11-01T00:00:00'];
 
+    public function test_crear_una_tarjeta_sin_fecha_trae_el_mensaje_para_el_aviso_de_por_ubicar(): void
+    {
+        foreach (['tarea', 'recordatorio', 'nota'] as $tipo) {
+            $this->postJson(route('calendario.tarjetas.store'), ['tipo' => $tipo])
+                ->assertCreated()->assertJsonPath('mensaje', 'Tarjeta agregada a Por ubicar.');
+        }
+
+        // Con fecha va directo al calendario: no es "Por ubicar", no hay aviso.
+        $this->postJson(route('calendario.tarjetas.store'), ['tipo' => 'tarea', 'fecha' => '2026-10-10'])
+            ->assertCreated()->assertJsonPath('mensaje', null);
+    }
+
+    public function test_las_tarjetas_de_por_ubicar_muestran_su_contexto_con_el_color_efectivo(): void
+    {
+        $entorno = Contexto::factory()->entorno()->create(['nombre' => 'Carrera', 'color' => '#3b8e9b']);
+        $materia = Contexto::factory()->create(['nombre' => 'Programación II', 'contexto_padre_id' => $entorno->id, 'color' => null]);
+        $suelto = Contexto::factory()->proyecto()->create(['nombre' => 'Sin color propio', 'color' => null]);
+
+        Tarea::factory()->create(['titulo' => 'Con contexto', 'fecha_limite' => null, 'contexto_id' => $materia->id]);
+        Nota::factory()->create(['titulo' => 'Nota con contexto', 'fecha' => null, 'contexto_id' => $suelto->id]);
+        Tarea::factory()->create(['titulo' => 'Sin contexto', 'fecha_limite' => null, 'contexto_id' => null]);
+        Nota::factory()->create(['titulo' => 'Nota sin contexto', 'fecha' => null, 'contexto_id' => null]);
+        Recordatorio::factory()->create(['mensaje' => 'Aviso', 'recordar_en' => null, 'tarea_id' => null]);
+
+        $html = $this->get(route('calendario.index'))->assertOk()->getContent();
+
+        // Nombre en la tarjeta, ruta completa en el tooltip y el color heredado del entorno.
+        $this->assertStringContainsString('title="Carrera › Programación II"', $html);
+        $this->assertMatchesRegularExpression('/<p class="tarj-contexto actividad-celeste"[^>]*>.*?Programación II/s', $html);
+        // El contexto sin color en toda su cadena se ve en neutro.
+        $this->assertMatchesRegularExpression('/<p class="tarj-contexto tarj-contexto-neutro" title="Sin color propio"/', $html);
+        // Solo las dos tarjetas con contexto lo muestran: las demás (y los recordatorios) no llevan nada extra.
+        $this->assertSame(2, substr_count($html, 'class="tarj-contexto '));
+    }
+
+    public function test_el_panel_no_consulta_el_contexto_por_cada_tarjeta(): void
+    {
+        $contexto = Contexto::factory()->create(['nombre' => 'Redes', 'color' => '#5f86a3']);
+        foreach (range(1, 8) as $i) {
+            Tarea::factory()->create(['fecha_limite' => null, 'contexto_id' => Contexto::factory()->create(['contexto_padre_id' => $contexto->id])->id]);
+            Nota::factory()->create(['fecha' => null, 'contexto_id' => $contexto->id]);
+        }
+
+        \DB::enableQueryLog();
+        $this->get(route('calendario.index'))->assertOk();
+        $consultas = collect(\DB::getQueryLog())->pluck('query')
+            ->filter(fn ($q) => str_contains($q, 'from "contextos"') || str_contains($q, 'from `contextos`'));
+        \DB::flushQueryLog();
+
+        // Rutas, colores y las relaciones en bloque: un puñado fijo, no una por tarjeta.
+        $this->assertLessThanOrEqual(6, $consultas->count(), $consultas->implode(' | '));
+    }
+
     public function test_se_crea_cada_tipo_de_tarjeta_sin_fecha(): void
     {
         $this->postJson(route('calendario.tarjetas.store'), ['tipo' => 'tarea'])

@@ -36,6 +36,8 @@ class TarjetaCalendarioController extends Controller
             'tarjeta' => $datos,
             'panel' => $datos['fecha'] === null ? $this->tarjetas->html($tarjeta, nueva: true) : null,
             'evento' => $datos['fecha'] !== null ? $this->evento($tarjeta) : null,
+            // Una tarjeta nueva sin fecha queda en "Por ubicar": el panel lo confirma con un aviso de éxito.
+            'mensaje' => $datos['fecha'] === null ? 'Tarjeta agregada a Por ubicar.' : null,
         ], 201);
     }
 
@@ -44,8 +46,10 @@ class TarjetaCalendarioController extends Controller
     {
         $filas = $this->tarjetas->pagina($tipo, array_map('intval', $request->validated('excluir') ?? []));
 
+        $contextos = $this->tarjetas->contextosDelPanel();
+
         return response()->json([
-            'html' => $filas->take(TarjetasCalendario::POR_PAGINA)->map(fn ($fila) => $this->tarjetas->html($fila))->implode(''),
+            'html' => $filas->take(TarjetasCalendario::POR_PAGINA)->map(fn ($fila) => $this->tarjetas->html($fila, contextos: $contextos))->implode(''),
             'hayMas' => $filas->count() > TarjetasCalendario::POR_PAGINA,
         ]);
     }

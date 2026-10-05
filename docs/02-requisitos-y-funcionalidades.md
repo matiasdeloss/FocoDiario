@@ -27,7 +27,7 @@
 ## Estado actual (2026-10)
 Construido y con pruebas automáticas (393 de PHPUnit y pruebas en Node de la lógica de JavaScript en `tests/js/`):
 - **Hoy:** nota rápida que crea nota, tarea o recordatorio, semana en curso, recordatorios pendientes, tareas abiertas, pomodoro y recomendaciones destacadas.
-- **Agenda:** planificador semanal con cajas por materia o proyecto, listas de verificación y disposición editable.
+- **Agenda:** planificador semanal con cajas por contexto (cualquiera de los cuatro tipos; la caja toma el color de su contexto o el de su contexto padre), listas de verificación y disposición editable.
 - **Calendario:** vistas de mes, semana, día y lista, con bandeja lateral para ubicar lo que no tiene fecha.
 - **Tareas:** lista y tablero kanban con columnas personalizables, prioridad, fecha límite, color y comentario.
 - **Recordatorios y Registro** completos, con HTMX.

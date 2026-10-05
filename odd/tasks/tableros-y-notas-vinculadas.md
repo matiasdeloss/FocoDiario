@@ -7,7 +7,9 @@
 **Decisiones del usuario (2026-10-05):**
 - Varios tableros por usuario. Cada tablero tiene una primera columna fija **"Sin asignar"** que no se puede borrar; las tareas nuevas de ese tablero caen ahí.
 - **Tablero principal (opción A):** uno de los tableros está marcado como principal; lo que se crea fuera del tablero (nota rápida de Hoy, calendario, formulario de tareas) va al "Sin asignar" del principal, y el formulario permite elegir otro tablero. La asociación tablero↔contexto (opción B) queda para más adelante.
-- **Notas vinculadas (opción B):** una tarea puede tener notas vinculadas, visibles y abribles desde la tarjeta. Las notas no se mueven por columnas. Relación muchos a muchos (una nota puede servir a varias tareas).
+- **Notas vinculadas (opción B):** una tarea puede tener notas vinculadas, visibles y abribles desde la tarjeta. Relación muchos a muchos (una nota puede servir a varias tareas).
+- **Cambio posterior del mismo día: toda nota y toda tarea están en el tablero.** Las notas también son tarjetas: tienen columna y orden, caen en "Sin asignar" del tablero principal al crearse y se mueven por las columnas igual que las tareas, incluida "Completada". Un badge en la tarjeta distingue **Nota** de **Tarea**. El vínculo nota–tarea (opción B) se mantiene además.
+- Pendiente de definir en la implementación (proponer al usuario): cómo se ve una nota que está en una columna de categoría "completada" en la pantalla Notas, en Hoy y en el calendario.
 
 **Alcance:**
 - Entidad `tableros` (usuario, nombre, principal, posición) y `columnas_tablero.tablero_id`. Migración que crea un tablero principal por usuario con sus columnas actuales y agrega "Sin asignar" a cada tablero, sin perder tareas ni columnas.
@@ -27,6 +29,7 @@
 - [ ] B2 — Vista del tablero con selector de tableros y gestión (crear, renombrar, principal, borrar) — ruta: delegada
 - [ ] B3 — Tareas creadas fuera del tablero van al "Sin asignar" del principal; formulario con selector de tablero — ruta: delegada
 - [ ] B4 — Notas vinculadas a tareas (pivote, diálogo de la tarea, indicador en la tarjeta) — ruta: delegada
+- [ ] B6 — Notas como tarjetas del tablero: columna y orden en notas, migración que las ubica en "Sin asignar" del principal, arrastre entre columnas, badge Nota/Tarea, creación desde el tablero — ruta: delegada
 - [ ] B5 — Datos iniciales, fusión de invitado, tests, documentación y revisión visual — ruta: delegada + verificación inline
 
 ## Progreso

@@ -112,8 +112,8 @@ class CalendarioTest extends TestCase
         \DB::enableQueryLog();
         $this->getJson(route('calendario.eventos', self::RANGO))->assertOk();
 
-        // Una consulta por tipo (4) más la de las cajas del planner y la de sus actividades, en bloque.
-        $this->assertLessThanOrEqual(6, count(\DB::getQueryLog()));
+        // Una consulta por tipo (4) más la de las cajas del planner, la de sus contextos y la de los colores efectivos (con herencia), en bloque.
+        $this->assertLessThanOrEqual(7, count(\DB::getQueryLog()));
     }
 
     public function test_se_asigna_y_se_quita_la_fecha_de_una_tarea(): void

@@ -213,9 +213,7 @@ function iniciar(lienzo) {
         const { estado } = controlador;
 
         campo('titulo-caja').textContent = estado.titulo?.trim() || 'Sin título';
-        dialogo.querySelectorAll('[name="dc-actividad"]').forEach((radio) => {
-            radio.checked = radio.value === String(estado.contexto_id ?? '');
-        });
+        campo('contexto').value = String(estado.contexto_id ?? '');
         dialogo.querySelectorAll('[name="dc-tipo"]').forEach((radio) => {
             radio.checked = radio.value === estado.tipo;
         });
@@ -252,7 +250,7 @@ function iniciar(lienzo) {
 
         const objetivo = evento.target;
 
-        if (objetivo.name === 'dc-actividad') {
+        if (objetivo.name === 'dc-contexto') {
             actual.aplicar({ contexto_id: objetivo.value === '' ? null : Number(objetivo.value) });
         } else if (objetivo.name === 'dc-borde-grosor') {
             actual.aplicar({ borde_grosor: Number(objetivo.value) });

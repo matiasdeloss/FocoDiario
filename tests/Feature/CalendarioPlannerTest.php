@@ -49,16 +49,16 @@ class CalendarioPlannerTest extends TestCase
         $this->assertSame(route('agenda.dia', ['fecha' => '2026-10-07']), $porTitulo['Sin título']['extendedProps']['urlDia']);
     }
 
-    public function test_el_evento_toma_el_color_de_la_actividad(): void
+    public function test_el_evento_toma_el_color_del_contexto(): void
     {
-        $actividad = Contexto::factory()->create(['nombre' => 'Gimnasio', 'color' => ColorActividad::Salvia->value]);
-        Caja::factory()->delDia('2026-10-06')->create(['titulo' => 'Pesas', 'contexto_id' => $actividad->id]);
+        $contexto = Contexto::factory()->create(['nombre' => 'Gimnasio', 'color' => ColorActividad::Salvia->value]);
+        Caja::factory()->delDia('2026-10-06')->create(['titulo' => 'Pesas', 'contexto_id' => $contexto->id]);
 
         $evento = $this->eventos(['tipos' => 'planner'])[0];
 
         $this->assertContains('ev-tipo-planner', $evento['classNames']);
         $this->assertContains('actividad-salvia', $evento['classNames']);
-        $this->assertSame('Gimnasio', $evento['extendedProps']['actividad']);
+        $this->assertSame('Gimnasio', $evento['extendedProps']['contexto']);
     }
 
     public function test_excluye_cajas_de_la_semana_fuera_de_rango_y_de_otros_usuarios(): void

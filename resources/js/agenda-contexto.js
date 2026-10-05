@@ -51,15 +51,15 @@ export const guardador = crearGuardador({
     alEstado: mostrarEstado,
 });
 
-let clasesActividad = {};
+let clasesContexto = {};
 
 try {
-    clasesActividad = JSON.parse(document.querySelector('[data-actividades]')?.dataset.actividades ?? '{}');
+    clasesContexto = JSON.parse(document.querySelector('[data-contextos]')?.dataset.contextos ?? '{}');
 } catch {
-    clasesActividad = {};
+    clasesContexto = {};
 }
 
-export const editor = crearEditorDeCajas({ guardador, clasesActividad });
+export const editor = crearEditorDeCajas({ guardador, clasesContexto });
 
 document.addEventListener('click', (evento) => {
     if (evento.target.closest('[data-guardado-reintentar]')) {

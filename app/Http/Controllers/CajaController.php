@@ -9,6 +9,7 @@ use App\Http\Requests\LayoutCajasRequest;
 use App\Http\Resources\CajaResource;
 use App\Models\Caja;
 use App\Models\Contexto;
+use App\Support\ColoresDeContexto;
 use App\Services\Agenda\Semana;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -38,13 +39,13 @@ class CajaController extends Controller
             ...$datos,
         ]);
 
-        $caja->load('actividad:id,nombre,color');
+        $caja->load('contexto:id,nombre,color');
 
         return response()->json([
             'caja' => new CajaResource($caja),
             'html' => view('agenda._caja', [
                 'caja' => $caja,
-                'actividades' => Contexto::query()->actividades()->get(),
+                'colores' => ColoresDeContexto::delUsuario(),
             ])->render(),
         ], 201);
     }

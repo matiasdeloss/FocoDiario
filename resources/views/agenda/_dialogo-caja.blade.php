@@ -1,4 +1,4 @@
-{{-- Opciones de la caja abierta: actividad, horario, formato, borde, hecha, eliminar. Requiere: $actividades --}}
+{{-- Opciones de la caja abierta: contexto, horario, formato, borde, hecha, eliminar. Requiere: $contextos (agrupados por tipo, Contexto::opcionesPorTipo()) --}}
 <dialog id="dialogo-caja" class="dialogo" aria-labelledby="dialogo-caja-titulo">
     <div class="dialogo-cuerpo">
         <div class="dialogo-cab">
@@ -8,25 +8,14 @@
         <p class="dialogo-subtitulo" data-dc="titulo-caja"></p>
 
         <fieldset class="dialogo-grupo">
-            <legend>Actividad</legend>
-            <div class="paleta-actividades">
-                <label class="paleta-opcion paleta-sin-color">
-                    <input type="radio" name="dc-actividad" value="">
-                    <span class="paleta-nombre">Sin actividad</span>
-                </label>
-                @foreach ($actividades as $actividad)
-                    <label class="paleta-opcion {{ $actividad->colorActividad()?->clase() }}">
-                        <input type="radio" name="dc-actividad" value="{{ $actividad->id }}">
-                        <span class="paleta-punto" aria-hidden="true"></span>
-                        <span class="paleta-nombre">{{ $actividad->nombre }}</span>
-                    </label>
-                @endforeach
-            </div>
+            <legend><label for="dc-contexto">Contexto</label></legend>
+            <select id="dc-contexto" name="dc-contexto" class="form-select" data-dc="contexto">
+                <option value="">Sin contexto</option>
+                @include('tareas._opciones-contexto', ['grupos' => $contextos])
+            </select>
             <p class="dialogo-ayuda">
-                @if ($actividades->isEmpty())
-                    Todavía no hay actividades.
-                @endif
-                <button type="button" class="dialogo-enlace" data-abrir-dialogo="dialogo-actividades">Gestionar actividades</button>
+                La caja se ve con el color de su contexto (o el de su contexto padre).
+                <a href="{{ route('contextos.index') }}" class="dialogo-enlace">Gestionar contextos</a>
             </p>
         </fieldset>
 
@@ -69,7 +58,7 @@
                 </div>
             </div>
             <div class="actividad-colores borde-colores" role="radiogroup" aria-label="Color del borde">
-                <label class="actividad-color borde-auto" title="Automático: el color de la actividad o el terracota del cuaderno">
+                <label class="actividad-color borde-auto" title="Automático: el color del contexto o el terracota del cuaderno">
                     <input type="radio" name="dc-borde-color" value="" aria-label="Automático">
                     <span class="actividad-color-punto" aria-hidden="true"><i class="bi bi-dash-lg"></i></span>
                 </label>

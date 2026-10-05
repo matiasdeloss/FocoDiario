@@ -73,7 +73,7 @@ class AgendaPlannerTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder(['Lunes', '08:30', 'Repaso temprano', '18:00', 'Otorrino', 'Caja sin hora', 'Martes', '17:00', 'Neuro'])
             ->assertDontSee('De la semana siguiente')
-            // El color de la actividad llega como clase de la línea.
+            // El color del contexto llega como clase de la línea.
             ->assertSee('plan-linea '.ColorActividad::AzulPolvo->clase(), false);
     }
 
@@ -107,15 +107,16 @@ class AgendaPlannerTest extends TestCase
             ->assertDontSee('Nota de otra semana');
     }
 
-    public function test_la_leyenda_lista_las_actividades_con_su_color(): void
+    public function test_la_leyenda_lista_los_contextos_de_las_cajas_con_su_color(): void
     {
-        Contexto::factory()->create(['nombre' => 'Pediatría', 'color' => ColorActividad::Ocre->value]);
-        Contexto::factory()->create(['nombre' => 'Contexto sin color', 'color' => null]);
+        $pediatria = Contexto::factory()->create(['nombre' => 'Pediatría', 'color' => ColorActividad::Ocre->value]);
+        Contexto::factory()->create(['nombre' => 'Contexto sin cajas', 'color' => ColorActividad::Rosa->value]);
+        Caja::factory()->delDia(now()->toDateString())->create(['contexto_id' => $pediatria->id]);
 
         $this->get(route('agenda.index'))
             ->assertSee('Pediatría')
             ->assertSee('plan-chip '.ColorActividad::Ocre->clase(), false)
-            ->assertDontSee('Contexto sin color');
+            ->assertDontSee('Contexto sin cajas');
     }
 
     public function test_las_cajas_de_la_semana_se_guardan_y_se_actualizan_por_zona(): void

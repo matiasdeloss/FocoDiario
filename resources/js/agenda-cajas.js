@@ -1,5 +1,5 @@
 /*
- * Editor de las cajas de la Agenda: título, texto con renglones, listas con casillas, actividad, horas y "hecha".
+ * Editor de las cajas de la Agenda: título, texto con renglones, listas con casillas, contexto, horas y "hecha".
  * Cada caja es un <article data-caja data-url data-metodo data-estado='{json}'>; los cambios van al guardador
  * (autoguardado). Lo usan la hoja del día (PATCH por caja) y las cajas Notas y Pendiente del planner (PUT).
  */
@@ -7,11 +7,11 @@ import {
     alternarItem, cambiarTextoItem, insertarItemDespues, listaATexto, normalizarItems, quitarItem, resolverClic, textoALista,
 } from './agenda-logica.js';
 
-const CLASE_ACTIVIDAD = /(^|\s)actividad-[\w-]+/g;
+const CLASE_COLOR = /(^|\s)actividad-[\w-]+/g;
 
 const PLANTILLA_AGREGAR = '<button type="button" class="caja-agregar" data-accion="agregar-item"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar ítem</button>';
 
-export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
+export function crearEditorDeCajas({ guardador, clasesContexto = {} }) {
     const controladores = new WeakMap();
 
     function filaItem(item) {
@@ -49,10 +49,10 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
 
         /* ---------- Cómo se ve ---------- */
 
-        function pintarActividad() {
-            articulo.className = articulo.className.replace(CLASE_ACTIVIDAD, '');
+        function pintarContexto() {
+            articulo.className = articulo.className.replace(CLASE_COLOR, '');
 
-            const clase = estado.contexto_id ? clasesActividad[estado.contexto_id] : null;
+            const clase = estado.contexto_id ? clasesContexto[estado.contexto_id] : null;
 
             if (clase) {
                 articulo.classList.add(clase);
@@ -249,7 +249,7 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
             aplicar(parche) {
                 guardar(parche);
 
-                if ('contexto_id' in parche) pintarActividad();
+                if ('contexto_id' in parche) pintarContexto();
                 if ('hora_inicio' in parche || 'hora_fin' in parche) pintarHora();
                 if ('hecha' in parche) pintarHecha();
                 if ('borde_grosor' in parche || 'borde_color' in parche) pintarBorde();
@@ -282,7 +282,7 @@ export function crearEditorDeCajas({ guardador, clasesActividad = {} }) {
             },
         };
 
-        pintarActividad();
+        pintarContexto();
         pintarHora();
         pintarHecha();
         pintarSelectorDeTipo();

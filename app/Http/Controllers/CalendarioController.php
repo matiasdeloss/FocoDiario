@@ -105,6 +105,6 @@ class CalendarioController extends Controller
         $caja->hora_fin = $inicio === null ? null : $request->validated('hora_fin');
         $caja->save();
 
-        return response()->json(['evento' => $calendario->eventoPlanner($caja->load('actividad'))]);
+        return response()->json(['evento' => $calendario->eventoPlanner($caja->load('contexto:id,nombre,color'))]);
     }
 }

@@ -10,6 +10,7 @@ use App\Models\Ajuste;
 use App\Models\Caja;
 use App\Models\Contexto;
 use App\Support\Aviso;
+use App\Support\ColoresDeContexto;
 use App\Services\Agenda\PlannerLayout;
 use App\Services\Agenda\PlannerSemanal;
 use App\Services\Agenda\Semana;
@@ -60,6 +61,7 @@ class AgendaController extends Controller
         abort_unless(Semana::esFechaValida($fecha), 404);
 
         $dia = CarbonImmutable::parse($fecha)->startOfDay();
+        $colores = ColoresDeContexto::delUsuario();
 
         return view('agenda.dia', [
             'dia' => $dia,
@@ -67,8 +69,9 @@ class AgendaController extends Controller
             'lunes' => Semana::lunesDe($dia),
             'urlAnterior' => route('agenda.dia', ['fecha' => $dia->subDay()->toDateString()]),
             'urlSiguiente' => route('agenda.dia', ['fecha' => $dia->addDay()->toDateString()]),
-            'cajas' => Caja::query()->with('actividad:id,nombre,color')->delDia($dia)->enOrdenDeLectura()->get(),
-            'actividades' => Contexto::query()->actividades()->get(),
+            'cajas' => Caja::query()->with('contexto:id,nombre,color')->delDia($dia)->enOrdenDeLectura()->get(),
+            'colores' => $colores,
+            'contextos' => Contexto::opcionesPorTipo(),
         ]);
     }
 }

@@ -53,7 +53,7 @@ class AgendaCajaTest extends TestCase
         $this->assertDatabaseCount('cajas', 2);
     }
 
-    public function test_se_crea_una_caja_de_lista_con_actividad_y_horas(): void
+    public function test_se_crea_una_caja_de_lista_con_contexto_y_horas(): void
     {
         $actividad = Contexto::factory()->create(['color' => ColorActividad::Salvia->value]);
 
@@ -103,7 +103,7 @@ class AgendaCajaTest extends TestCase
         $this->assertTrue($caja->fresh()->itemsLista()[1]['hecho']);
     }
 
-    public function test_se_pueden_quitar_las_horas_y_la_actividad(): void
+    public function test_se_pueden_quitar_las_horas_y_el_contexto(): void
     {
         $actividad = Contexto::factory()->create(['color' => ColorActividad::Rosa->value]);
         $caja = Caja::factory()->delDia(self::FECHA)->conHora('10:00', '11:00')->create(['contexto_id' => $actividad->id]);
@@ -125,7 +125,7 @@ class AgendaCajaTest extends TestCase
         $this->assertDatabaseMissing('cajas', ['id' => $caja->id]);
     }
 
-    public function test_el_color_de_una_actividad_inexistente_se_rechaza(): void
+    public function test_un_contexto_inexistente_se_rechaza(): void
     {
         $this->postJson(route('agenda.cajas.store'), ['fecha' => self::FECHA, 'tipo' => 'texto', 'contexto_id' => 999])
             ->assertJsonValidationErrors('contexto_id');
@@ -238,7 +238,7 @@ class AgendaCajaTest extends TestCase
         $this->assertSame(['A', 'B', 'C'], Caja::delDia(self::FECHA)->enOrdenDeLectura()->pluck('titulo')->all());
     }
 
-    public function test_la_hoja_renderiza_las_cajas_con_su_posicion_y_el_color_de_la_actividad(): void
+    public function test_la_hoja_renderiza_las_cajas_con_su_posicion_y_el_color_del_contexto(): void
     {
         $actividad = Contexto::factory()->create(['nombre' => 'Urología', 'color' => ColorActividad::Ciruela->value]);
         Caja::factory()->delDia(self::FECHA)->create(['contexto_id' => $actividad->id, 'x' => 3, 'y' => 5, 'ancho' => 4, 'alto' => 7]);
@@ -299,7 +299,7 @@ class AgendaCajaTest extends TestCase
         $this->assertNull($caja->fresh()->borde_color);
     }
 
-    public function test_las_cajas_no_llevan_tinte_de_fondo_por_actividad(): void
+    public function test_las_cajas_no_llevan_tinte_de_fondo_por_contexto(): void
     {
         $css = file_get_contents(resource_path('css/agenda.css'));
 

@@ -17,7 +17,7 @@
     {{-- Abierta si todavía no hay contextos (ahí explica cómo empezar); cerrada si ya hay, para no ocupar lugar. --}}
     <details class="tarjeta contextos-ayuda" @if ($arbol->isEmpty()) open @endif>
         <summary>¿Para qué sirven los contextos?</summary>
-        <p>Un contexto agrupa tus notas, tareas, sesiones de estudio y actividades de la agenda bajo una misma cosa. Así ves todo lo de una materia o un proyecto junto, en lugar de buscarlo por separado. Podés anidarlos: un tema dentro de una materia, una materia dentro de un entorno.</p>
+        <p>Un contexto agrupa tus notas, tareas, sesiones de estudio y cajas de la agenda bajo una misma cosa. Así ves todo lo de una materia o un proyecto junto, en lugar de buscarlo por separado. Podés anidarlos: un tema dentro de una materia, una materia dentro de un entorno.</p>
         <dl class="contextos-tipos">
             <div><dt><span class="badge-foco">Entorno</span></dt><dd>Un área grande de tu vida, como "Carrera" o "Vida cotidiana".</dd></div>
             <div><dt><span class="badge-foco">Materia</span></dt><dd>Una materia o curso que estás cursando.</dd></div>
@@ -31,12 +31,14 @@
             @php($contexto = $fila['contexto'])
             <div class="arbol-fila" style="--nivel: {{ $fila['nivel'] }}">
                 <div class="arbol-nombre">
+                    <span class="arbol-titulo">
                     @php($color = $colores->visible($contexto->id))
                     @if ($color)
                         <span class="arbol-color @unless ($color->propio) es-heredado @endunless" style="background: {{ $color->marca() }}"
                               @unless ($color->propio) title="Usa el color de {{ $color->origen }}" @endunless aria-hidden="true"></span>
                     @endif
                     <a href="{{ route('notas.index', ['contexto' => $contexto->id]) }}" class="fw-medium text-decoration-none">{{ $contexto->nombre }}</a>
+                    </span>
                     <span class="badge-foco">{{ $contexto->tipo->etiqueta() }}</span>
                     <span class="text-secondary small">{{ $contexto->notas_count }} {{ $contexto->notas_count === 1 ? 'nota' : 'notas' }}</span>
                 </div>
@@ -44,7 +46,7 @@
                     <a href="{{ route('contextos.create', ['padre' => $contexto->id]) }}" class="btn-icono" title="Agregar subcontexto" aria-label="Agregar subcontexto a {{ $contexto->nombre }}"><i class="bi bi-node-plus"></i></a>
                     <a href="{{ route('contextos.edit', $contexto) }}" class="btn-icono" title="Editar" aria-label="Editar {{ $contexto->nombre }}"><i class="bi bi-pencil"></i></a>
                     <form method="POST" action="{{ route('contextos.destroy', $contexto) }}" class="d-inline"
-                          data-confirmar="¿Eliminar &quot;{{ $contexto->nombre }}&quot;? Sus notas pasan a la bandeja de entrada y sus subcontextos quedan sin padre.@if ($contexto->color) También es una actividad de la Agenda: sus cajas quedan sin actividad.@endif">
+                          data-confirmar="¿Eliminar &quot;{{ $contexto->nombre }}&quot;? Sus notas pasan a la bandeja de entrada, sus tareas y cajas quedan sin contexto y sus subcontextos quedan sin padre.">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn-icono" title="Eliminar" aria-label="Eliminar {{ $contexto->nombre }}"><i class="bi bi-trash"></i></button>
