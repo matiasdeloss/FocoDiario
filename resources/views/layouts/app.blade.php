@@ -8,6 +8,7 @@
     <meta name="url-login" content="{{ route('login') }}">
     <meta name="url-recordatorios-vencidos" content="{{ route('recordatorios.vencidos') }}">
     <title>@yield('titulo', 'FocoDiario')</title>
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     {{-- Aplica el tema guardado antes de pintar (sin destello). Lleva el nonce de la CSP; el interruptor está en resources/js/tema.js. --}}
     <script nonce="{{ Vite::cspNonce() }}">try{var t=localStorage.getItem('foco-tema');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
