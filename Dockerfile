@@ -32,6 +32,10 @@ RUN install-php-extensions \
     pcntl \
     bcmath
 
+# Quitar la capability de archivo de FrankenPHP: Render no permite ejecutar
+# binarios con capabilities y el puerto 10000 no necesita privilegios
+RUN setcap -r /usr/local/bin/frankenphp
+
 WORKDIR /app
 
 # Copiar código de la aplicación
