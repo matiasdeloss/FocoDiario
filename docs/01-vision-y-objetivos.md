@@ -12,7 +12,7 @@ Una herramienta personal que ayude a:
 - Consultar buenas prácticas de estudio dentro de la misma app.
 
 ## Usuario
-Solo yo (Matías). Sin cuentas de usuario ni multiusuario. Si algún día se abre a otros, será una decisión posterior.
+Solo yo. Sin cuentas de usuario ni multiusuario. Si algún día se abre a otros, será una decisión posterior.
 
 ## Qué resuelve
 - Visibilidad: saber en qué se va el tiempo.
@@ -32,7 +32,3 @@ Solo yo (Matías). Sin cuentas de usuario ni multiusuario. Si algún día se abr
 - Ver un resumen semanal de horas aprovechadas vs. ocio.
 - Bajar las horas de ocio no planificado (meta a definir con datos reales).
 
-## Preguntas abiertas
-- ¿Web, escritorio o ambas? (se decide después de los requisitos)
-- ¿Cómo se define "hora aprovechada"? (propuesta: tiempo en categorías productivas)
-- ¿Los recordatorios necesitan notificaciones del sistema?
