@@ -22,9 +22,9 @@ RUN composer install \
     --no-scripts
 
 # -------------------------------------------------------------
-# Etapa 3: Imagen de producción con FrankenPHP (PHP 8.3)
+# Etapa 3: Imagen de producción con FrankenPHP (PHP 8.4)
 # -------------------------------------------------------------
-FROM dunglas/frankenphp:1-php8.3
+FROM dunglas/frankenphp:1-php8.4
 
 # Instalar extensiones necesarias para Laravel y PostgreSQL
 RUN install-php-extensions \
