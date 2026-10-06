@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nota;
+use App\Support\Busqueda;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,10 +14,10 @@ class NotaTareaController extends Controller
     public function buscar(Request $request): JsonResponse
     {
         $texto = trim((string) $request->query('q', ''));
-        $patron = '%'.addcslashes($texto, '\\%_').'%';
+        $patron = Busqueda::patron($texto);
 
         $notas = Nota::query()
-            ->when($texto !== '', fn ($q) => $q->where(fn ($w) => $w->where('titulo', 'like', $patron)->orWhere('contenido', 'like', $patron)))
+            ->when($texto !== '', fn ($q) => $q->where(fn ($w) => $w->whereRaw(Busqueda::condicion('titulo'), [$patron])->orWhereRaw(Busqueda::condicion('contenido'), [$patron])))
             ->latest('updated_at')->latest('id')
             ->limit(10)
             ->get();

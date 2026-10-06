@@ -293,4 +293,16 @@ class NotasEnTableroTest extends TestCase
         $this->assertSame(0, Tablero::withoutGlobalScopes()->where('user_id', $invitado->id)->count());
         $this->assertNotNull($facultadInvitado);
     }
+
+    public function test_editar_una_nota_con_la_columna_donde_esta_la_tarjeta_no_la_devuelve_a_la_vieja(): void
+    {
+        $nota = Nota::factory()->create(['titulo' => 'Mover']);
+        $enProgreso = $this->columna('en_progreso');
+
+        $this->patchJson(route('notas.columna', $nota), ['columna_id' => $enProgreso->id])->assertOk();
+        // El diálogo manda la columna que muestra el tablero (resources/js/notas.js), no la del data-nota viejo.
+        $this->putJson(route('notas.update', $nota), ['contenido' => 'Editada', 'columna_id' => $enProgreso->id])->assertOk();
+
+        $this->assertSame($enProgreso->id, $nota->fresh()->columna_id);
+    }
 }

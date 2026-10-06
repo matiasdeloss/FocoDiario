@@ -17,13 +17,39 @@ final class ColoresDeContexto
 
     public static function delUsuario(): self
     {
+        return self::desde(Contexto::query()->get(['id', 'nombre', 'color', 'contexto_padre_id']));
+    }
+
+    /**
+     * Lo mismo a partir de contextos ya cargados (con id, nombre, color y contexto_padre_id), para no consultarlos otra vez.
+     *
+     * @param  iterable<Contexto>  $contextos
+     */
+    public static function desde(iterable $contextos): self
+    {
         $filas = [];
 
-        foreach (Contexto::query()->get(['id', 'nombre', 'color', 'contexto_padre_id']) as $contexto) {
+        foreach ($contextos as $contexto) {
             $filas[$contexto->id] = ['nombre' => $contexto->nombre, 'color' => $contexto->color, 'padre' => $contexto->contexto_padre_id];
         }
 
         return new self($filas);
+    }
+
+    /**
+     * Ids del contexto y de todos sus ancestros, separados por espacios ("4 1" para un contexto 4 hijo del 1): lo que lleva cada
+     * tarjeta del tablero para que el filtro por contexto también muestre las de sus descendientes. Vacío si no hay contexto.
+     */
+    public function cadena(?int $contextoId): string
+    {
+        $ids = [];
+
+        while ($contextoId !== null && isset($this->contextos[$contextoId]) && ! in_array($contextoId, $ids, true)) {
+            $ids[] = $contextoId;
+            $contextoId = $this->contextos[$contextoId]['padre'];
+        }
+
+        return implode(' ', $ids);
     }
 
     /** Color de la paleta del contexto o del ancestro más cercano con color; null si ninguno tiene. */

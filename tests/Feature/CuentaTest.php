@@ -285,4 +285,48 @@ class CuentaTest extends TestCase
         $this->assertSame(0, Nota::withoutGlobalScopes()->where('user_id', $viejo->id)->count());
         $this->assertSame(0, ColumnaTablero::withoutGlobalScopes()->where('user_id', $vacio->id)->count());
     }
+
+    public function test_la_fusion_conserva_la_columna_previa_de_las_columnas_que_se_unen(): void
+    {
+        $cuenta = $this->cuenta();
+        $invitado = User::factory()->invitado()->create();
+
+        [$tarea, $nota] = $this->como($invitado, function () {
+            $enProgreso = ColumnaTablero::where('categoria', EstadoTarea::EnProgreso)->firstOrFail();
+            $completada = ColumnaTablero::where('categoria', EstadoTarea::Completada)->firstOrFail();
+
+            $tarea = Tarea::factory()->create(['columna_id' => $enProgreso->id]);
+            $nota = Nota::factory()->create(['columna_id' => $enProgreso->id]);
+            $tarea->update(['columna_id' => $completada->id]);
+            $nota->update(['columna_id' => $completada->id]);
+
+            return [$tarea->fresh(), $nota->fresh()];
+        });
+
+        $this->assertNotNull($tarea->columna_previa_id);
+        $this->assertNotNull($nota->columna_previa_id);
+
+        $this->postJson(route('login.store'), ['email' => 'yo@foco.test', 'password' => 'una-clave-larga'])->assertOk();
+
+        $enProgresoCuenta = ColumnaTablero::where('categoria', EstadoTarea::EnProgreso)->firstOrFail();
+        $this->assertSame($enProgresoCuenta->id, Tarea::find($tarea->id)->columna_previa_id);
+        $this->assertSame($enProgresoCuenta->id, Nota::find($nota->id)->columna_previa_id);
+    }
+
+    public function test_la_limpieza_conserva_al_invitado_con_otro_tablero_o_columnas_propias(): void
+    {
+        $conTablero = User::factory()->invitado()->create(['created_at' => now()->subDays(3)]);
+        $this->como($conTablero, fn () => Tablero::crearConColumnas($conTablero->id, 'Facultad', false, [], 1));
+
+        $conColumna = User::factory()->invitado()->create(['created_at' => now()->subDays(3)]);
+        $this->como($conColumna, fn () => ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]));
+
+        $soloDeFabrica = User::factory()->invitado()->create(['created_at' => now()->subDays(3)]);
+
+        $this->artisan('foco:limpiar-invitados')->expectsOutput('Invitados borrados: 0 sin uso, 1 sin datos.')->assertSuccessful();
+
+        $this->assertNotNull($conTablero->fresh());
+        $this->assertNotNull($conColumna->fresh());
+        $this->assertNull($soloDeFabrica->fresh());
+    }
 }

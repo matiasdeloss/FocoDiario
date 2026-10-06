@@ -5,7 +5,10 @@ namespace App\Http\Requests;
 use App\Enums\ColorActividad;
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\ColumnaTablero;
+use App\Models\Tarea;
 use App\Support\ReglasDeUsuario;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -55,6 +58,25 @@ class TareaRequest extends FormRequest
             // Color de la tarjeta en el tablero; vacío = sin color (crema).
             'color' => ['nullable', Rule::enum(ColorActividad::class)],
         ];
+    }
+
+    /** Un estado sin columna propia en el tablero de la tarea (solo "En progreso" puede faltar) se rechaza. */
+    public function withValidator(Validator $validador): void
+    {
+        $validador->after(function (Validator $validador) {
+            $estado = EstadoTarea::tryFrom((string) $this->input('estado', ''));
+
+            if ($estado === null || $this->filled('columna_id') || $validador->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $tarea = $this->route('tarea');
+            $tableroId = $this->filled('tablero_id') ? (int) $this->input('tablero_id') : ($tarea instanceof Tarea ? $tarea->columna?->tablero_id : null);
+
+            if (ColumnaTablero::faltaCategoria($estado, $tableroId)) {
+                $validador->errors()->add('estado', ColumnaTablero::mensajeSinCategoria($estado));
+            }
+        });
     }
 
     public function messages(): array

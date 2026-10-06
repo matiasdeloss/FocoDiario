@@ -16,3 +16,13 @@ export function urlDeMovimiento(tipo, id, rutas) {
 
     return molde.replace('__ID__', String(id));
 }
+
+/**
+ * Datos de edición de una nota con la columna que muestra el tablero. El `data-nota` se renderiza al cargar la página y
+ * queda viejo si la tarjeta se movió después (arrastre o flechas): si la tarjeta está en una columna, esa es la vigente.
+ */
+export function datosConColumnaVigente(datos, columnaEnTablero) {
+    const columna = Number(columnaEnTablero);
+
+    return columnaEnTablero && Number.isFinite(columna) ? { ...datos, columna_id: columna } : datos;
+}

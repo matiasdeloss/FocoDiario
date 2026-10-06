@@ -44,7 +44,9 @@ class ColumnaTableroController extends Controller
     {
         $columna->update($request->safe()->except("tablero_id"));
 
-        // Si cambió el tipo, las tareas de la columna adoptan el estado nuevo (una sola consulta).
+        // Si cambió el tipo, las tareas de la columna adoptan el estado nuevo (una sola consulta). No se toca `columna_previa_id`:
+        // las tarjetas que ya estaban aquí no se "completaron" desde otra columna, así que al reabrirse (si ahora es completada)
+        // van a la columna de su nuevo estado en el tablero, no a una previa inventada.
         if ($columna->wasChanged('categoria')) {
             $columna->tareas()->update(['estado' => $columna->categoria]);
         }
@@ -199,11 +201,27 @@ class ColumnaTableroController extends Controller
     {
         $tarjetas ??= array_map(fn ($id) => 'tarea:'.$id, array_values($ordenTareas ?? []));
 
+        // Ids pedidos por tipo, con la posición que les toca (1, 2, 3...).
+        $pedidas = ['tarea' => [], 'nota' => []];
+
         foreach ($tarjetas as $posicion => $token) {
             [$tipo, $id] = explode(':', $token);
-            $modelo = $tipo === 'nota' ? Nota::class : Tarea::class;
+            $pedidas[$tipo === 'nota' ? 'nota' : 'tarea'][(int) $id] = $posicion + 1;
+        }
 
-            $modelo::whereKey((int) $id)->where('columna_id', $columna)->update(['orden' => $posicion + 1]);
+        // Una consulta por tabla con el orden actual; solo se actualizan las tarjetas cuyo orden cambia.
+        foreach (['tarea' => Tarea::class, 'nota' => Nota::class] as $tipo => $modelo) {
+            if ($pedidas[$tipo] === []) {
+                continue;
+            }
+
+            $actuales = $modelo::query()->where('columna_id', $columna)->whereKey(array_keys($pedidas[$tipo]))->pluck('orden', 'id');
+
+            foreach ($pedidas[$tipo] as $id => $orden) {
+                if ($actuales->has($id) && (int) $actuales[$id] !== $orden) {
+                    $modelo::whereKey($id)->update(['orden' => $orden]);
+                }
+            }
         }
     }
 

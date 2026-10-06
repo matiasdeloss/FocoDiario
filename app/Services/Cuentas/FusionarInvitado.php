@@ -81,6 +81,9 @@ class FusionarInvitado
                 if ($igual !== null) {
                     DB::table('tareas')->where('columna_id', $columna->id)->update(['columna_id' => $igual->id]);
                     DB::table('notas')->where('columna_id', $columna->id)->update(['columna_id' => $igual->id]);
+                    // La columna previa (a donde vuelven al reabrirse) también apunta a la que se une; si no, el borrado la pondría en null.
+                    DB::table('tareas')->where('columna_previa_id', $columna->id)->update(['columna_previa_id' => $igual->id]);
+                    DB::table('notas')->where('columna_previa_id', $columna->id)->update(['columna_previa_id' => $igual->id]);
                     DB::table('columnas_tablero')->where('id', $columna->id)->delete();
                 } else {
                     DB::table('columnas_tablero')->where('id', $columna->id)->update(['user_id' => $a, 'tablero_id' => $principalCuenta->id, 'posicion' => ++$posicion]);

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Columna del tablero de tareas. Su categoría (EstadoTarea) es el estado que reciben las tareas
@@ -27,7 +28,11 @@ class ColumnaTablero extends Model
     protected static function booted(): void
     {
         static::creating(function (ColumnaTablero $columna) {
-            $columna->tablero_id ??= Tablero::principal($columna->user_id)?->id;
+            $usuario = $columna->user_id ?? Auth::id();
+
+            if ($columna->tablero_id === null && $usuario !== null) {
+                $columna->tablero_id = Tablero::principal($usuario)?->id;
+            }
         });
     }
 
@@ -76,6 +81,24 @@ class ColumnaTablero extends Model
 
         return (clone $base)->where('categoria', $estado)->orderBy('posicion')->orderBy('id')->first()
             ?? (clone $base)->orderBy('posicion')->orderBy('id')->first();
+    }
+
+    /**
+     * ¿Le falta al tablero (por defecto, el principal) una columna de esa categoría? Solo "En progreso" puede faltar: pendiente
+     * y completada son obligatorias. Sirve para rechazar un estado pedido en vez de dejar la tarea en "Sin asignar" en silencio.
+     */
+    public static function faltaCategoria(EstadoTarea $estado, ?int $tableroId = null, ?int $usuarioId = null): bool
+    {
+        $tableroId ??= Tablero::principal($usuarioId)?->id;
+
+        return $tableroId !== null
+            && ! static::query()->withoutGlobalScope('usuario')->where('tablero_id', $tableroId)->where('categoria', $estado)->exists();
+    }
+
+    /** Mensaje de validación cuando el tablero no tiene columna del estado pedido. */
+    public static function mensajeSinCategoria(EstadoTarea $estado): string
+    {
+        return "Este tablero no tiene una columna {$estado->etiqueta()}.";
     }
 
     /**

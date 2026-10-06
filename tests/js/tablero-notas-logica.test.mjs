@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fichaDeTarjeta, urlDeMovimiento } from '../../resources/js/tablero-logica.js';
+import { datosConColumnaVigente, fichaDeTarjeta, urlDeMovimiento } from '../../resources/js/tablero-logica.js';
 import { candidatas, desvincular, idsDe, vincular } from '../../resources/js/notas-vinculadas-logica.js';
 
 test('la ficha de una tarjeta distingue notas y tareas', () => {
@@ -30,4 +30,13 @@ test('los resultados de la búsqueda no ofrecen las notas ya vinculadas', () => 
     const resultados = [{ id: 1, titulo: 'A' }, { id: 2, titulo: 'B' }];
 
     assert.deepEqual(candidatas(resultados, [{ id: 1, titulo: 'A' }]).map((n) => n.id), [2]);
+});
+
+test('al editar una nota del tablero manda la columna donde está la tarjeta, no la del data-nota viejo', () => {
+    const datos = { id: 4, titulo: 'N', columna_id: 1 };
+
+    assert.equal(datosConColumnaVigente(datos, '3').columna_id, 3);
+    assert.equal(datos.columna_id, 1);
+    assert.equal(datosConColumnaVigente(datos, undefined), datos);
+    assert.equal(datosConColumnaVigente(datos, 'x'), datos);
 });

@@ -57,13 +57,6 @@ class Contexto extends Model
         return $this->hasMany(Caja::class);
     }
 
-    /** Actividades de la agenda: los contextos que tienen un color de la paleta. */
-    #[Scope]
-    protected function actividades(Builder $query): Builder
-    {
-        return $query->whereNotNull('color')->orderBy('nombre');
-    }
-
     /** Color de la paleta de actividades, o null si no tiene color o el hex no es de la paleta. */
     public function colorActividad(): ?ColorActividad
     {
@@ -97,6 +90,14 @@ class Contexto extends Model
         return implode(self::SEPARADOR, $partes);
     }
 
+    /** Id del contexto del usuario con ese nombre (sin distinguir mayúsculas), o null; sirve a los enlaces viejos ?proyecto=NOMBRE. */
+    public static function idPorNombre(?string $nombre): ?int
+    {
+        $nombre = trim((string) $nombre);
+
+        return $nombre === '' ? null : self::query()->whereRaw('LOWER(nombre) = LOWER(?)', [$nombre])->orderBy('id')->value('id');
+    }
+
     /** Ids de este contexto y de todos sus descendientes. */
     public function idsConDescendientes(): array
     {
@@ -125,15 +126,22 @@ class Contexto extends Model
         return array_values(array_diff($this->idsConDescendientes(), [$this->id]));
     }
 
+    /** Todos los contextos del usuario con lo mínimo para armar rutas, colores y filtros: una sola consulta que se puede reutilizar. */
+    public static function todos(): Collection
+    {
+        return self::query()->get(['id', 'nombre', 'tipo', 'color', 'contexto_padre_id']);
+    }
+
     /**
      * Todos los contextos como [id => ruta completa], ordenados por ruta.
-     * Resuelve las rutas con una sola consulta.
+     * Resuelve las rutas con una sola consulta (o con `$contextos`, si el llamador ya los cargó con todos()).
      *
+     * @param  Collection<int, self>|null  $contextos
      * @return Collection<int, string>
      */
-    public static function opciones(): Collection
+    public static function opciones(?Collection $contextos = null): Collection
     {
-        return self::rutas(self::query()->get(['id', 'nombre', 'contexto_padre_id']));
+        return self::rutas($contextos ?? self::query()->get(['id', 'nombre', 'contexto_padre_id']));
     }
 
     /**
@@ -166,18 +174,30 @@ class Contexto extends Model
     /**
      * Los mismos contextos de opciones() agrupados por tipo, para los selectores de las tareas:
      * [etiqueta del tipo => [id => ruta completa]], en el orden del enum y sin los tipos vacíos.
-     * Con `$soloConTareas` deja solo los contextos que tienen alguna tarea (para los filtros).
+     * Con `$soloConTareas` deja solo los contextos que tienen alguna tarea, ellos o sus descendientes (para los filtros,
+     * que incluyen a los descendientes). Con `$contextos` (ver todos()) no vuelve a consultarlos.
      *
+     * @param  Collection<int, self>|null  $contextos
      * @return Collection<string, Collection<int, string>>
      */
-    public static function opcionesPorTipo(bool $soloConTareas = false): Collection
+    public static function opcionesPorTipo(bool $soloConTareas = false, ?Collection $contextos = null): Collection
     {
-        $contextos = self::query()->get(['id', 'nombre', 'tipo', 'contexto_padre_id']);
+        $contextos ??= self::query()->get(['id', 'nombre', 'tipo', 'contexto_padre_id']);
         $rutas = self::rutas($contextos);
 
         if ($soloConTareas) {
-            $conTareas = Tarea::query()->whereNotNull('contexto_id')->distinct()->pluck('contexto_id')->all();
-            $rutas = $rutas->only($conTareas);
+            $porId = $contextos->keyBy('id');
+            $visibles = [];
+
+            foreach (Tarea::query()->whereNotNull('contexto_id')->distinct()->pluck('contexto_id') as $id) {
+                // El contexto de la tarea y sus ancestros.
+                while ($id !== null && $porId->has($id) && ! isset($visibles[$id])) {
+                    $visibles[$id] = true;
+                    $id = $porId[$id]->contexto_padre_id;
+                }
+            }
+
+            $rutas = $rutas->only(array_keys($visibles));
         }
 
         $tipos = $contextos->pluck('tipo', 'id');

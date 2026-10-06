@@ -31,6 +31,11 @@ class TareaController extends Controller
     {
         $filtros = $request->validated();
 
+        // Enlaces viejos ?proyecto=NOMBRE: van al contexto con ese nombre (si no existe, se ignora).
+        if (! $request->filled('contexto') && ($contextoId = Contexto::idPorNombre($request->query('proyecto'))) !== null) {
+            return redirect()->route('tareas.index', ['contexto' => $contextoId] + $request->except('proyecto'));
+        }
+
         if (($filtros['vista'] ?? 'lista') === 'tablero') {
             return redirect()->route('tablero.index', array_filter(['contexto' => $filtros['contexto'] ?? null]));
         }
@@ -129,6 +134,8 @@ class TareaController extends Controller
     /** Cambia el estado con un clic. Con HTMX devuelve solo la fila actualizada. */
     public function cambiarEstado(CambiarEstadoTareaRequest $request, Tarea $tarea, ListasHoy $listas): View|RedirectResponse|JsonResponse
     {
+        // Destildar una completada la devuelve a la columna donde estaba antes de completarse.
+        $tarea->reabrirEnColumnaPrevia = $request->validated('estado') === EstadoTarea::Pendiente->value;
         $tarea->update($request->validated());
 
         if ($request->expectsJson()) {

@@ -9,6 +9,7 @@ use App\Models\Tablero;
 use App\Models\Tarea;
 use App\Support\ColoresDeContexto;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -20,8 +21,13 @@ class TableroController extends Controller
 {
     private const COMPLETADAS_EN_TABLERO = 10;
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
+        // Enlaces viejos ?proyecto=NOMBRE: van al contexto con ese nombre (si no existe, se ignora).
+        if (! $request->filled('contexto') && ($contextoId = Contexto::idPorNombre($request->query('proyecto'))) !== null) {
+            return redirect()->route('tablero.index', ['contexto' => $contextoId] + $request->except('proyecto'));
+        }
+
         $tableros = Tablero::ordenados()->get();
         $actual = $this->elegido($request, $tableros);
 
@@ -60,17 +66,20 @@ class TableroController extends Controller
             ];
         })->values();
 
+        // Los contextos se cargan una sola vez para los colores y las dos listas de opciones.
+        $contextosDelUsuario = Contexto::todos();
+
         return view('tablero.index', [
             'columnas' => $columnas,
             'total' => $columnas->sum(fn ($c) => $c['tarjetas']->count() + $c['ocultas']),
             'columnasOrden' => $columnasTablero,
-            'colores' => ColoresDeContexto::delUsuario(),
-            'contextosFiltro' => Contexto::opcionesPorTipo(soloConTareas: true),
-            'contextos' => Contexto::opcionesPorTipo(),
+            'colores' => ColoresDeContexto::desde($contextosDelUsuario),
+            'contextosFiltro' => Contexto::opcionesPorTipo(soloConTareas: true, contextos: $contextosDelUsuario),
+            'contextos' => Contexto::opcionesPorTipo(contextos: $contextosDelUsuario),
             'contextoInicial' => (string) $request->query('contexto', ''),
             'tableros' => $tableros,
             'tableroActual' => $actual,
-            'destinos' => Contexto::opciones(),
+            'destinos' => Contexto::opciones($contextosDelUsuario),
             'columnasTodas' => ColumnaTablero::paraSelector(),
         ]);
     }

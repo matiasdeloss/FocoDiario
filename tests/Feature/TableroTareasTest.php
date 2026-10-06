@@ -49,7 +49,7 @@ class TableroTareasTest extends TestCase
         preg_match('/<select id="k-contexto".*?<\/select>/s', $html, $filtro);
         $this->assertStringNotContainsString('Sin tareas', $filtro[0]);
         // Cada tarjeta lleva lo que el filtro necesita y sus etiquetas de prioridad y contexto.
-        $this->assertStringContainsString('data-contexto="'.$tesis->id.'"', $html);
+        $this->assertStringContainsString('data-contextos="'.$tesis->id.'"', $html);
         $this->assertStringContainsString('data-prioridad="alta"', $html);
         $this->assertStringContainsString('k-chip-contexto', $html);
     }

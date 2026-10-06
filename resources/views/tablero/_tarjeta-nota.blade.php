@@ -13,7 +13,7 @@
 <article class="tarea-tarjeta tarjeta-nota @if ($colorVisible) con-color @endif" id="nota-tablero-{{ $nota->id }}" draggable="true"
          @if ($colorVisible) style="--tarjeta-fondo: {{ $colorVisible->fondo() }}; --tarjeta-marca: {{ $colorVisible->marca() }}" @endif
          data-id="{{ $nota->id }}" data-tipo="nota" data-estado="{{ $completada ? 'completada' : 'abierta' }}" data-titulo="{{ $titulo }}"
-         data-prioridad="" data-contexto="{{ $nota->contexto_id }}"
+         data-prioridad="" data-contextos="{{ $colores?->cadena($nota->contexto_id) ?? $nota->contexto_id }}"
          data-buscar="{{ mb_strtolower($titulo.' '.$extracto.' '.$nota->contexto?->nombre) }}">
     <div class="tarea-titulo {{ $completada ? 'texto-tachado' : 'fw-medium' }}" data-titulo-texto>{{ $titulo }}</div>
     @if ($extracto !== '' && $extracto !== $titulo)

@@ -90,17 +90,28 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Las tarjetas de "Sin asignar" pasan a la primera columna pendiente que no sea fija (o quedan sin columna).
-        foreach (DB::table('columnas_tablero')->where('fija', true)->get() as $fija) {
-            $destino = DB::table('columnas_tablero')->where('user_id', $fija->user_id)->where('fija', false)
-                ->where('categoria', 'pendiente')->orderBy('tablero_id')->orderBy('posicion')->value('id');
+        // Antes de este cambio había un solo tablero por usuario: queda el principal (o, si no hay, el primero) sin su "Sin asignar",
+        // y las tarjetas de los demás tableros pasan a su columna de la misma categoría (o, si no hay, a la primera no fija).
+        $tablas = collect(['tareas', 'notas'])->filter(fn ($tabla) => Schema::hasTable($tabla) && Schema::hasColumn($tabla, 'columna_id'));
 
-            DB::table('tareas')->where('columna_id', $fija->id)->update(['columna_id' => $destino]);
+        foreach (DB::table('tableros')->distinct()->pluck('user_id') as $usuario) {
+            $tablero = DB::table('tableros')->where('user_id', $usuario)->orderByDesc('principal')->orderBy('posicion')->orderBy('id')->value('id');
+            $propias = DB::table('columnas_tablero')->where('tablero_id', $tablero)->where('fija', false)->orderBy('posicion')->orderBy('id')->get();
+            $ajenas = DB::table('columnas_tablero')->where('user_id', $usuario)
+                ->where(fn ($q) => $q->where('tablero_id', '!=', $tablero)->orWhere('fija', true))->get();
+
+            foreach ($ajenas as $columna) {
+                $destino = ($propias->firstWhere('categoria', $columna->categoria) ?? $propias->first())?->id;
+
+                foreach ($tablas as $tabla) {
+                    DB::table($tabla)->where('columna_id', $columna->id)->update(['columna_id' => $destino]);
+                }
+            }
+
+            DB::table('columnas_tablero')->whereIn('id', $ajenas->pluck('id'))->delete();
+            // Sin la columna fija, las del principal vuelven a empezar en 0.
+            DB::table('columnas_tablero')->where('tablero_id', $tablero)->decrement('posicion');
         }
-
-        DB::table('columnas_tablero')->where('fija', true)->delete();
-        // Sin la columna fija, las demás vuelven a empezar en 0.
-        DB::table('columnas_tablero')->where('posicion', '>', 0)->decrement('posicion');
 
         $guardadas = $this->guardarColumnasDeTareas();
 

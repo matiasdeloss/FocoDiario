@@ -33,7 +33,7 @@ if (tablero) {
     const hayFiltros = () => filtros.q !== '' || filtros.contexto !== '' || filtros.prioridad !== '';
 
     const coincide = (tarjeta) => (filtros.q === '' || tarjeta.dataset.buscar.includes(filtros.q))
-        && (filtros.contexto === '' || tarjeta.dataset.contexto === filtros.contexto)
+        && (filtros.contexto === '' || ` ${tarjeta.dataset.contextos ?? ''} `.includes(` ${filtros.contexto} `))
         && (filtros.prioridad === '' || tarjeta.dataset.prioridad === filtros.prioridad);
 
     /** Contadores, estados vacíos y resumen según las tarjetas que hay y las que dejan pasar los filtros. */

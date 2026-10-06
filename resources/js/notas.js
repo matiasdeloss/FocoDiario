@@ -2,6 +2,7 @@
 // Mejora progresiva: sin JS, los enlaces llevan a las páginas de crear/editar y los filtros son enlaces.
 import { aviso } from './avisos.js';
 import { pedirSeguro } from './red.js';
+import { datosConColumnaVigente } from './tablero-logica.js';
 
 const lista = document.getElementById('lista-notas');
 const contenedor = document.getElementById('notas');
@@ -231,7 +232,9 @@ if (dialogo) {
         evento.preventDefault();
 
         if (opener.dataset.abrirNota === 'editar') {
-            const datos = JSON.parse(opener.dataset.nota);
+            // Solo la tarjeta de la nota manda su columna: un enlace a una nota dentro de una tarea está en la columna de la tarea.
+            const columnaEnTablero = opener.closest('.tarjeta-nota')?.closest('.tablero-columna[data-columna]')?.dataset.columna;
+            const datos = datosConColumnaVigente(JSON.parse(opener.dataset.nota), columnaEnTablero);
             abrir(opener, datos, { url: datos.url, metodo: 'PUT' });
         } else {
             abrir(opener, { contexto_id: opener.dataset.contexto || '' }, { url: dialogo.dataset.urlCrear, metodo: 'POST' });

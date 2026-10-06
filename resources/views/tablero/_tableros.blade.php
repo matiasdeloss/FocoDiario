@@ -48,7 +48,7 @@
 
             @if ($tableros->count() > 1)
                 <form method="POST" action="{{ route('tableros.destroy', $tableroActual) }}" class="k-gestion-form"
-                      data-confirmar="¿Eliminar el tablero &quot;{{ $tableroActual->nombre }}&quot;? Sus tarjetas pasan a &quot;Sin asignar&quot; del tablero que elijas.">
+                      data-confirmar="¿Eliminar el tablero &quot;{{ $tableroActual->nombre }}&quot;? Sus tarjetas pasan a &quot;Sin asignar&quot; del tablero que elijas y las tareas completadas vuelven a pendientes.">
                     @csrf
                     @method('DELETE')
                     <label for="tablero-destino" class="form-label">Al eliminarlo, pasar sus tarjetas a</label>

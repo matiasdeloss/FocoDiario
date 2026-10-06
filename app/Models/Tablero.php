@@ -32,12 +32,6 @@ class Tablero extends Model
         return $this->hasMany(ColumnaTablero::class, 'tablero_id')->orderBy('posicion')->orderBy('id');
     }
 
-    /** La columna fija "Sin asignar" (la primera del tablero). */
-    public function sinAsignar(): ?ColumnaTablero
-    {
-        return ColumnaTablero::query()->where('tablero_id', $this->id)->where('fija', true)->first();
-    }
-
     public function scopeOrdenados(Builder $consulta): Builder
     {
         return $consulta->orderBy('posicion')->orderBy('id');

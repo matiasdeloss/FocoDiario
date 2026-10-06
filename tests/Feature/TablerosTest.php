@@ -345,6 +345,10 @@ class TablerosTest extends TestCase
             $this->get(route('tablero.index'))->assertOk();
             DB::disableQueryLog();
 
+            // Los contextos se cargan completos una sola vez (las demás lecturas son las de eager loading por ids).
+            $completas = array_filter(DB::getQueryLog(), fn ($q) => str_contains($q['query'], 'from "contextos"') && ! str_contains($q['query'], ' in ('));
+            $this->assertCount(1, $completas, 'El tablero debe cargar todos los contextos en una sola consulta.');
+
             return count(DB::getQueryLog());
         };
 

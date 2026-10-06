@@ -16,12 +16,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
 #[Fillable(['titulo', 'descripcion', 'contexto_id', 'fecha_limite', 'prioridad', 'color', 'estado', 'columna_id', 'orden'])]
 class Tarea extends Model
 {
     /** @use HasFactory<TareaFactory> */
     use HasFactory, HeredaColorDeContexto, PerteneceAUsuario;
+
+    /**
+     * Transitorio (no se guarda): lo activa quien reabre con el "tilde" de Hoy, la lista o el calendario. Una reapertura así
+     * vuelve a la columna previa aunque sea de otro tipo (p. ej. "En progreso" al destildar); elegir un estado explícito en un
+     * formulario no lo usa y va a la columna de ese estado.
+     */
+    public bool $reabrirEnColumnaPrevia = false;
 
     protected function casts(): array
     {
@@ -61,12 +69,21 @@ class Tarea extends Model
             $columnaActual = $tarea->columna_id !== null ? ColumnaTablero::find($tarea->columna_id) : null;
 
             if ($columnaActual === null || $columnaActual->categoria !== $estado) {
-
-                // Al reabrir (sale de una completada sin elegir columna) vuelve a la que tenía antes de completarse.
+                // Al reabrir (sale de una completada sin elegir columna) vuelve a la que tenía antes de completarse: siempre si es
+                // un destildado (`reabrirEnColumnaPrevia`); si se pidió un estado explícito, solo si esa columna es de ese tipo.
                 $reabierta = $columnaActual?->esCompletada() && $estado !== EstadoTarea::Completada
                     ? ColumnaTablero::deReapertura($tarea->columna_previa_id, $columnaActual->tablero_id)
                     : null;
-                $destino = $reabierta ?? ColumnaTablero::paraEstado($estado, $columnaActual?->tablero_id, $tarea->user_id);
+
+                if ($reabierta !== null && ! $tarea->reabrirEnColumnaPrevia && $reabierta->categoria !== $estado) {
+                    $reabierta = null;
+                }
+
+                // Último recurso (los formularios ya rechazan un estado sin columna): sin tablero ni usuario no se busca nada,
+                // para no tomar el tablero de otro usuario.
+                $usuario = $tarea->user_id ?? Auth::id();
+                $tableroId = $columnaActual?->tablero_id;
+                $destino = $reabierta ?? ($tableroId !== null || $usuario !== null ? ColumnaTablero::paraEstado($estado, $tableroId, $usuario) : null);
 
                 $tarea->columna_id = $destino?->id;
 

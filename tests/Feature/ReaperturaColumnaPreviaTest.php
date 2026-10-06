@@ -54,7 +54,7 @@ class ReaperturaColumnaPreviaTest extends TestCase
         $this->assertNull($tarea->columna_previa_id);
     }
 
-    public function test_una_nota_completada_vuelve_a_su_columna_previa_al_reabrirse(): void
+    public function test_una_nota_recuerda_su_columna_previa_al_completarse(): void
     {
         $revision = $this->revision();
         $nota = Nota::factory()->create(['columna_id' => $revision->id]);
@@ -62,31 +62,21 @@ class ReaperturaColumnaPreviaTest extends TestCase
         $this->patchJson(route('notas.columna', $nota), ['columna_id' => $this->columna('completada')->id])->assertOk();
         $this->assertSame($revision->id, $nota->fresh()->columna_previa_id);
 
-        $nota->fresh()->reabrir();
-
-        $nota->refresh();
-        $this->assertSame($revision->id, $nota->columna_id);
-        $this->assertNull($nota->columna_previa_id);
+        $this->assertSame($this->columna('completada')->id, $nota->fresh()->columna_id);
     }
 
     public function test_si_la_columna_previa_se_borra_vuelve_a_sin_asignar(): void
     {
         $revision = $this->revision();
         $tarea = Tarea::factory()->create(['columna_id' => $revision->id]);
-        $nota = Nota::factory()->create(['columna_id' => $revision->id]);
-        $completada = $this->columna('completada');
 
         $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'completada'])->assertOk();
-        $this->patchJson(route('notas.columna', $nota), ['columna_id' => $completada->id])->assertOk();
 
         $revision->delete();
 
         $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'pendiente'])->assertOk();
-        $nota->fresh()->reabrir();
 
-        $sinAsignar = ColumnaTablero::sinAsignarDe();
-        $this->assertSame($sinAsignar->id, $tarea->fresh()->columna_id);
-        $this->assertSame($sinAsignar->id, $nota->fresh()->columna_id);
+        $this->assertSame(ColumnaTablero::sinAsignarDe()->id, $tarea->fresh()->columna_id);
     }
 
     public function test_un_movimiento_explicito_despues_de_completar_ignora_la_memoria(): void
@@ -128,21 +118,62 @@ class ReaperturaColumnaPreviaTest extends TestCase
         $otro = $this->otroTablero();
         $revision = $this->revision();
         $tarea = Tarea::factory()->create(['columna_id' => $revision->id]);
-        $nota = Nota::factory()->create(['columna_id' => $revision->id]);
 
         $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'completada'])->assertOk();
-        $this->patchJson(route('notas.columna', $nota), ['columna_id' => $this->columna('completada')->id])->assertOk();
 
-        // Pasan a la completada del otro tablero (movimiento explícito entre completadas).
+        // Pasa a la completada del otro tablero (movimiento explícito entre completadas).
         $completadaOtro = $this->columna('completada', $otro);
         $this->patchJson(route('tareas.columna', $tarea), ['columna_id' => $completadaOtro->id])->assertOk();
-        $this->patchJson(route('notas.columna', $nota), ['columna_id' => $completadaOtro->id])->assertOk();
 
         $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'pendiente'])->assertOk();
-        $nota->fresh()->reabrir();
 
-        $sinAsignarOtro = ColumnaTablero::sinAsignarDe($otro->id);
-        $this->assertSame($sinAsignarOtro->id, $tarea->fresh()->columna_id);
-        $this->assertSame($sinAsignarOtro->id, $nota->fresh()->columna_id);
+        $this->assertSame(ColumnaTablero::sinAsignarDe($otro->id)->id, $tarea->fresh()->columna_id);
+    }
+
+    public function test_destildar_devuelve_a_en_progreso_aunque_se_pida_pendiente(): void
+    {
+        $enProgreso = $this->columna('en_progreso');
+        $tarea = Tarea::factory()->create(['columna_id' => $enProgreso->id]);
+
+        $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'completada'])->assertOk();
+        $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'pendiente'])->assertOk();
+
+        $tarea->refresh();
+        $this->assertSame($enProgreso->id, $tarea->columna_id);
+        $this->assertSame(EstadoTarea::EnProgreso, $tarea->estado);
+    }
+
+    public function test_pedir_en_progreso_desde_un_formulario_va_a_esa_columna_y_no_a_la_previa_pendiente(): void
+    {
+        $pendiente = $this->columna('pendiente');
+        $enProgreso = $this->columna('en_progreso');
+        $tarea = Tarea::factory()->create(['columna_id' => $pendiente->id]);
+
+        $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'completada'])->assertOk();
+        $this->patchJson(route('tareas.update', $tarea), [
+            'titulo' => $tarea->titulo,
+            'prioridad' => $tarea->prioridad->value,
+            'estado' => 'en_progreso',
+        ])->assertSuccessful();
+
+        $tarea->refresh();
+        $this->assertSame($enProgreso->id, $tarea->columna_id);
+        $this->assertSame(EstadoTarea::EnProgreso, $tarea->estado);
+    }
+
+    public function test_cambiar_el_tipo_de_una_columna_a_completada_no_inventa_una_previa(): void
+    {
+        $revision = $this->revision();
+        $tarea = Tarea::factory()->create(['columna_id' => $revision->id]);
+
+        $this->patchJson(route('tablero.columnas.update', $revision), ['nombre' => 'Revisión', 'categoria' => 'completada'])->assertOk();
+
+        $tarea->refresh();
+        $this->assertSame(EstadoTarea::Completada, $tarea->estado);
+        $this->assertNull($tarea->columna_previa_id);
+
+        // Al reabrirse cae en la columna del estado pedido del tablero, no en una previa inexistente.
+        $this->patchJson(route('tareas.estado', $tarea), ['estado' => 'pendiente'])->assertOk();
+        $this->assertSame(ColumnaTablero::sinAsignarDe()->id, $tarea->fresh()->columna_id);
     }
 }

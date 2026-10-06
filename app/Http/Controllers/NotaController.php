@@ -9,6 +9,7 @@ use App\Enums\ColorActividad;
 use App\Models\Contexto;
 use App\Models\Nota;
 use App\Support\Aviso;
+use App\Support\Busqueda;
 use App\Support\ColoresDeContexto;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -33,8 +34,8 @@ class NotaController extends Controller
 
 
         if ($busqueda !== '') {
-            $patron = '%'.addcslashes($busqueda, '\\%_').'%';
-            $notas->where(fn ($q) => $q->where('titulo', 'like', $patron)->orWhere('contenido', 'like', $patron));
+            $patron = Busqueda::patron($busqueda);
+            $notas->where(fn ($q) => $q->whereRaw(Busqueda::condicion('titulo'), [$patron])->orWhereRaw(Busqueda::condicion('contenido'), [$patron]));
         }
 
         if ($color) {

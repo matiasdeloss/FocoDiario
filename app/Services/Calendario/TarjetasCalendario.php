@@ -4,6 +4,7 @@ namespace App\Services\Calendario;
 
 use App\Enums\EstadoTarea;
 use App\Enums\PrioridadTarea;
+use App\Models\ColumnaTablero;
 use App\Models\Contexto;
 use App\Models\Nota;
 use App\Models\Recordatorio;
@@ -12,6 +13,7 @@ use App\Support\ColoresDeContexto;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Tarjetas simples del panel "Por ubicar": tareas, recordatorios y notas sin fecha.
@@ -91,10 +93,17 @@ class TarjetasCalendario
 
             if (array_key_exists('completada', $datos)) {
                 $campos['estado'] = $datos['completada'] ? EstadoTarea::Completada : EstadoTarea::Pendiente;
+                // Destildar vuelve a la columna previa; si además se elige un estado, manda ese (ver más abajo).
+                $tarjeta->reabrirEnColumnaPrevia = ! array_key_exists('estado', $datos);
             }
 
             if (array_key_exists('estado', $datos)) {
                 $campos['estado'] = $datos['estado'];
+                $pedido = EstadoTarea::tryFrom((string) $datos['estado']);
+
+                if ($pedido !== null && ColumnaTablero::faltaCategoria($pedido, $tarjeta->columna?->tablero_id)) {
+                    throw ValidationException::withMessages(['estado' => ColumnaTablero::mensajeSinCategoria($pedido)]);
+                }
             }
 
             if (array_key_exists('contexto_id', $datos)) {

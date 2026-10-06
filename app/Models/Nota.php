@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 #[Fillable(['titulo', 'contenido', 'contexto_id', 'fecha', 'fijada', 'color', 'columna_id', 'orden', 'oculta'])]
@@ -28,7 +29,12 @@ class Nota extends Model
     {
         static::saving(function (Nota $nota) {
             if ($nota->columna_id === null && ! $nota->exists) {
-                $nota->columna_id = ColumnaTablero::sinAsignarDe(null, $nota->user_id)?->id;
+                // Sin usuario (ni propio ni de la sesión) no se asigna columna: nunca se busca sin acotar.
+                $usuario = $nota->user_id ?? Auth::id();
+
+                if ($usuario !== null) {
+                    $nota->columna_id = ColumnaTablero::sinAsignarDe(null, $usuario)?->id;
+                }
             }
 
             if ($nota->exists && $nota->columna_id !== null && $nota->isDirty('columna_id')) {
@@ -39,23 +45,6 @@ class Nota extends Model
                 }
             }
         });
-    }
-
-    /** Reabre una nota completada: vuelve a la columna que tenía antes de completarse o, si ya no sirve, a "Sin asignar" de su tablero. */
-    public function reabrir(): void
-    {
-        $columna = $this->columna;
-
-        if ($columna === null || ! $columna->esCompletada()) {
-            return;
-        }
-
-        $destino = ColumnaTablero::deReapertura($this->columna_previa_id, $columna->tablero_id)
-            ?? ColumnaTablero::sinAsignarDe($columna->tablero_id);
-
-        if ($destino !== null) {
-            $this->update(['columna_id' => $destino->id]);
-        }
     }
 
     protected function casts(): array

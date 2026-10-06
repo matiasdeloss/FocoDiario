@@ -25,7 +25,7 @@
 <article class="tarea-tarjeta prioridad-{{ $tarea->prioridad->value }} @if ($colorVisible) con-color @endif" id="tarea-{{ $tarea->id }}" draggable="true"
          @if ($colorVisible) style="--tarjeta-fondo: {{ $colorVisible->fondo() }}; --tarjeta-marca: {{ $colorVisible->marca() }}" @endif
          data-id="{{ $tarea->id }}" data-tipo="tarea" data-estado="{{ $tarea->estado->value }}" data-titulo="{{ $tarea->titulo }}"
-         data-prioridad="{{ $tarea->prioridad->value }}" data-contexto="{{ $tarea->contexto_id }}"
+         data-prioridad="{{ $tarea->prioridad->value }}" data-contextos="{{ $colores?->cadena($tarea->contexto_id) ?? $tarea->contexto_id }}"
          data-buscar="{{ mb_strtolower($tarea->titulo.' '.$tarea->contexto?->nombre) }}"
          @if ($estadoFecha === 'vencida') data-pasada="1" @endif>
     <div class="tarea-titulo {{ $completada ? 'texto-tachado' : 'fw-medium' }}" data-titulo-texto>{{ $tarea->titulo }}</div>

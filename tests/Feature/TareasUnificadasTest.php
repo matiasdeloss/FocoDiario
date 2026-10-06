@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Enums\EstadoTarea;
 use App\Models\Contexto;
+use App\Models\Nota;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /** Pantalla unificada de Tareas y Recordatorios: lista agrupada por tiempo, filtros y modales de recordatorio. */
@@ -161,5 +163,26 @@ class TareasUnificadasTest extends TestCase
 
         $this->get(route('recordatorios.create'))->assertOk()->assertSee('href="'.route('tareas.index').'"', false);
         $this->get(route('recordatorios.edit', $recordatorio))->assertOk();
+    }
+
+    public function test_la_lista_no_consulta_las_notas_vinculadas_tarea_por_tarea(): void
+    {
+        $contar = function (int $tareas): int {
+            Tarea::query()->delete();
+
+            foreach (range(1, $tareas) as $i) {
+                Tarea::factory()->create()->notas()->attach(Nota::factory()->create());
+            }
+
+            DB::enableQueryLog();
+            $this->get(route('tareas.index'))->assertOk();
+            $consultas = count(DB::getQueryLog());
+            DB::flushQueryLog();
+            DB::disableQueryLog();
+
+            return $consultas;
+        };
+
+        $this->assertSame($contar(2), $contar(6));
     }
 }

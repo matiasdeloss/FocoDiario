@@ -3,8 +3,10 @@
 namespace App\Services\Tareas;
 
 use App\Enums\EstadoTarea;
+use App\Models\Contexto;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
+use App\Support\Busqueda;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -27,7 +29,7 @@ class ListaTareas
     private const COMPLETADAS = 30;
 
     /**
-     * @param  array{tipo?: string|null, estado?: string|null, prioridad?: string|null, contexto?: int|string|null, q?: string|null}  $filtros
+     * @param  array{tipo?: string|null, estado?: string|null, prioridad?: string|null, contexto?: int|string|null, q?: string|null, contexto_ids?: list<int>}  $filtros
      * @return array{grupos: array<string, Collection<int, ItemLista>>, completadas: Collection<int, ItemLista>, hechasTotal: int}
      */
     public function armar(array $filtros): array
@@ -37,6 +39,11 @@ class ListaTareas
         $hoy = today();
 
         $conTareas = $tipo !== 'recordatorio';
+        // El contexto filtra también por sus descendientes (como Notas); se resuelve una sola vez para las consultas de abajo.
+        if (! empty($filtros['contexto'])) {
+            $filtros['contexto_ids'] = Contexto::find($filtros['contexto'])?->idsConDescendientes() ?? [(int) $filtros['contexto']];
+        }
+
         $conRecordatorios = $tipo !== 'tarea' && empty($filtros['prioridad']) && empty($filtros['contexto']);
 
         $abiertos = collect();
@@ -100,13 +107,15 @@ class ListaTareas
     private function tareas(array $filtros): Builder
     {
         return Tarea::query()
-            ->with('contexto')
+            ->with(['contexto', 'notas'])
             ->when($filtros['prioridad'] ?? null, fn ($c, $prioridad) => $c->where('prioridad', $prioridad))
-            ->when($filtros['contexto'] ?? null, fn ($c, $contexto) => $c->where('contexto_id', $contexto))
+            ->when($filtros['contexto'] ?? null, fn ($c, $contexto) => $c->whereIn('contexto_id', $filtros['contexto_ids'] ?? [(int) $contexto]))
             ->when($filtros['q'] ?? null, function ($c, $q) {
-                $c->where(fn ($w) => $w->where('titulo', 'like', "%{$q}%")
-                    ->orWhere('descripcion', 'like', "%{$q}%")
-                    ->orWhereHas('contexto', fn ($contexto) => $contexto->where('nombre', 'like', "%{$q}%")));
+                $patron = Busqueda::patron($q);
+
+                $c->where(fn ($w) => $w->whereRaw(Busqueda::condicion('tareas.titulo'), [$patron])
+                    ->orWhereRaw(Busqueda::condicion('tareas.descripcion'), [$patron])
+                    ->orWhereHas('contexto', fn ($contexto) => $contexto->whereRaw(Busqueda::condicion('contextos.nombre'), [$patron])));
             });
     }
 
@@ -114,7 +123,9 @@ class ListaTareas
     {
         return Recordatorio::query()
             ->when($filtros['q'] ?? null, function ($c, $q) {
-                $c->where(fn ($w) => $w->where('mensaje', 'like', "%{$q}%")->orWhere('descripcion', 'like', "%{$q}%"));
+                $patron = Busqueda::patron($q);
+
+                $c->where(fn ($w) => $w->whereRaw(Busqueda::condicion('mensaje'), [$patron])->orWhereRaw(Busqueda::condicion('descripcion'), [$patron]));
             });
     }
 
