@@ -9,8 +9,11 @@
     $idError = $prefijo.'-error-'.$nombre;
     $mensaje = $enDialogo ? null : $errors->first($nombre);
     $valor = $valor ?? null;
+    // Las columnas de todos los tableros (cada tablero es un grupo): elegir la columna es elegir el tablero.
+    // Por defecto, "Sin asignar" del tablero principal.
+    $columnasSelector = $columnasTodas ?? $columnasOrden ?? collect();
     $columnaInicial = $campo === 'columna'
-        ? ($columnasOrden->firstWhere('categoria', \App\Enums\EstadoTarea::Pendiente) ?? $columnasOrden->first())
+        ? ($columnasSelector->first(fn ($c) => $c->fija && $c->tablero?->principal) ?? $columnasSelector->firstWhere('fija', true) ?? $columnasSelector->first())
         : null;
     $claseControl = $enDialogo ? 'form-select' : 'hoy-entrada'.($mensaje ? ' es-invalido' : '');
 @endphp
@@ -33,11 +36,15 @@
             </select>
             @break
         @case('columna')
-            <label for="{{ $id }}" class="{{ $enDialogo ? 'dialogo-etiqueta' : '' }}">Columna</label>
+            <label for="{{ $id }}" class="{{ $enDialogo ? 'dialogo-etiqueta' : '' }}">Tablero y columna</label>
             <select id="{{ $id }}" name="columna_id" class="{{ $claseControl }}" required @if ($mensaje) aria-invalid="true" @endif aria-describedby="{{ $idError }}">
-                @foreach ($columnasOrden as $columna)
-                    <option value="{{ $columna->id }}" data-por-defecto="{{ $columna->is($columnaInicial) ? 'true' : 'false' }}"
-                            @selected($enDialogo ? false : (string) ($valor ?? $columnaInicial?->id) === (string) $columna->id)>{{ $columna->nombre }}@if (mb_strtolower($columna->nombre) !== mb_strtolower($columna->categoria->etiqueta())) ({{ $columna->categoria->etiqueta() }})@endif</option>
+                @foreach ($columnasSelector->groupBy('tablero_id') as $delTablero)
+                    <optgroup label="{{ $delTablero->first()->tablero?->nombre }}{{ $delTablero->first()->tablero?->principal ? ' (principal)' : '' }}">
+                        @foreach ($delTablero as $columna)
+                            <option value="{{ $columna->id }}" data-por-defecto="{{ $columna->is($columnaInicial) ? 'true' : 'false' }}"
+                                    @selected($enDialogo ? false : (string) ($valor ?? $columnaInicial?->id) === (string) $columna->id)>{{ $columna->nombre }}@if (mb_strtolower($columna->nombre) !== mb_strtolower($columna->categoria->etiqueta())) ({{ $columna->categoria->etiqueta() }})@endif</option>
+                        @endforeach
+                    </optgroup>
                 @endforeach
             </select>
             @break

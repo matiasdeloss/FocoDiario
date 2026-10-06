@@ -49,7 +49,9 @@
 .dialogo .form-check { display: flex; align-items: center; gap: 8px; padding-left: 0; margin: 0; }
 .dialogo .form-check-input { float: none; margin: 0; }
 .dialogo-form { display: flex; flex-direction: column; gap: 16px; }
-.dialogo-form .dialogo-campo { flex-basis: 200px; }
+/* El ancho base solo vale dentro de una fila: en la columna del formulario actuaría como alto y dejaría un hueco. */
+.dialogo-form .dialogo-fila > .dialogo-campo { flex-basis: 200px; }
+.dialogo-form > .dialogo-campo { flex: 0 0 auto; }
 .dialogo-form .form-control, .dialogo-form .form-select { border-color: var(--color-neutral-300); }
 .dialogo-form :is(.form-control, .form-select).is-invalid { border-color: var(--color-danger-border); }
 .dialogo-etiqueta { display: block; margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--color-neutral-800); }

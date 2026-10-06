@@ -104,8 +104,9 @@ class PaletaUnificadaTest extends TestCase
         $nota = $this->get(route('notas.create'))->assertOk()->getContent();
         $tablero = $this->get(route('tablero.index'))->assertOk()->getContent();
 
-        foreach ([$nota, $tablero] as $html) {
-            $this->assertSame(11, substr_count($html, 'name="color" value='));
+        // El tablero trae además el diálogo de notas (las notas también son tarjetas): dos selectores.
+        foreach ([[$nota, 11], [$tablero, 22]] as [$html, $cuantos]) {
+            $this->assertSame($cuantos, substr_count($html, 'name="color" value='));
             $this->assertStringContainsString('Sin color (usa el del contexto)', $html);
             // "Sin color" va primero.
             $this->assertLessThan(strpos($html, 'name="color" value="#'), strpos($html, 'name="color" value=""'));
@@ -174,10 +175,10 @@ class PaletaUnificadaTest extends TestCase
         Contexto::factory()->create(['nombre' => 'Redes', 'contexto_padre_id' => $carrera->id]);
         Contexto::factory()->create(['nombre' => 'Suelto']);
 
-        foreach ([route('notas.create'), route('tablero.index')] as $url) {
+        foreach ([[route('notas.create'), 2], [route('tablero.index'), 4]] as [$url, $cuantos]) {
             $html = $this->get($url)->assertOk()->getContent();
 
-            $this->assertSame(2, substr_count($html, 'data-color-heredado="celeste" data-color-origen="Carrera"'), $url);
+            $this->assertSame($cuantos, substr_count($html, 'data-color-heredado="celeste" data-color-origen="Carrera"'), $url);
             $this->assertStringContainsString('data-color-pista', $html);
         }
     }

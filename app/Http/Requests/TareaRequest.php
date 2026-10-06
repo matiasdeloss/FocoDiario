@@ -47,6 +47,11 @@ class TareaRequest extends FormRequest
             // El modal manda la columna del tablero (su tipo fija el estado); el formulario clásico manda el estado.
             'columna_id' => ['nullable', 'integer', ReglasDeUsuario::existe('columnas_tablero')],
             'estado' => ['required_without:columna_id', 'nullable', Rule::enum(EstadoTarea::class)],
+            // Formulario clásico (sin JS): el tablero al que va la tarea; la columna sale de su estado ("Sin asignar" si es pendiente).
+            'tablero_id' => ['nullable', 'integer', ReglasDeUsuario::existe('tableros')],
+            // Notas vinculadas (ids): reemplazan a las que tenía. Sin este campo, no se tocan.
+            'notas' => ['sometimes', 'nullable', 'array', 'max:100'],
+            'notas.*' => ['integer', 'distinct', ReglasDeUsuario::existe('notas')],
             // Color de la tarjeta en el tablero; vacío = sin color (crema).
             'color' => ['nullable', Rule::enum(ColorActividad::class)],
         ];
@@ -66,6 +71,11 @@ class TareaRequest extends FormRequest
             'estado.required_without' => 'Elegí un estado.',
             'columna_id.exists' => 'La columna elegida no existe.',
             'columna_id.integer' => 'La columna elegida no es válida.',
+            'tablero_id.exists' => 'El tablero elegido no existe.',
+            'notas.array' => 'Las notas vinculadas no son válidas.',
+            'notas.*.exists' => 'Una de las notas elegidas no existe.',
+            'notas.*.integer' => 'Una de las notas elegidas no es válida.',
+            'notas.*.distinct' => 'Hay una nota repetida entre las vinculadas.',
             'estado.enum' => 'El estado elegido no es válido.',
             'color.enum' => 'El color elegido no es válido.',
         ];

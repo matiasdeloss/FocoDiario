@@ -3,10 +3,10 @@
 namespace App\Services\Cuentas;
 
 use App\Enums\EstadoTarea;
-use App\Models\ColumnaTablero;
+use App\Models\Tablero;
 use App\Models\User;
 
-/** Lo que necesita cada usuario nuevo para arrancar: las tres columnas de fábrica del tablero. */
+/** Lo que necesita cada usuario nuevo para arrancar: el tablero principal con "Sin asignar" y las tres columnas de fábrica. */
 class DatosIniciales
 {
     public const COLUMNAS = [
@@ -17,10 +17,12 @@ class DatosIniciales
 
     public function crear(User $usuario): void
     {
-        foreach (self::COLUMNAS as $posicion => $columna) {
-            $nueva = new ColumnaTablero([...$columna, 'posicion' => $posicion]);
-            $nueva->user_id = $usuario->id;
-            $nueva->save();
-        }
+        Tablero::crearConColumnas(
+            $usuario->id,
+            'Principal',
+            true,
+            array_map(fn ($c) => [$c['nombre'], $c['categoria']], self::COLUMNAS),
+            0,
+        );
     }
 }

@@ -23,6 +23,8 @@ class TarjetaColumnaRequest extends FormRequest
     {
         return [
             'titulo' => ['required', 'string', 'max:255'],
+            // Lo que se crea: una tarea (por defecto) o una nota.
+            'tipo' => ['sometimes', 'in:tarea,nota'],
         ];
     }
 
@@ -31,6 +33,7 @@ class TarjetaColumnaRequest extends FormRequest
         return [
             'titulo.required' => 'Escribí un título para la tarjeta.',
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
+            'tipo.in' => 'Elegí si es una tarea o una nota.',
         ];
     }
 }

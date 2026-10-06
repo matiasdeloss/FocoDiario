@@ -9,6 +9,7 @@ use App\Models\Ajuste;
 use App\Models\Caja;
 use App\Models\ColumnaTablero;
 use App\Models\Contexto;
+use App\Models\Tablero;
 use App\Models\Nota;
 use App\Models\SesionEstudio;
 use App\Models\Tarea;
@@ -48,7 +49,7 @@ class CuentaTest extends TestCase
 
         $this->assertTrue($invitado->es_invitado);
         $this->assertNull($invitado->email);
-        $this->assertSame(['Pendiente', 'En progreso', 'Completada'], ColumnaTablero::ordenadas()->pluck('nombre')->all());
+        $this->assertSame(['Sin asignar', 'Pendiente', 'En progreso', 'Completada'], ColumnaTablero::ordenadas()->pluck('nombre')->all());
 
         // Siguiente pedido: el mismo invitado, no uno nuevo.
         $this->get(route('notas.index'))->assertOk();
@@ -167,7 +168,8 @@ class CuentaTest extends TestCase
         $this->assertAuthenticatedAs($cuenta);
         $this->assertSame(1, User::count());
         // Las columnas de fábrica del invitado se unieron con las de la cuenta: no quedan repetidas.
-        $this->assertSame(3, ColumnaTablero::withoutGlobalScopes()->count());
+        $this->assertSame(4, ColumnaTablero::withoutGlobalScopes()->count());
+        $this->assertSame(1, Tablero::withoutGlobalScopes()->count());
     }
 
     public function test_al_entrar_lo_del_invitado_se_suma_a_la_cuenta(): void
@@ -209,9 +211,11 @@ class CuentaTest extends TestCase
         $this->assertSame($carrera->id, Tarea::find($tarea->id)->contexto_id);
         $this->assertSame('Carrera (invitado)', Tarea::find($tarea->id)->contexto->nombre);
 
-        // Columnas: las de fábrica se unieron; "Revisión" se agregó al final.
-        $this->assertSame(['Pendiente', 'En progreso', 'Completada', 'Revisión'], ColumnaTablero::ordenadas()->pluck('nombre')->all());
-        $this->assertSame(ColumnaTablero::where('nombre', 'Pendiente')->value('id'), Tarea::find($tarea->id)->columna_id);
+        // Tableros: el principal del invitado se unió al de la cuenta ("Sin asignar" y las de fábrica se unieron; "Revisión" se agregó al final).
+        $this->assertSame(1, Tablero::count());
+        $this->assertSame(1, Tablero::where('principal', true)->count());
+        $this->assertSame(['Sin asignar', 'Pendiente', 'En progreso', 'Completada', 'Revisión'], ColumnaTablero::ordenadas()->pluck('nombre')->all());
+        $this->assertSame(ColumnaTablero::where('fija', true)->value('id'), Tarea::find($tarea->id)->columna_id);
         $this->assertNotNull(ColumnaTablero::find($revision->id));
 
         // La caja del invitado quedó debajo de la de la cuenta ese día.

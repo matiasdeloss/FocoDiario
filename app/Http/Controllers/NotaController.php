@@ -26,9 +26,11 @@ class NotaController extends Controller
         $busqueda = trim((string) ($datos['q'] ?? ''));
         $color = isset($datos['color']) ? ColorActividad::tryFrom($datos['color']) : null;
         $soloFijadas = (bool) ($datos['fijadas'] ?? false);
+        $soloOcultas = (bool) ($datos['ocultas'] ?? false);
         $contextoFiltro = null;
 
-        $notas = Nota::query()->with('contexto')->ordenadas();
+        $notas = Nota::query()->with(['contexto', 'columna'])->ordenadas();
+
 
         if ($busqueda !== '') {
             $patron = '%'.addcslashes($busqueda, '\\%_').'%';
@@ -55,7 +57,18 @@ class NotaController extends Controller
             }
         }
 
+        // Ocultas que quedan fuera del listado con el mismo contexto y los mismos filtros (color, texto, fijadas), para el aviso "y N ocultas · ver".
+        $ocultasDelFiltro = $filtro !== null && ! $soloOcultas ? (clone $notas)->reorder()->soloOcultas()->count() : 0;
+
+        // La pantalla Notas no lista las ocultas, salvo en la vista "Ver ocultas" (que lista solo esas).
+        if ($soloOcultas) {
+            $notas->soloOcultas();
+        } else {
+            $notas->sinOcultar();
+        }
+
         $destinos = Contexto::opciones();
+        $totalOcultas = Nota::soloOcultas()->count();
 
         return view('notas.index', [
             'notas' => $notas->get(),
@@ -63,12 +76,15 @@ class NotaController extends Controller
             'destinos' => $destinos,
             'filtro' => $filtro,
             'contextoFiltro' => $contextoFiltro,
-            'totalBandeja' => Nota::sinContexto()->count(),
-            'totalNotas' => Nota::count(),
-            'totalFijadas' => Nota::where('fijada', true)->count(),
+            'totalBandeja' => Nota::sinOcultar()->sinContexto()->count(),
+            'totalNotas' => $soloOcultas ? $totalOcultas : Nota::sinOcultar()->count(),
+            'totalOcultas' => $totalOcultas,
+            'ocultasDelFiltro' => $ocultasDelFiltro,
+            'totalFijadas' => Nota::sinOcultar()->where('fijada', true)->count(),
             'busqueda' => $busqueda,
             'colorFiltro' => $color,
             'soloFijadas' => $soloFijadas,
+            'soloOcultas' => $soloOcultas,
         ]);
     }
 
@@ -152,6 +168,30 @@ class NotaController extends Controller
         return $this->respuestaNota($request, $nota, $nota->fijada ? 'Nota fijada.' : 'Nota desfijada.');
     }
 
+    /** Oculta la nota de la pantalla Notas (no se borra ni deja de verse en el resto de la app). */
+    public function ocultar(Request $request, Nota $nota): JsonResponse|RedirectResponse
+    {
+        return $this->alternarOculta($request, $nota, true, 'Nota oculta.');
+    }
+
+    /** Devuelve la nota a la pantalla Notas. */
+    public function mostrar(Request $request, Nota $nota): JsonResponse|RedirectResponse
+    {
+        return $this->alternarOculta($request, $nota, false, 'Nota visible de nuevo.');
+    }
+
+    /** Con JS responde JSON (el aviso con "Deshacer" lo arma notas.js); sin JS vuelve a la pantalla con el aviso en la sesión. */
+    private function alternarOculta(Request $request, Nota $nota, bool $oculta, string $mensaje): JsonResponse|RedirectResponse
+    {
+        $nota->update(['oculta' => $oculta]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'oculta' => $oculta]);
+        }
+
+        return back()->with(Aviso::flash($mensaje));
+    }
+
     /** Mueve la nota a otro contexto (o a la bandeja de entrada si no se elige ninguno). */
     public function mover(MoverNotaRequest $request, Nota $nota): Response|RedirectResponse
     {
@@ -164,7 +204,7 @@ class NotaController extends Controller
     {
         if ($request->header('HX-Request')) {
             return Aviso::enHtmx(view('notas._nota', [
-                'nota' => $nota->load('contexto'),
+                'nota' => $nota->load(['contexto', 'columna']),
                 'destinos' => Contexto::opciones(),
             ]), $mensaje);
         }

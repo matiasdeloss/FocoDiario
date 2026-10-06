@@ -58,6 +58,7 @@ class EventosCalendario
 
         if (in_array('nota', $tipos, true)) {
             $notas = Nota::query()
+                ->conEstadoDeColumna()
                 ->where('fecha', '>=', $desde->toDateString())
                 ->where('fecha', '<', $hasta->toDateString())
                 ->orderBy('id')
@@ -179,6 +180,8 @@ class EventosCalendario
     public function eventoNota(Nota $nota): array
     {
         $titulo = $nota->tituloVisible();
+        // Una nota en una columna de tipo completada se ve como una tarea completada.
+        $completada = $nota->estaCompletada();
 
         return [
             'id' => 'nota-'.$nota->id,
@@ -186,10 +189,11 @@ class EventosCalendario
             'start' => $nota->fecha->toDateString(),
             'allDay' => true,
             'editable' => true,
-            'classNames' => ['ev-tipo-nota'],
+            'classNames' => array_values(array_filter(['ev-tipo-nota', $completada ? 'ev-hecho' : null])),
             'extendedProps' => [
                 'tipo' => 'nota',
                 'notaId' => $nota->id,
+                'completada' => $completada,
                 'fijada' => $nota->fijada,
                 'tarjeta' => $this->tarjetas->datos($nota),
             ],

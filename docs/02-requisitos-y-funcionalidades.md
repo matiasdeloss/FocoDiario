@@ -29,7 +29,7 @@ Construido y con pruebas automáticas (393 de PHPUnit y pruebas en Node de la l�
 - **Hoy:** nota rápida que crea nota, tarea o recordatorio, semana en curso, recordatorios pendientes, tareas abiertas, pomodoro y recomendaciones destacadas.
 - **Agenda:** planificador semanal con cajas por contexto (cualquiera de los cuatro tipos; la caja toma el color de su contexto o el de su contexto padre), listas de verificación y disposición editable.
 - **Calendario:** vistas de mes, semana, día y lista, con bandeja lateral para ubicar lo que no tiene fecha.
-- **Tareas:** lista y tablero kanban con columnas personalizables, prioridad, fecha límite, color y comentario.
+- **Tareas:** lista y tablero kanban con varios tableros por usuario (uno es el principal), columnas personalizables y una primera columna fija "Sin asignar" donde caen las tarjetas nuevas; prioridad, fecha límite, color y comentario. Las notas también son tarjetas del tablero (con un badge Nota / Tarea) y una tarea puede tener notas vinculadas.
 - **Recordatorios y Registro** completos, con HTMX.
 - **Contextos y Notas:** jerarquía entorno / materia / tema, bandeja de entrada, notas con título, color y fijadas (ver `06-inicio-y-notas.md`).
 - **Recomendaciones:** motor de reglas que muestra sugerencias con su fuente; incluye la hora sugerida para dormir y despertar.

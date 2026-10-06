@@ -8,6 +8,7 @@ use App\Http\Requests\CambiarEstadoTareaRequest;
 use App\Http\Requests\FiltroTareasRequest;
 use App\Http\Requests\TareaRequest;
 use App\Models\ColumnaTablero;
+use App\Models\Tablero;
 use App\Models\Contexto;
 use App\Models\Recordatorio;
 use App\Models\Tarea;
@@ -20,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 class TareaController extends Controller
@@ -33,7 +35,7 @@ class TareaController extends Controller
             return redirect()->route('tablero.index', array_filter(['contexto' => $filtros['contexto'] ?? null]));
         }
 
-        $columnasOrden = ColumnaTablero::ordenadas()->get();
+        $columnasOrden = ColumnaTablero::paraSelector();
 
         return view('tareas.index', $lista->armar($filtros) + [
             'resumen' => $lista->resumen(),
@@ -65,7 +67,8 @@ class TareaController extends Controller
 
     public function store(TareaRequest $request, ListasHoy $listas): RedirectResponse|JsonResponse
     {
-        $tarea = Tarea::create($request->validated());
+        $tarea = Tarea::create($this->datosDeTarea($request));
+        $this->vincularNotas($request, $tarea);
 
         // Modal de tareas: solo confirma; la página se recarga y muestra el aviso.
         if ($request->expectsJson() && $request->hasHeader('X-Modal')) {
@@ -100,7 +103,8 @@ class TareaController extends Controller
 
     public function update(TareaRequest $request, Tarea $tarea): RedirectResponse|JsonResponse
     {
-        $tarea->update($request->validated());
+        $tarea->update($this->datosDeTarea($request, $tarea));
+        $this->vincularNotas($request, $tarea);
 
         if ($request->expectsJson()) {
             Aviso::guardar('Tarea actualizada.');
@@ -155,6 +159,34 @@ class TareaController extends Controller
         ];
     }
 
+    /**
+     * Datos listos para guardar: sin las notas vinculadas (van aparte) y con el tablero resuelto a una columna. Sin columna ni
+     * tablero, una tarea nueva cae en "Sin asignar" del principal (lo resuelve el modelo).
+     *
+     * @return array<string, mixed>
+     */
+    private function datosDeTarea(TareaRequest $request, ?Tarea $actual = null): array
+    {
+        $datos = Arr::except($request->validated(), ['notas', 'tablero_id']);
+        $tableroId = $request->validated('tablero_id');
+
+        // Con tablero pero sin columna: la columna del estado en ese tablero (sin cambiar si la tarea ya está ahí).
+        if ($tableroId !== null && empty($datos['columna_id']) && $actual?->columna?->tablero_id !== (int) $tableroId) {
+            $estado = EstadoTarea::tryFrom((string) ($datos['estado'] ?? '')) ?? EstadoTarea::Pendiente;
+            $datos['columna_id'] = ColumnaTablero::paraEstado($estado, (int) $tableroId)?->id;
+        }
+
+        return $datos;
+    }
+
+    /** Reemplaza las notas vinculadas si el pedido las trae (los ids ya se validaron como del usuario). */
+    private function vincularNotas(TareaRequest $request, Tarea $tarea): void
+    {
+        if ($request->has('notas')) {
+            $tarea->notas()->sync($request->validated('notas') ?? []);
+        }
+    }
+
     private function datosFormulario(Tarea $tarea): array
     {
         return [
@@ -162,6 +194,7 @@ class TareaController extends Controller
             'prioridades' => PrioridadTarea::cases(),
             'estados' => EstadoTarea::cases(),
             'contextos' => Contexto::opcionesPorTipo(),
+            'tableros' => Tablero::ordenados()->get(),
         ];
     }
 }

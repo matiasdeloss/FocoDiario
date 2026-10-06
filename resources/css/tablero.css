@@ -300,3 +300,53 @@
     .tablero { scroll-behavior: auto; }
     .tablero-columna, .tarea-tarjeta, .tarea-acciones { transition: none; }
 }
+
+/* ---------- Tableros: pestañas y gestión ---------- */
+.k-tableros { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: var(--foco-espacio-3); }
+.k-tableros-lista { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.k-tablero-pestana {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px;
+    border-radius: var(--radius-pill); background: var(--color-neutral-200); color: var(--color-neutral-800);
+    font-size: 14px; font-weight: 500; text-decoration: none;
+}
+.k-tablero-pestana:hover { background: var(--color-neutral-300); color: var(--color-text); }
+.k-tablero-pestana:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.k-tablero-pestana[aria-current="page"] { background: var(--color-accent-200); color: var(--color-accent-800); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--color-accent-600); }
+.k-tablero-principal { font-size: 11px; }
+.k-gestion { position: relative; }
+.k-gestion > summary { list-style: none; cursor: pointer; }
+.k-gestion > summary::-webkit-details-marker { display: none; }
+.k-gestion-cuerpo {
+    position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; width: min(360px, calc(100vw - 32px));
+    display: flex; flex-direction: column; gap: 14px; padding: 14px;
+    background: var(--color-surface); border: 1px solid var(--color-neutral-300); border-radius: 12px; box-shadow: var(--shadow-md);
+}
+.k-gestion-form { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.k-gestion-fila { display: flex; gap: 8px; }
+.k-gestion-nota { margin: 0; font-size: 13px; color: var(--foco-texto-suave); }
+.btn-peligro-suave { background: var(--color-danger-bg); color: var(--color-danger-text); border: 0; }
+.btn-peligro-suave:hover { filter: brightness(0.96); color: var(--color-danger-text); }
+
+/* ---------- Tarjetas: tipo (Nota / Tarea), notas vinculadas ---------- */
+.k-tipo {
+    display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: var(--radius-pill);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.7; text-transform: uppercase;
+}
+.k-tipo-tarea { background: var(--tipo-tarea-fondo); color: var(--tipo-tarea-texto); }
+.k-tipo-nota { background: var(--tipo-nota-fondo); color: var(--tipo-nota-texto); }
+/* La lista se despliega dentro de la tarjeta (en su propia fila), así no tapa a las tarjetas vecinas. */
+.k-notas-vinc { display: inline-block; }
+.k-notas-vinc[open] { display: block; flex: 1 0 100%; }
+.k-notas-vinc > summary { list-style: none; cursor: pointer; }
+.k-notas-vinc > summary::-webkit-details-marker { display: none; }
+.k-chip-notas { gap: 4px; }
+.k-notas-lista {
+    margin: 6px 0 0; padding: 4px; list-style: none; background: var(--color-surface); border: 1px solid var(--color-neutral-300); border-radius: 10px;
+}
+.k-notas-lista a { display: block; padding: 6px 8px; border-radius: 6px; color: var(--color-text); font-size: 13px; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-notas-lista a:hover, .k-notas-lista a:focus-visible { background: var(--color-neutral-200); }
+.k-anadir-tipo { display: flex; gap: 12px; margin: 0 0 6px; padding: 0; border: 0; font-size: 13px; }
+.k-anadir-tipo label { display: inline-flex; align-items: center; gap: 4px; margin: 0; cursor: pointer; }
+
+/* Columna fija "Sin asignar": se distingue por una línea punteada */
+.tablero-columna[data-fija] > .tablero-columna-cabecera { border-bottom-style: dashed; }

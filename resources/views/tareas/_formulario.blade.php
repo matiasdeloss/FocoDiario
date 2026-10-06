@@ -1,4 +1,4 @@
-{{-- Formulario compartido de crear y editar tarea. Requiere: $tarea, $prioridades, $estados, $contextos, $accion, $metodo --}}
+{{-- Formulario compartido de crear y editar tarea. Requiere: $tarea, $prioridades, $estados, $contextos, $tableros, $accion, $metodo --}}
 <form method="POST" action="{{ $accion }}" novalidate>
     @csrf
     @if ($metodo !== 'POST')
@@ -56,6 +56,18 @@
             </select>
             @error('estado') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
+    </div>
+
+    <div class="mb-4">
+        <label for="tablero_id" class="form-label">Tablero</label>
+        <select id="tablero_id" name="tablero_id" class="form-select @error('tablero_id') is-invalid @enderror">
+            @php($tableroDeLaTarea = old('tablero_id', $tarea->columna?->tablero_id ?? $tableros->firstWhere('principal', true)?->id))
+            @foreach ($tableros as $tablero)
+                <option value="{{ $tablero->id }}" @selected((string) $tableroDeLaTarea === (string) $tablero->id)>{{ $tablero->nombre }}{{ $tablero->principal ? ' (principal)' : '' }}</option>
+            @endforeach
+        </select>
+        <div class="form-text">Una tarea pendiente cae en "Sin asignar" del tablero elegido.</div>
+        @error('tablero_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
     <div class="d-flex gap-2">

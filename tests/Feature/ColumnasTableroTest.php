@@ -18,12 +18,13 @@ class ColumnasTableroTest extends TestCase
         return ColumnaTablero::where('categoria', $categoria)->orderBy('posicion')->firstOrFail();
     }
 
-    public function test_la_migracion_deja_las_tres_columnas_de_fabrica_en_orden(): void
+    public function test_un_usuario_nuevo_tiene_sin_asignar_y_las_tres_columnas_de_fabrica_en_orden(): void
     {
-        $this->assertSame(
-            ['pendiente', 'en_progreso', 'completada'],
-            ColumnaTablero::ordenadas()->get()->map(fn ($c) => $c->categoria->value)->all(),
-        );
+        $columnas = ColumnaTablero::ordenadas()->get();
+
+        $this->assertSame(['pendiente', 'pendiente', 'en_progreso', 'completada'], $columnas->map(fn ($c) => $c->categoria->value)->all());
+        $this->assertSame(['Sin asignar', 'Pendiente', 'En progreso', 'Completada'], $columnas->pluck('nombre')->all());
+        $this->assertSame([true, false, false, false], $columnas->map(fn ($c) => $c->fija)->all());
     }
 
     public function test_una_tarea_nueva_cae_en_la_columna_de_su_estado_y_al_cambiar_el_estado_la_sigue(): void
@@ -75,8 +76,8 @@ class ColumnasTableroTest extends TestCase
         $respuesta = $this->get(route('tablero.index'))->assertOk();
 
         $columnas = $respuesta->viewData('columnas');
-        $this->assertCount(4, $columnas);
-        $this->assertSame(['Para revisar'], $columnas[3]['tareas']->pluck('titulo')->all());
+        $this->assertCount(5, $columnas);
+        $this->assertSame(['Para revisar'], $columnas[4]['tareas']->pluck('titulo')->all());
         $respuesta->assertSee('Revisión')->assertSee('Añadir columna')->assertSee('Añadir tarjeta');
     }
 
@@ -137,18 +138,26 @@ class ColumnasTableroTest extends TestCase
         $this->assertSame(EstadoTarea::Completada, $tarea->fresh()->estado);
     }
 
-    public function test_no_se_puede_eliminar_la_unica_columna_pendiente_ni_completada(): void
+    public function test_no_se_puede_eliminar_la_unica_columna_completada_ni_sin_asignar(): void
     {
         $otra = $this->columna('en_progreso');
+        $sinAsignar = ColumnaTablero::where('fija', true)->firstOrFail();
 
-        $this->deleteJson(route('tablero.columnas.destroy', $this->columna('pendiente')), ['reasignar_a' => $otra->id])
-            ->assertStatus(422)->assertJsonValidationErrors('columna');
         $this->deleteJson(route('tablero.columnas.destroy', $this->columna('completada')), ['reasignar_a' => $otra->id])
-            ->assertStatus(422);
+            ->assertStatus(422)->assertJsonValidationErrors('columna');
+        $this->deleteJson(route('tablero.columnas.destroy', $sinAsignar), ['reasignar_a' => $otra->id])
+            ->assertStatus(422)->assertJsonValidationErrors('columna');
 
-        // En progreso sí se puede quitar (no es obligatoria).
-        $this->deleteJson(route('tablero.columnas.destroy', $otra), ['reasignar_a' => $this->columna('pendiente')->id])->assertOk();
+        // Pendiente (que ya no es la única pendiente) y En progreso sí se pueden quitar.
+        $this->deleteJson(route('tablero.columnas.destroy', $this->pendiente()), ['reasignar_a' => $sinAsignar->id])->assertOk();
+        $this->deleteJson(route('tablero.columnas.destroy', $otra), ['reasignar_a' => $sinAsignar->id])->assertOk();
         $this->assertSame(2, ColumnaTablero::count());
+    }
+
+    /** La columna "Pendiente" de fábrica (no la fija "Sin asignar"). */
+    private function pendiente(): ColumnaTablero
+    {
+        return ColumnaTablero::where('categoria', 'pendiente')->where('fija', false)->firstOrFail();
     }
 
     public function test_reordenar_columnas_intercambia_posiciones(): void
@@ -157,12 +166,15 @@ class ColumnasTableroTest extends TestCase
 
         $this->patchJson(route('tablero.columnas.mover', $enProgreso), ['direccion' => 'izquierda'])->assertOk();
         $this->assertSame(
-            ['en_progreso', 'pendiente', 'completada'],
-            ColumnaTablero::ordenadas()->get()->map(fn ($c) => $c->categoria->value)->all(),
+            ['Sin asignar', 'En progreso', 'Pendiente', 'Completada'],
+            ColumnaTablero::ordenadas()->pluck('nombre')->all(),
         );
 
-        // En el borde no hace nada ni falla.
+        // Nada pasa a la izquierda de "Sin asignar": en el borde no hace nada ni falla.
         $this->patchJson(route('tablero.columnas.mover', $enProgreso), ['direccion' => 'izquierda'])->assertOk();
+        $this->assertSame('Sin asignar', ColumnaTablero::ordenadas()->first()->nombre);
+        // Y la fija no se mueve.
+        $this->patchJson(route('tablero.columnas.mover', ColumnaTablero::where('fija', true)->firstOrFail()), ['direccion' => 'derecha'])->assertStatus(422);
         $this->patchJson(route('tablero.columnas.mover', $enProgreso), ['direccion' => 'arriba'])->assertStatus(422);
     }
 
@@ -171,7 +183,7 @@ class ColumnasTableroTest extends TestCase
         $revision = ColumnaTablero::create(['nombre' => 'Revisión', 'categoria' => EstadoTarea::EnProgreso, 'posicion' => 9]);
 
         $this->post(route('tablero.columnas.tarjetas.store', $revision), ['titulo' => 'Tarjeta rápida'])
-            ->assertRedirect(route('tablero.index'));
+            ->assertRedirect(route('tablero.index', ['tablero' => $revision->tablero_id]));
 
         $tarea = Tarea::where('titulo', 'Tarjeta rápida')->firstOrFail();
         $this->assertSame($revision->id, $tarea->columna_id);

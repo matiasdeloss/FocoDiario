@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['titulo', 'descripcion', 'contexto_id', 'fecha_limite', 'prioridad', 'color', 'estado', 'columna_id', 'orden'])]
@@ -34,7 +35,8 @@ class Tarea extends Model
 
     /**
      * Mantiene sincronizados estado y columna: si cambia la columna, el estado pasa a ser la categoría
-     * de esa columna; si cambia solo el estado (Hoy, formulario), la tarea va a la primera columna de esa categoría.
+     * de esa columna; si cambia solo el estado (Hoy, formulario), la tarea va a la primera columna de esa categoría
+     * de SU tablero. Una tarea nueva sin columna cae en "Sin asignar" del tablero principal.
      */
     protected static function booted(): void
     {
@@ -44,6 +46,7 @@ class Tarea extends Model
 
                 if ($columna !== null) {
                     $tarea->estado = $columna->categoria;
+                    ColumnaTablero::recordarPrevia($tarea, $columna);
 
                     return;
                 }
@@ -58,7 +61,19 @@ class Tarea extends Model
             $columnaActual = $tarea->columna_id !== null ? ColumnaTablero::find($tarea->columna_id) : null;
 
             if ($columnaActual === null || $columnaActual->categoria !== $estado) {
-                $tarea->columna_id = ColumnaTablero::paraEstado($estado)?->id;
+
+                // Al reabrir (sale de una completada sin elegir columna) vuelve a la que tenía antes de completarse.
+                $reabierta = $columnaActual?->esCompletada() && $estado !== EstadoTarea::Completada
+                    ? ColumnaTablero::deReapertura($tarea->columna_previa_id, $columnaActual->tablero_id)
+                    : null;
+                $destino = $reabierta ?? ColumnaTablero::paraEstado($estado, $columnaActual?->tablero_id, $tarea->user_id);
+
+                $tarea->columna_id = $destino?->id;
+
+                if ($destino !== null) {
+                    $tarea->estado = $destino->categoria;
+                    ColumnaTablero::recordarPrevia($tarea, $destino);
+                }
             }
         });
     }
@@ -76,12 +91,19 @@ class Tarea extends Model
             'prioridad' => $this->prioridad->value,
             'columna_id' => $this->columna_id,
             'color' => $this->color?->value,
+            'notas' => $this->notas->map(fn (Nota $nota) => ['id' => $nota->id, 'titulo' => $nota->tituloVisible()])->values()->all(),
         ];
     }
 
     public function columna(): BelongsTo
     {
         return $this->belongsTo(ColumnaTablero::class, 'columna_id');
+    }
+
+    /** Notas vinculadas a la tarea (visibles y abribles desde su tarjeta). */
+    public function notas(): BelongsToMany
+    {
+        return $this->belongsToMany(Nota::class, 'nota_tarea')->withTimestamps();
     }
 
     public function contexto(): BelongsTo

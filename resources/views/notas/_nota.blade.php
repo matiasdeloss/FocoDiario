@@ -2,15 +2,9 @@
 @php
     // Color propio o, si no tiene, el del contexto (o su ancestro). El selector de edición sigue mostrando solo el propio.
     $colorVisible = $nota->colorVisible($colores ?? null);
-    $datosEdicion = [
-        'url' => route('notas.update', $nota),
-        'titulo' => $nota->titulo,
-        'contenido' => $nota->contenido,
-        'contexto_id' => $nota->contexto_id,
-        'fecha' => $nota->fecha?->format('Y-m-d'),
-        'color' => $nota->color?->value,
-        'fijada' => $nota->fijada,
-    ];
+    $datosEdicion = $nota->datosEdicion();
+    // Una nota completada es la que está en una columna de ese tipo (se ve atenuada y con su marca).
+    $completada = $nota->estaCompletada();
     // Lo que muestra el modal de lectura (notas.js): la nota completa, sin recortar.
     $datosLectura = [
         'titulo' => $nota->titulo,
@@ -24,7 +18,7 @@
         'marca' => $colorVisible?->marca(),
     ];
 @endphp
-<article id="nota-{{ $nota->id }}" class="nota-item {{ $nota->fijada ? 'nota-fijada' : '' }} {{ $colorVisible ? 'nota-con-color' : '' }}"
+<article id="nota-{{ $nota->id }}" class="nota-item {{ $nota->fijada ? 'nota-fijada' : '' }} {{ $colorVisible ? 'nota-con-color' : '' }} {{ $completada ? 'nota-completada' : '' }}"
          @if ($colorVisible) style="--nota-fondo: {{ $colorVisible->fondo() }}; --nota-marca: {{ $colorVisible->marca() }}" @endif>
     <div class="nota-acciones">
         <form method="POST" action="{{ route('notas.fijar', $nota) }}"
@@ -37,6 +31,16 @@
                 <i class="bi {{ $nota->fijada ? 'bi-pin-angle-fill' : 'bi-pin-angle' }}" aria-hidden="true"></i>
             </button>
         </form>
+        {{-- Ocultar/mostrar: solo afecta a esta pantalla. notas.js lo envía por fetch y ofrece "Deshacer"; sin JS es un formulario normal. --}}
+        <form method="POST" action="{{ route($nota->oculta ? 'notas.mostrar' : 'notas.ocultar', $nota) }}"
+              data-alternar-oculta="{{ $nota->oculta ? 'mostrar' : 'ocultar' }}"
+              data-url-inversa="{{ route($nota->oculta ? 'notas.ocultar' : 'notas.mostrar', $nota) }}">
+            @csrf
+            @method('PATCH')
+            <button type="submit" class="nota-boton" title="{{ $nota->oculta ? 'Mostrar' : 'Ocultar' }}" aria-label="{{ $nota->oculta ? 'Mostrar' : 'Ocultar' }} nota">
+                <i class="bi {{ $nota->oculta ? 'bi-eye' : 'bi-eye-slash' }}" aria-hidden="true"></i>
+            </button>
+        </form>
         <a href="{{ route('notas.edit', $nota) }}" class="nota-boton" title="Editar" aria-label="Editar nota"
            data-abrir-nota="editar" data-nota="{{ json_encode($datosEdicion, JSON_UNESCAPED_UNICODE) }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
         <form method="POST" action="{{ route('notas.destroy', $nota) }}"
@@ -47,6 +51,10 @@
             <button type="submit" class="nota-boton nota-boton-peligro" title="Eliminar" aria-label="Eliminar nota"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </form>
     </div>
+
+    @if ($completada)
+        <span class="nota-marca-completada"><i class="bi bi-check2-circle" aria-hidden="true"></i> Completada</span>
+    @endif
 
     {{-- Título y contenido abren la nota completa (modal de lectura); sin JS, la página de la nota. --}}
     <a href="{{ route('notas.show', $nota) }}" class="nota-abrir" data-ver-nota="{{ json_encode($datosLectura, JSON_UNESCAPED_UNICODE) }}"

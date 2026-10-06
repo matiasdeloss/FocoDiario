@@ -37,6 +37,15 @@
     </div>
 </div>
 
+<div class="dialogo-campo">
+    <label for="{{ $p }}-columna" class="dialogo-etiqueta">Tablero y columna</label>
+    <select id="{{ $p }}-columna" name="columna_id" class="form-select @error('columna_id') is-invalid @enderror" aria-describedby="{{ $p }}-error-columna_id">
+        <option value="">Tablero principal › Sin asignar</option>
+        @include('tablero._opciones-columna', ['columnas' => $columnasTodas ?? \App\Models\ColumnaTablero::paraSelector(), 'elegida' => old('columna_id', $nota->columna_id)])
+    </select>
+    <div class="dialogo-error" id="{{ $p }}-error-columna_id" data-error="columna_id">@error('columna_id'){{ $message }}@enderror</div>
+</div>
+
 <fieldset class="dialogo-grupo">
     <legend>Color</legend>
     <div class="notas-colores">

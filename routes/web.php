@@ -15,7 +15,9 @@ use App\Http\Controllers\RecomendacionController;
 use App\Http\Controllers\RecordatorioController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\SesionEstudioController;
+use App\Http\Controllers\NotaTareaController;
 use App\Http\Controllers\TableroController;
+use App\Http\Controllers\TableroGestionController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\TarjetaCalendarioController;
 use App\Http\Middleware\IdentificarInvitado;
@@ -46,6 +48,8 @@ Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
     // ---- Notas y contextos ----
     Route::resource('notas', NotaController::class);
     Route::patch('notas/{nota}/fijar', [NotaController::class, 'fijar'])->name('notas.fijar');
+    Route::patch('notas/{nota}/ocultar', [NotaController::class, 'ocultar'])->name('notas.ocultar');
+    Route::patch('notas/{nota}/mostrar', [NotaController::class, 'mostrar'])->name('notas.mostrar');
     Route::patch('notas/{nota}/mover', [NotaController::class, 'mover'])->name('notas.mover');
     Route::resource('contextos', ContextoController::class);
 
@@ -86,6 +90,14 @@ Route::middleware([IdentificarInvitado::class, 'auth'])->group(function () {
     Route::patch('tablero/columnas/{columna}/mover', [ColumnaTableroController::class, 'mover'])->name('tablero.columnas.mover');
     Route::post('tablero/columnas/{columna}/tarjetas', [ColumnaTableroController::class, 'tarjeta'])->name('tablero.columnas.tarjetas.store');
     Route::patch('tareas/{tarea}/columna', [ColumnaTableroController::class, 'moverTarea'])->name('tareas.columna');
+    Route::patch('notas/{nota}/columna', [ColumnaTableroController::class, 'moverNota'])->name('notas.columna');
+    // Tableros: crear, renombrar, elegir el principal y eliminar (sus tarjetas pasan a otro tablero).
+    Route::post('tableros', [TableroGestionController::class, 'store'])->name('tableros.store');
+    Route::patch('tableros/{tablero}', [TableroGestionController::class, 'update'])->name('tableros.update');
+    Route::patch('tableros/{tablero}/principal', [TableroGestionController::class, 'principal'])->name('tableros.principal');
+    Route::delete('tableros/{tablero}', [TableroGestionController::class, 'destroy'])->name('tableros.destroy');
+    // Notas vinculadas a tareas: buscar notas para vincular desde el diálogo de la tarea.
+    Route::get('notas-buscar', [NotaTareaController::class, 'buscar'])->name('notas.buscar');
 
     // ---- Captura rápida de Hoy ----
     Route::post('hoy/captura', CapturaRapidaController::class)->name('hoy.captura');

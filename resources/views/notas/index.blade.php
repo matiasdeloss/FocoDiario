@@ -7,13 +7,14 @@
 @endpush
 
 @php
-    $hayFiltros = $filtro || $busqueda !== '' || $colorFiltro || $soloFijadas;
+    $hayFiltros = $filtro || $busqueda !== '' || $colorFiltro || $soloFijadas || $soloOcultas;
     // Enlace de cada pastilla: conserva los demás filtros y cambia solo el suyo.
     $actuales = array_filter([
         'contexto' => $filtro,
         'q' => $busqueda !== '' ? $busqueda : null,
         'color' => $colorFiltro?->value,
         'fijadas' => $soloFijadas ? 1 : null,
+        'ocultas' => $soloOcultas ? 1 : null,
     ]);
     $enlace = fn (array $cambios) => route('notas.index', array_filter(array_merge($actuales, $cambios), fn ($v) => $v !== null && $v !== ''));
 @endphp
@@ -24,12 +25,15 @@
             <div class="notas-titulos">
                 <h1 class="notas-titulo">Notas</h1>
                 <p class="notas-subtitulo" id="notas-subtitulo">
+                    @if ($soloOcultas)
+                        Ocultas ·
+                    @endif
                     @if ($filtro === 'bandeja')
                         Bandeja de entrada ·
                     @elseif ($contextoFiltro)
                         {{ $contextoFiltro->rutaCompleta() }} ·
                     @endif
-                    <span data-conteo>{{ $notas->count() }}</span> {{ $notas->count() === 1 ? 'nota' : 'notas' }}@if ($hayFiltros) de {{ $totalNotas }}@endif
+                    <span data-conteo>{{ $notas->count() }}</span> <span data-conteo-etiqueta>{{ $notas->count() === 1 ? 'nota' : 'notas' }}</span>@if ($hayFiltros) de <span data-total>{{ $totalNotas }}</span>@endif
                     @if ($totalFijadas > 0 && ! $hayFiltros) · {{ $totalFijadas }} {{ $totalFijadas === 1 ? 'fijada' : 'fijadas' }}@endif
                 </p>
             </div>
@@ -48,6 +52,7 @@
         <form method="GET" action="{{ route('notas.index') }}" class="notas-filtros" role="search" aria-label="Buscar y filtrar notas">
             @if ($colorFiltro) <input type="hidden" name="color" value="{{ $colorFiltro->value }}"> @endif
             @if ($soloFijadas) <input type="hidden" name="fijadas" value="1"> @endif
+            @if ($soloOcultas) <input type="hidden" name="ocultas" value="1"> @endif
 
             <label class="notas-buscar">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -67,7 +72,7 @@
                 </select>
             </label>
 
-            <div class="notas-pastillas" role="group" aria-label="Filtrar por color o fijadas">
+            <div class="notas-pastillas" role="group" aria-label="Filtrar por color, fijadas u ocultas">
                 <a href="{{ $enlace(['fijadas' => $soloFijadas ? null : 1]) }}" class="notas-pastilla" @if ($soloFijadas) aria-current="true" @endif>
                     <i class="bi bi-pin-angle{{ $soloFijadas ? '-fill' : '' }}" aria-hidden="true"></i> Fijadas
                 </a>
@@ -78,6 +83,11 @@
                         <span class="notas-punto" aria-hidden="true"></span>
                     </a>
                 @endforeach
+                {{-- Solo aparece si hay ocultas (o ya se está en esa lista); notas.js la muestra u oculta al ocultar/mostrar. --}}
+                <a href="{{ $enlace(['ocultas' => $soloOcultas ? null : 1]) }}" class="notas-pastilla" data-pastilla-ocultas @if ($soloOcultas) aria-current="true" @endif
+                   @if ($totalOcultas === 0 && ! $soloOcultas) hidden @endif>
+                    <i class="bi bi-eye-slash" aria-hidden="true"></i><span>Ver ocultas (<span data-conteo-ocultas>{{ $totalOcultas }}</span>)</span>
+                </a>
                 @if ($hayFiltros)
                     <a href="{{ route('notas.index') }}" class="notas-pastilla notas-limpiar"><i class="bi bi-x-lg" aria-hidden="true"></i> Quitar filtros</a>
                 @endif
@@ -91,6 +101,14 @@
                 @include('notas._nota')
             @endforeach
         </div>
+
+        {{-- Con un contexto elegido, avisa de las ocultas que el listado deja fuera (mismos filtros). notas.js la actualiza al ocultar/mostrar. --}}
+        @if ($filtro !== null && ! $soloOcultas)
+            <p class="notas-ocultas-aviso" data-ocultas-aviso @if ($ocultasDelFiltro === 0) hidden @endif>
+                y <span data-ocultas-n>{{ $ocultasDelFiltro }}</span> <span data-ocultas-etiqueta>{{ $ocultasDelFiltro === 1 ? 'oculta' : 'ocultas' }}</span> ·
+                <a href="{{ $enlace(['ocultas' => 1]) }}">ver<span class="visually-hidden"> las notas ocultas de este filtro</span></a>
+            </p>
+        @endif
 
         <div class="notas-vacio" data-vacio @if ($notas->isNotEmpty()) hidden @endif>
             <i class="bi bi-journal-text" aria-hidden="true"></i>

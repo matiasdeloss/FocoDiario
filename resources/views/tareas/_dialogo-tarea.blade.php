@@ -1,7 +1,11 @@
 {{-- Modal de crear y editar tarea (mejora progresiva: sin JS, los enlaces llevan a las páginas de siempre).
      Requiere: $columnasOrden, $contextos. Lo maneja resources/js/dialogos-tablero.js. --}}
 @php
-    $columnaInicial = $columnasOrden->firstWhere('categoria', \App\Enums\EstadoTarea::Pendiente) ?? $columnasOrden->first();
+    // Una tarea nueva cae en "Sin asignar": la del tablero que se está mirando o, fuera del tablero, la del principal.
+    $columnasSelector = $columnasTodas ?? $columnasOrden;
+    $columnaInicial = (isset($tableroActual) ? $columnasSelector->first(fn ($c) => $c->fija && $c->tablero_id === $tableroActual->id) : null)
+        ?? $columnasSelector->first(fn ($c) => $c->fija && $c->tablero?->principal) ??
+        $columnasSelector->firstWhere('categoria', \App\Enums\EstadoTarea::Pendiente) ?? $columnasOrden->first();
 @endphp
 <dialog id="dialogo-tarea" class="dialogo" data-modal aria-labelledby="dialogo-tarea-titulo"
         data-url-crear="{{ route('tareas.store') }}" data-columna-inicial="{{ $columnaInicial?->id }}">
@@ -58,6 +62,17 @@
             @include('tareas._campo-extra', ['campo' => 'prioridad', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
             @include('tareas._campo-extra', ['campo' => 'columna', 'prefijo' => 'tarea', 'estilo' => 'dialogo'])
         </div>
+
+        {{-- Notas vinculadas: se buscan entre las notas del usuario y se guardan junto con la tarea (dialogos-tablero.js). --}}
+        <fieldset class="dialogo-grupo" data-notas-zona data-url-buscar="{{ route('notas.buscar') }}" hidden data-requiere-js>
+            <legend>Notas vinculadas <span class="dialogo-opcional">(opcional)</span></legend>
+            <ul class="notas-vinc-lista" data-notas-lista aria-label="Notas vinculadas"></ul>
+            <p class="dialogo-ayuda" data-notas-vacia>Todavía no hay notas vinculadas.</p>
+            <label for="tarea-notas-buscar" class="visually-hidden">Buscar una nota para vincular</label>
+            <input type="search" id="tarea-notas-buscar" class="form-control" placeholder="Buscar una nota para vincular…" maxlength="100" autocomplete="off" data-notas-buscar>
+            <ul class="notas-vinc-resultados" data-notas-resultados aria-label="Notas encontradas"></ul>
+            <div class="dialogo-error" data-error="notas"></div>
+        </fieldset>
 
         <div class="dialogo-pie-acciones">
             <button type="button" class="btn btn-foco-suave" data-cerrar-modal>Cancelar</button>

@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
             $datos = $vista->getData();
             $vista->with([
                 'contextosTarea' => $datos['contextosTarea'] ?? Contexto::opcionesPorTipo(),
-                'columnasOrden' => $datos['columnasOrden'] ?? ColumnaTablero::ordenadas()->get(),
+                'columnasOrden' => $datos['columnasOrden'] ?? ColumnaTablero::paraSelector(),
             ]);
         });
     }

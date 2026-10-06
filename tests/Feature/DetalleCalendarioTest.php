@@ -35,7 +35,8 @@ class DetalleCalendarioTest extends TestCase
             // Contexto y estado se editan en el panel (no se repiten en el resumen de solo lectura).
             ->assertJsonPath('detalle.contexto_id', $tesis->id)
             ->assertJsonPath('detalle.destinos.0.etiqueta', 'Tesis')
-            ->assertJsonPath('detalle.filas', [])
+            // La tarea cae en "Sin asignar" (el nombre difiere del estado "Pendiente", así que se informa).
+            ->assertJsonPath('detalle.filas', [['etiqueta' => 'Columna', 'valor' => 'Sin asignar']])
             ->assertJsonCount(3, 'detalle.prioridades');
     }
 

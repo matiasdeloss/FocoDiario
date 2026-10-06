@@ -3,6 +3,7 @@
 <dialog id="dialogo-columna" class="dialogo dialogo-chico" data-modal aria-labelledby="dialogo-columna-titulo"
         data-url-crear="{{ route('tablero.columnas.store') }}">
     <form class="dialogo-cuerpo dialogo-form" method="POST" action="{{ route('tablero.columnas.store') }}" novalidate data-form-modal>
+        <input type="hidden" name="tablero_id" value="{{ $tableroActual->id }}">
         <div class="dialogo-cab">
             <h2 class="dialogo-titulo" id="dialogo-columna-titulo" data-titulo-dialogo>Nueva columna</h2>
             <button type="button" class="dialogo-cerrar" data-cerrar-modal aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
@@ -24,7 +25,7 @@
                 @endforeach
             </select>
             <div class="dialogo-error" id="columna-error-categoria" data-error="categoria"></div>
-            <p class="dialogo-ayuda" id="columna-ayuda-categoria" data-ayuda-categoria>Las tareas que caigan en esta columna toman ese estado.</p>
+            <p class="dialogo-ayuda" id="columna-ayuda-categoria" data-ayuda-categoria>Las tareas que caigan en esta columna toman ese estado; las notas quedan completadas si es de ese tipo.</p>
         </div>
 
         <div class="dialogo-pie-acciones">
@@ -46,7 +47,7 @@
         <p class="dialogo-texto" data-texto-eliminar></p>
 
         <div data-bloque-destino>
-            <label for="columna-destino" class="dialogo-etiqueta">Pasar sus tareas a</label>
+            <label for="columna-destino" class="dialogo-etiqueta">Pasar sus tarjetas a</label>
             <select id="columna-destino" name="reasignar_a" class="form-select" aria-describedby="columna-error-reasignar_a"></select>
             <div class="dialogo-error" id="columna-error-reasignar_a" data-error="reasignar_a"></div>
             <p class="dialogo-ayuda">Cada tarea toma el estado de la columna de destino.</p>

@@ -1,6 +1,7 @@
 /*
  * Tablero Kanban: arrastrar y soltar nativo (entre columnas y dentro de una columna, con el orden guardado),
- * botones de mover, alta rápida al pie de la columna y filtros por texto, contexto y prioridad.
+ * botones de mover, alta rápida al pie de la columna (tarea o nota) y filtros por texto, contexto y prioridad.
+ * Las tarjetas son tareas y notas (data-tipo): se mueven igual, cada una con su ruta.
  * Se carga solo en esta pantalla (ver tablero/index.blade.php). Los modales viven en dialogos-tablero.js.
  * Sin JS, todo funciona con formularios comunes. Las columnas son personalizables (data-columna = id).
  *
@@ -10,6 +11,9 @@
 import { aviso } from './avisos.js';
 import { crearSerie } from './hoy-lista-logica.js';
 import { pedirSeguro } from './red.js';
+import { fichaDeTarjeta, urlDeMovimiento } from './tablero-logica.js';
+// Las notas del tablero se abren en el diálogo de la página Notas.
+import './notas.js';
 
 const tablero = document.getElementById('tablero');
 
@@ -112,8 +116,9 @@ if (tablero) {
         const col = columna(destino);
         const cuerpo = { columna_id: Number(destino) };
 
+        // Notas y tareas comparten el orden de la columna: viaja como "tarea:12" / "nota:5".
         if (col.dataset.categoria !== 'completada') {
-            cuerpo.orden = tarjetasDe(col).map((otra) => Number(otra.dataset.id));
+            cuerpo.tarjetas = tarjetasDe(col).map((otra) => fichaDeTarjeta(otra.dataset.tipo, otra.dataset.id));
         }
 
         tarjeta.classList.add('guardando');
@@ -121,7 +126,7 @@ if (tablero) {
 
         return serie.agregar(async () => {
             try {
-                const respuesta = await pedirSeguro(tablero.dataset.urlColumna.replace('__ID__', tarjeta.dataset.id), {
+                const respuesta = await pedirSeguro(urlDeMovimiento(tarjeta.dataset.tipo, tarjeta.dataset.id, tablero.dataset), {
                     method: 'PATCH',
                     body: JSON.stringify(cuerpo),
                 });
@@ -158,12 +163,14 @@ if (tablero) {
 
         const origen = posicionActual(tarjeta);
         const clave = boton.dataset.moverA;
+        // actualizarTarjeta() reescribe el value de los botones para la nueva posición: leerlo antes.
+        const destino = boton.value;
 
-        columna(boton.value).querySelector('[data-lista]').prepend(tarjeta);
-        actualizarTarjeta(tarjeta, boton.value);
+        columna(destino).querySelector('[data-lista]').prepend(tarjeta);
+        actualizarTarjeta(tarjeta, destino);
         recontar();
 
-        guardar(tarjeta, boton.value, origen).then(() => {
+        guardar(tarjeta, destino, origen).then(() => {
             const activo = tarjeta.querySelector(`[data-mover-a="${clave}"]:not(:disabled)`)
                 ?? tarjeta.querySelector('[data-mover-a]:not(:disabled)');
             (activo ?? tarjeta).focus?.();
@@ -265,6 +272,7 @@ if (tablero) {
         const abrir = zona.querySelector('[data-anadir-abrir]');
         const formulario = zona.querySelector('[data-anadir-form]');
         const campo = formulario.elements.titulo;
+        const tipoElegido = () => formulario.querySelector('input[name="tipo"]:checked')?.value ?? 'tarea';
         const error = zona.querySelector('[data-anadir-error]');
         const enviar = zona.querySelector('[data-anadir-enviar]');
         const lista = zona.closest('.tablero-columna').querySelector('[data-lista]');
@@ -316,7 +324,7 @@ if (tablero) {
             try {
                 const respuesta = await pedirSeguro(zona.dataset.url, {
                     method: 'POST',
-                    body: JSON.stringify({ titulo }),
+                    body: JSON.stringify({ titulo, tipo: tipoElegido() }),
                 });
                 const datos = await respuesta.json().catch(() => ({}));
 
@@ -335,9 +343,8 @@ if (tablero) {
                 if (nueva) window.htmx?.process(nueva); // activa el borrado con HTMX de la tarjeta nueva
                 if (nueva && !coincide(nueva)) nueva.hidden = true;
 
-                campo.value = '';
                 recontar();
-                campo.focus(); // sigue abierto para cargar la siguiente
+                cerrar(); // se cierra al añadir; el foco vuelve a "Añadir tarjeta" (con un error de validación sigue abierto)
             } catch {
                 error.textContent = 'No se pudo añadir. Revisá tu conexión e intentá de nuevo.';
             } finally {
@@ -368,10 +375,10 @@ if (tablero) {
     tablero.addEventListener('click', (evento) => {
         const tarjeta = evento.target.closest('.tarea-tarjeta');
 
-        if (!tarjeta || evento.target.closest('a, button, form, input, select, textarea, label, summary')) return;
+        if (!tarjeta || evento.target.closest('a, button, form, input, select, textarea, label, summary, details')) return;
         if (window.getSelection()?.toString()) return;
 
-        tarjeta.querySelector('[data-abrir-tarea="editar"]')?.click();
+        tarjeta.querySelector('[data-abrir-tarea="editar"], [data-abrir-nota="editar"]')?.click();
     });
 
     tablero.addEventListener('keydown', (evento) => {

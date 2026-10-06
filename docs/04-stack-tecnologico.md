@@ -42,7 +42,9 @@ Tomadas de `02-requisitos-y-funcionalidades.md`:
 - `recordatorios`: fecha y hora, mensaje, tarea opcional.
 - `bloques_tiempo`: inicio, fin, categoría, tarea opcional, origen (manual / pomodoro), concentración (1 a 5, fase 3).
 - `contextos`: nombre, tipo (entorno / materia / tema / proyecto), contexto padre, color.
-- `notas`: contenido, contexto opcional, fecha opcional, fijada.
+- `tableros`: nombre, principal (exactamente uno por usuario), posición. `columnas_tablero`: tablero, nombre, categoría de estado, posición y `fija` (la columna "Sin asignar", siempre primera).
+- `notas`: contenido, contexto opcional, fecha opcional, fijada, columna y orden en el tablero (una nota está completada si su columna es de tipo completada).
+- `nota_tarea`: notas vinculadas a tareas (muchos a muchos). `tareas` también tiene columna y orden.
 - `sesiones_estudio` e `intervalos_estudio`: sesiones de Pomodoro y sus fases (foco, descanso, tiempo libre).
 - (`dias` se creó y luego se eliminó: el sueño no se registra a mano.)
 

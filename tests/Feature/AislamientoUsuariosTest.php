@@ -135,9 +135,9 @@ class AislamientoUsuariosTest extends TestCase
 
     public function test_cada_usuario_tiene_sus_propias_columnas(): void
     {
-        $this->assertSame(['Pendiente', 'En progreso', 'Completada'], ColumnaTablero::ordenadas()->pluck('nombre')->all());
+        $this->assertSame(['Sin asignar', 'Pendiente', 'En progreso', 'Completada'], ColumnaTablero::ordenadas()->pluck('nombre')->all());
 
-        // Una tarea nueva de Beto cae en SU columna Pendiente.
+        // Una tarea nueva de Beto cae en SU columna "Sin asignar".
         $tarea = Tarea::factory()->create();
         $this->assertSame($this->beto->id, ColumnaTablero::withoutGlobalScopes()->find($tarea->columna_id)->user_id);
     }

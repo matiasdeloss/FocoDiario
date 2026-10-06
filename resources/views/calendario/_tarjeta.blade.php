@@ -12,14 +12,14 @@
     <div class="tarj-cabeza" title="Arrastrá para ubicarla en el calendario">
         <i class="bi bi-grip-vertical tarj-asa" aria-hidden="true"></i>
         <span class="tarj-tipo"><span class="tarj-punto" aria-hidden="true"></span>{{ $meta['etiqueta'] }}</span>
+        @if (! empty($t['contexto']))
+            <span class="tarj-contexto {{ $t['contexto']['clase'] ?? 'tarj-contexto-neutro' }}" title="{{ $t['contexto']['ruta'] }}">
+                <span class="tarj-contexto-punto" aria-hidden="true"></span>
+                <span class="visually-hidden">Contexto:</span><span class="tarj-contexto-texto">{{ $t['contexto']['nombre'] }}</span>
+            </span>
+        @endif
         <time class="tarj-creada" datetime="{{ $t['creada']->toDateString() }}" title="Fecha de creación">{{ $t['creada']->format('d/m/Y') }}</time>
     </div>
-    @if (! empty($t['contexto']))
-        <p class="tarj-contexto {{ $t['contexto']['clase'] ?? 'tarj-contexto-neutro' }}" title="{{ $t['contexto']['ruta'] }}">
-            <span class="tarj-contexto-punto" aria-hidden="true"></span>
-            <span class="visually-hidden">Contexto:</span>{{ $t['contexto']['nombre'] }}
-        </p>
-    @endif
     <input type="text" class="tarj-campo tarj-titulo" data-campo="titulo" value="{{ $t['titulo'] }}" maxlength="255"
            placeholder="Título" aria-label="Título de {{ $meta['articulo'] }}" autocomplete="off" data-valor="{{ $t['titulo'] }}">
     <textarea class="tarj-campo tarj-comentario" data-campo="comentario" rows="1" maxlength="5000"

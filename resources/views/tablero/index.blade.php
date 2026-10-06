@@ -3,7 +3,7 @@
 @section('titulo', 'Tablero Kanban · FocoDiario')
 
 @push('head')
-    @vite(['resources/css/tablero.css', 'resources/js/tablero.js'])
+    @vite(['resources/css/tablero.css', 'resources/css/notas.css', 'resources/js/tablero.js'])
 @endpush
 
 @section('contenido')
@@ -39,13 +39,16 @@
                 </div>
 
                 <a href="{{ route('tareas.index') }}" class="btn btn-foco-suave"><i class="bi bi-list-check" aria-hidden="true"></i> Tareas</a>
-                <a href="{{ route('tareas.create') }}" class="btn btn-foco" data-abrir-tarea="nueva"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva tarea</a>
+                <a href="{{ route('tareas.create') }}" class="btn btn-foco" data-abrir-tarea="nueva" data-columna="{{ $columnasOrden->firstWhere('fija', true)?->id }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva tarea</a>
             </div>
         </header>
 
+        @include('tablero._tableros')
         @include('tablero._columnas')
     </div>
 
-    @include('tareas._dialogo-tarea', ['contextos' => $contextos])
+    @include('tareas._dialogo-tarea', ['contextos' => $contextos, 'columnasTodas' => $columnasTodas])
     @include('tablero._dialogos-columna')
+    {{-- Las notas del tablero se abren en el mismo diálogo de la página Notas (notas.js). --}}
+    @include('notas._dialogo', ['destinos' => $destinos])
 @endsection

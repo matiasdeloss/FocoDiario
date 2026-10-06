@@ -22,9 +22,10 @@ class EliminarColumnaTableroRequest extends FormRequest
 
         return [
             'reasignar_a' => [
-                $columna->tareas()->exists() ? 'required' : 'nullable',
+                $columna->tareas()->exists() || $columna->notas()->exists() ? 'required' : 'nullable',
                 'integer',
-                ReglasDeUsuario::existe('columnas_tablero')->whereNot('id', $columna->id),
+                // La columna de destino es del mismo tablero.
+                ReglasDeUsuario::existe('columnas_tablero')->whereNot('id', $columna->id)->where('tablero_id', $columna->tablero_id),
             ],
         ];
     }
@@ -36,6 +37,12 @@ class EliminarColumnaTableroRequest extends FormRequest
                 /** @var ColumnaTablero $columna */
                 $columna = $this->route('columna');
 
+                if ($columna->fija) {
+                    $validator->errors()->add('columna', 'La columna "Sin asignar" es fija: no se puede eliminar.');
+
+                    return;
+                }
+
                 if ($columna->categoriaObligatoria()) {
                     $validator->errors()->add('columna', "Es la única columna de tipo \"{$columna->categoria->etiqueta()}\"; el tablero necesita al menos una.");
                 }
@@ -46,7 +53,7 @@ class EliminarColumnaTableroRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'reasignar_a.required' => 'Elegí a qué columna pasan las tareas de la columna que eliminás.',
+            'reasignar_a.required' => 'Elegí a qué columna pasan las tarjetas de la columna que eliminás.',
             'reasignar_a.exists' => 'La columna de destino no es válida.',
         ];
     }

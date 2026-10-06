@@ -46,9 +46,9 @@ class TarjetasCalendarioTest extends TestCase
 
         // Nombre en la tarjeta, ruta completa en el tooltip y el color heredado del entorno.
         $this->assertStringContainsString('title="Carrera › Programación II"', $html);
-        $this->assertMatchesRegularExpression('/<p class="tarj-contexto actividad-celeste"[^>]*>.*?Programación II/s', $html);
+        $this->assertMatchesRegularExpression('/<span class="tarj-contexto actividad-celeste"[^>]*>.*?Programación II/s', $html);
         // El contexto sin color en toda su cadena se ve en neutro.
-        $this->assertMatchesRegularExpression('/<p class="tarj-contexto tarj-contexto-neutro" title="Sin color propio"/', $html);
+        $this->assertMatchesRegularExpression('/<span class="tarj-contexto tarj-contexto-neutro" title="Sin color propio"/', $html);
         // Solo las dos tarjetas con contexto lo muestran: las demás (y los recordatorios) no llevan nada extra.
         $this->assertSame(2, substr_count($html, 'class="tarj-contexto '));
     }

@@ -21,6 +21,7 @@ class FiltroNotasRequest extends FormRequest
             'q' => ['nullable', 'string', 'max:100'],
             'color' => ['nullable', Rule::enum(ColorActividad::class)],
             'fijadas' => ['nullable', 'boolean'],
+            'ocultas' => ['nullable', 'boolean'],
         ];
     }
 

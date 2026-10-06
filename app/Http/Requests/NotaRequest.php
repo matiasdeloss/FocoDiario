@@ -25,6 +25,8 @@ class NotaRequest extends FormRequest
             'fecha' => ['nullable', 'date_format:Y-m-d'],
             'fijada' => ['nullable', 'boolean'],
             'color' => ['nullable', Rule::enum(ColorActividad::class)],
+            // Columna del tablero en la que está la nota (vacío = se queda donde está o, si es nueva, "Sin asignar" del principal).
+            'columna_id' => ['nullable', 'integer', ReglasDeUsuario::existe('columnas_tablero')],
             'origen' => ['nullable', 'in:hoy'],
         ];
     }
@@ -41,6 +43,8 @@ class NotaRequest extends FormRequest
             'fecha.date_format' => 'La fecha no es una fecha válida.',
             'fijada.boolean' => 'El valor de "fijada" no es válido.',
             'color.enum' => 'El color elegido no es válido.',
+            'columna_id.exists' => 'La columna elegida no existe.',
+            'columna_id.integer' => 'La columna elegida no es válida.',
         ];
     }
 
@@ -55,6 +59,11 @@ class NotaRequest extends FormRequest
 
         if ($this->has('fijada')) {
             $datos['fijada'] = $this->boolean('fijada');
+        }
+
+        // Sin columna elegida, la nota conserva la suya (el hook del modelo ubica las nuevas).
+        if (array_key_exists('columna_id', $datos) && $datos['columna_id'] === null) {
+            unset($datos['columna_id']);
         }
 
         return $datos;

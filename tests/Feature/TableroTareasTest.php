@@ -23,10 +23,12 @@ class TableroTareasTest extends TestCase
 
         $respuesta->assertViewIs('tablero.index');
         $columnas = $respuesta->viewData('columnas');
-        $this->assertCount(3, $columnas);
+        // "Sin asignar" (donde caen las pendientes sin columna), Pendiente, En progreso y Completada.
+        $this->assertCount(4, $columnas);
         $this->assertSame(['Tarea pendiente'], $columnas[0]['tareas']->pluck('titulo')->all());
-        $this->assertSame(['Tarea en curso'], $columnas[1]['tareas']->pluck('titulo')->all());
-        $this->assertSame(['Tarea lista'], $columnas[2]['tareas']->pluck('titulo')->all());
+        $this->assertSame([], $columnas[1]['tareas']->pluck('titulo')->all());
+        $this->assertSame(['Tarea en curso'], $columnas[2]['tareas']->pluck('titulo')->all());
+        $this->assertSame(['Tarea lista'], $columnas[3]['tareas']->pluck('titulo')->all());
     }
 
     public function test_el_tablero_ofrece_filtros_rapidos_y_preselecciona_el_contexto_de_la_url(): void
@@ -89,7 +91,7 @@ class TableroTareasTest extends TestCase
         $this->patchJson(route('tareas.columna', $movida), ['columna_id' => $enProgreso->id, 'orden' => [$x->id, $movida->id, $y->id]])
             ->assertOk()->assertJson(['columna_id' => $enProgreso->id, 'estado' => 'en_progreso']);
 
-        $this->assertSame(['X', 'Movida', 'Y'], $this->get(route('tablero.index'))->viewData('columnas')[1]['tareas']->pluck('titulo')->all());
+        $this->assertSame(['X', 'Movida', 'Y'], $this->get(route('tablero.index'))->viewData('columnas')[2]['tareas']->pluck('titulo')->all());
         $this->assertSame(EstadoTarea::EnProgreso, $movida->fresh()->estado);
     }
 
@@ -152,7 +154,7 @@ class TableroTareasTest extends TestCase
         }
 
         $respuesta = $this->get(route('tablero.index'))->assertOk();
-        $completadas = $respuesta->viewData('columnas')[2];
+        $completadas = $respuesta->viewData('columnas')[3];
 
         $this->assertCount(10, $completadas['tareas']);
         $this->assertSame(2, $completadas['ocultas']);

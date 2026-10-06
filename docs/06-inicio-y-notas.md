@@ -16,6 +16,9 @@ Cuando alguien entra, ¿qué necesita ver primero? Respuesta:
 | Nota rápida | Campo de texto siempre visible, con destino (a qué va) y fecha opcional. Enter guarda. | `notas`, `contextos` |
 | Resumen del día | Las métricas actuales (tareas abiertas, horas aprovechadas, recordatorios). Pasan a segundo plano. | ya existe |
 
+## Notas en el tablero y vinculadas a tareas
+Todas las notas son también tarjetas del tablero: caen en "Sin asignar" del tablero principal al crearse y se mueven por las columnas como las tareas; una nota en una columna de tipo completada se ve atenuada y con la marca "Completada" en Notas, y como hecha en el calendario. Además, una tarea puede tener notas vinculadas (se eligen en el diálogo de la tarea y se abren desde su tarjeta).
+
 ## Notas con destino
 Una nota puede ir a un contexto: una materia, un tema, un proyecto o un entorno (carrera, vida cotidiana, proyectos personales). Las tareas usan los mismos contextos.
 

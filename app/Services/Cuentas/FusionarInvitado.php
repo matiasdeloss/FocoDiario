@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  */
 class FusionarInvitado
 {
-    /** Tablas que solo cambian de dueño. Columnas, contextos, cajas y ajustes tienen su propio tratamiento. */
+    /** Tablas que solo cambian de dueño. Tableros (con sus columnas), contextos, cajas y ajustes tienen su propio tratamiento. */
     private const TABLAS = ['tareas', 'recordatorios', 'notas', 'bloques_tiempo', 'sesiones_estudio', 'intervalos_estudio'];
 
     public const SUFIJO_CONTEXTO = ' (invitado)';
@@ -28,7 +28,7 @@ class FusionarInvitado
             $de = $invitado->id;
             $a = $cuenta->id;
 
-            $this->columnas($de, $a);
+            $this->tableros($de, $a);
             $this->contextos($de, $a);
             $this->cajas($de, $a);
 
@@ -49,22 +49,61 @@ class FusionarInvitado
         });
     }
 
-    /** Columnas con el mismo nombre y tipo se unen (sus tareas pasan a la de la cuenta); las demás se agregan al final. */
-    private function columnas(int $de, int $a): void
+    /**
+     * Tableros. El principal del invitado se une al principal de la cuenta: "Sin asignar" con "Sin asignar" y las columnas
+     * con el mismo nombre y tipo se unen (sus tarjetas pasan a la de la cuenta); las demás se agregan al final.
+     * Los otros tableros del invitado pasan a la cuenta como tableros propios (con " (invitado)" si el nombre ya existe) y
+     * ninguno es principal: la cuenta sigue con exactamente un principal.
+     */
+    private function tableros(int $de, int $a): void
     {
-        $deLaCuenta = DB::table('columnas_tablero')->where('user_id', $a)->get();
+        $principalCuenta = DB::table('tableros')->where('user_id', $a)->orderByDesc('principal')->orderBy('posicion')->first();
+        $delInvitado = DB::table('tableros')->where('user_id', $de)->orderByDesc('principal')->orderBy('posicion')->orderBy('id')->get();
+
+        // Una cuenta sin tablero (no debería pasar) se queda con los del invitado tal cual.
+        if ($principalCuenta === null) {
+            DB::table('tableros')->where('user_id', $de)->update(['user_id' => $a]);
+            DB::table('columnas_tablero')->where('user_id', $de)->update(['user_id' => $a]);
+
+            return;
+        }
+
+        $principalInvitado = $delInvitado->first(fn ($t) => (bool) $t->principal) ?? $delInvitado->first();
+        $deLaCuenta = DB::table('columnas_tablero')->where('tablero_id', $principalCuenta->id)->get();
         $posicion = (int) $deLaCuenta->max('posicion');
 
-        foreach (DB::table('columnas_tablero')->where('user_id', $de)->orderBy('posicion')->orderBy('id')->get() as $columna) {
-            $igual = $deLaCuenta->first(fn ($otra) => $otra->categoria === $columna->categoria
-                && mb_strtolower(trim($otra->nombre)) === mb_strtolower(trim($columna->nombre)));
+        if ($principalInvitado !== null) {
+            foreach (DB::table('columnas_tablero')->where('tablero_id', $principalInvitado->id)->orderBy('posicion')->orderBy('id')->get() as $columna) {
+                $igual = $deLaCuenta->first(fn ($otra) => $columna->fija
+                    ? (bool) $otra->fija
+                    : ! $otra->fija && $otra->categoria === $columna->categoria && mb_strtolower(trim($otra->nombre)) === mb_strtolower(trim($columna->nombre)));
 
-            if ($igual !== null) {
-                DB::table('tareas')->where('columna_id', $columna->id)->update(['columna_id' => $igual->id]);
-                DB::table('columnas_tablero')->where('id', $columna->id)->delete();
-            } else {
-                DB::table('columnas_tablero')->where('id', $columna->id)->update(['user_id' => $a, 'posicion' => ++$posicion]);
+                if ($igual !== null) {
+                    DB::table('tareas')->where('columna_id', $columna->id)->update(['columna_id' => $igual->id]);
+                    DB::table('notas')->where('columna_id', $columna->id)->update(['columna_id' => $igual->id]);
+                    DB::table('columnas_tablero')->where('id', $columna->id)->delete();
+                } else {
+                    DB::table('columnas_tablero')->where('id', $columna->id)->update(['user_id' => $a, 'tablero_id' => $principalCuenta->id, 'posicion' => ++$posicion]);
+                }
             }
+
+            DB::table('tableros')->where('id', $principalInvitado->id)->delete();
+        }
+
+        $nombres = DB::table('tableros')->where('user_id', $a)->pluck('nombre')->map(fn ($n) => mb_strtolower($n))->flip();
+        $lugar = (int) DB::table('tableros')->where('user_id', $a)->max('posicion');
+
+        foreach ($delInvitado->reject(fn ($t) => $principalInvitado !== null && $t->id === $principalInvitado->id) as $tablero) {
+            $nombre = $tablero->nombre;
+
+            for ($n = 1; isset($nombres[mb_strtolower($nombre)]); $n++) {
+                $nombre = $tablero->nombre.self::SUFIJO_CONTEXTO.($n > 1 ? " {$n}" : '');
+            }
+
+            $nombres[mb_strtolower($nombre)] = true;
+
+            DB::table('tableros')->where('id', $tablero->id)->update(['user_id' => $a, 'nombre' => $nombre, 'principal' => false, 'posicion' => ++$lugar]);
+            DB::table('columnas_tablero')->where('tablero_id', $tablero->id)->update(['user_id' => $a]);
         }
     }
 

@@ -7,6 +7,7 @@
 //  - éxito: se recarga la página; el servidor deja el aviso "Tarea creada." en la sesión.
 import { aviso } from './avisos.js';
 import { pedirSeguro } from './red.js';
+import { candidatas, desvincular, idsDe, vincular } from './notas-vinculadas-logica.js';
 
 const dialogos = document.querySelectorAll('dialog[data-modal]');
 
@@ -93,7 +94,7 @@ if (dialogos.length > 0) {
     };
 
     const enviar = async (dialogo, formulario) => {
-        const { url, metodo } = abierto.get(dialogo) ?? {};
+        const { url, metodo, extra } = abierto.get(dialogo) ?? {};
         const boton = formulario.querySelector('[data-enviar]');
 
         if (!url || boton.disabled) {
@@ -107,7 +108,8 @@ if (dialogos.length > 0) {
             const respuesta = await pedirSeguro(url, {
                 method: metodo,
                 headers: { 'X-Modal': '1' },
-                body: JSON.stringify(Object.fromEntries(new FormData(formulario))),
+                // `extra` aporta lo que no es un campo del formulario (p. ej. las notas vinculadas de la tarea).
+                body: JSON.stringify({ ...Object.fromEntries(new FormData(formulario)), ...(extra?.() ?? {}) }),
             });
 
             if (respuesta.status === 422) {
@@ -199,6 +201,78 @@ if (dialogos.length > 0) {
         const enviarBtn = dialogoTarea.querySelector('[data-enviar]');
         const campos = ['titulo', 'descripcion', 'contexto_id', 'fecha_limite', 'prioridad', 'columna_id', 'color'];
 
+        // ----- Notas vinculadas: se buscan entre las notas del usuario; los ids viajan al guardar la tarea -----
+        const zonaNotas = dialogoTarea.querySelector('[data-notas-zona]');
+        const listaNotas = zonaNotas.querySelector('[data-notas-lista]');
+        const resultadosNotas = zonaNotas.querySelector('[data-notas-resultados]');
+        const buscador = zonaNotas.querySelector('[data-notas-buscar]');
+        let vinculadas = [];
+        let ultimosResultados = [];
+        let esperaBusqueda = null;
+
+        const botonDeNota = (nota, accion, texto, icono) => {
+            const item = document.createElement('li');
+            const titulo = document.createElement('span');
+            const boton = document.createElement('button');
+
+            titulo.textContent = nota.titulo;
+            boton.type = 'button';
+            boton.className = 'btn-icono';
+            boton.dataset[accion] = String(nota.id);
+            boton.setAttribute('aria-label', `${texto} ${nota.titulo}`);
+            boton.title = texto;
+            boton.innerHTML = `<i class="bi ${icono}" aria-hidden="true"></i>`;
+            item.append(titulo, boton);
+
+            return item;
+        };
+
+        const pintarNotas = () => {
+            listaNotas.replaceChildren(...vinculadas.map((nota) => botonDeNota(nota, 'desvincular', 'Desvincular', 'bi-x-lg')));
+            zonaNotas.querySelector('[data-notas-vacia]').hidden = vinculadas.length > 0;
+            resultadosNotas.replaceChildren(...candidatas(ultimosResultados, vinculadas).map((nota) => botonDeNota(nota, 'vincular', 'Vincular', 'bi-plus-lg')));
+        };
+
+        const buscarNotas = async () => {
+            try {
+                const respuesta = await pedirSeguro(`${zonaNotas.dataset.urlBuscar}?q=${encodeURIComponent(buscador.value.trim())}`, { method: 'GET' });
+
+                ultimosResultados = respuesta.ok ? ((await respuesta.json()).notas ?? []) : [];
+            } catch {
+                ultimosResultados = [];
+            }
+
+            pintarNotas();
+        };
+
+        buscador.addEventListener('input', () => {
+            clearTimeout(esperaBusqueda);
+            esperaBusqueda = setTimeout(buscarNotas, 250);
+        });
+
+        zonaNotas.addEventListener('click', (evento) => {
+            const quitar = evento.target.closest('[data-desvincular]');
+            const agregar = evento.target.closest('[data-vincular]');
+
+            if (quitar) {
+                vinculadas = desvincular(vinculadas, Number(quitar.dataset.desvincular));
+            } else if (agregar) {
+                const nota = ultimosResultados.find((n) => n.id === Number(agregar.dataset.vincular));
+
+                if (nota) {
+                    vinculadas = vincular(vinculadas, nota);
+                    // La búsqueda ya cumplió su fin: se vacía el campo y los resultados para empezar de nuevo.
+                    clearTimeout(esperaBusqueda);
+                    buscador.value = '';
+                    ultimosResultados = [];
+                }
+            } else {
+                return;
+            }
+
+            pintarNotas();
+        });
+
         const abrirTarea = (opener) => {
             const editar = opener.dataset.abrirTarea === 'editar';
             const datos = editar ? JSON.parse(opener.dataset.tarea) : {};
@@ -225,9 +299,18 @@ if (dialogos.length > 0) {
 
             titulo.textContent = editar ? 'Editar tarea' : 'Nueva tarea';
             enviarBtn.textContent = editar ? enviarBtn.dataset.textoEditar : enviarBtn.dataset.textoCrear;
+
+            vinculadas = (datos.notas ?? []).map((nota) => ({ id: nota.id, titulo: nota.titulo }));
+            ultimosResultados = [];
+            clearTimeout(esperaBusqueda);
+            buscador.value = '';
+            pintarNotas();
+
+            const extra = () => ({ notas: idsDe(vinculadas) });
+
             abrirDialogo(dialogoTarea, opener, editar
-                ? { url: datos.url, metodo: 'PATCH' }
-                : { url: dialogoTarea.dataset.urlCrear, metodo: 'POST' });
+                ? { url: datos.url, metodo: 'PATCH', extra }
+                : { url: dialogoTarea.dataset.urlCrear, metodo: 'POST', extra });
             enfocarInicial(dialogoTarea, formulario.elements.titulo);
         };
 

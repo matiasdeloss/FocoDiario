@@ -47,7 +47,7 @@ if (vistas && contenedor) {
 const vacio = document.querySelector('[data-vacio]');
 const conteo = document.querySelector('[data-conteo]');
 
-document.addEventListener('htmx:afterSettle', () => {
+function actualizarConteo() {
     if (!lista) {
         return;
     }
@@ -58,9 +58,124 @@ document.addEventListener('htmx:afterSettle', () => {
         conteo.textContent = String(total);
     }
 
+    const etiqueta = document.querySelector('[data-conteo-etiqueta]');
+
+    if (etiqueta) {
+        etiqueta.textContent = total === 1 ? 'nota' : 'notas';
+    }
+
     if (vacio) {
         vacio.hidden = total > 0;
     }
+}
+
+document.addEventListener('htmx:afterSettle', actualizarConteo);
+
+// ---------- Ocultar / mostrar (solo de esta pantalla) con "Deshacer" ----------
+const pastillaOcultas = document.querySelector('[data-pastilla-ocultas]');
+const conteoOcultas = pastillaOcultas?.querySelector('[data-conteo-ocultas]');
+
+/** Suma o resta al "Ver ocultas (N)". Sin ocultas la pastilla se esconde, salvo que sea la lista que se está viendo. */
+function ajustarOcultas(delta) {
+    if (!pastillaOcultas || !conteoOcultas) {
+        return;
+    }
+
+    const total = Math.max(0, Number(conteoOcultas.textContent) + delta);
+
+    conteoOcultas.textContent = String(total);
+    pastillaOcultas.hidden = total === 0 && pastillaOcultas.getAttribute('aria-current') !== 'true';
+}
+
+/** El "de N" del subtítulo (solo con filtros): sale o vuelve una nota de la vista actual. */
+function ajustarTotal(delta) {
+    const total = document.querySelector('[data-total]');
+
+    if (total) {
+        total.textContent = String(Math.max(0, Number(total.textContent) + delta));
+    }
+}
+
+/** "y N ocultas · ver" bajo la lista (solo existe con un contexto elegido). */
+function ajustarAvisoOcultas(delta) {
+    const linea = document.querySelector('[data-ocultas-aviso]');
+
+    if (!linea) {
+        return;
+    }
+
+    const total = Math.max(0, Number(linea.querySelector('[data-ocultas-n]').textContent) + delta);
+
+    linea.querySelector('[data-ocultas-n]').textContent = String(total);
+    linea.querySelector('[data-ocultas-etiqueta]').textContent = total === 1 ? 'oculta' : 'ocultas';
+    linea.hidden = total === 0;
+}
+
+async function alternarOculta(url) {
+    try {
+        const respuesta = await pedirSeguro(url, { method: 'PATCH' });
+
+        return respuesta.ok;
+    } catch {
+        return false;
+    }
+}
+
+document.addEventListener('submit', async (evento) => {
+    const formulario = evento.target.closest?.('form[data-alternar-oculta]');
+    const tarjeta = formulario?.closest('.nota-item');
+
+    if (!formulario || !tarjeta || !lista) {
+        return;
+    }
+
+    evento.preventDefault();
+
+    const ocultando = formulario.dataset.alternarOculta === 'ocultar';
+    const urlInversa = formulario.dataset.urlInversa;
+
+    if (formulario.dataset.enviando) {
+        return;
+    }
+
+    formulario.dataset.enviando = '1';
+
+    if (!await alternarOculta(formulario.action)) {
+        delete formulario.dataset.enviando;
+        aviso.error(ocultando ? 'No se pudo ocultar la nota.' : 'No se pudo mostrar la nota.');
+
+        return;
+    }
+
+    // La tarjeta sale de la lista; un marcador guarda su lugar por si se deshace.
+    const marcador = document.createComment('nota');
+
+    tarjeta.replaceWith(marcador);
+    delete formulario.dataset.enviando;
+    ajustarOcultas(ocultando ? 1 : -1);
+    ajustarAvisoOcultas(ocultando ? 1 : -1);
+    ajustarTotal(-1);
+    actualizarConteo();
+
+    aviso.exito(ocultando ? 'Nota oculta.' : 'Nota visible de nuevo.', {
+        accion: {
+            texto: 'Deshacer',
+            alHacer: async () => {
+                if (!await alternarOculta(urlInversa)) {
+                    aviso.error('No se pudo deshacer. Recargá la página para ver el estado real.');
+
+                    return;
+                }
+
+                marcador.replaceWith(tarjeta);
+                ajustarOcultas(ocultando ? -1 : 1);
+                ajustarAvisoOcultas(ocultando ? -1 : 1);
+                ajustarTotal(1);
+                actualizarConteo();
+                formulario.querySelector('[type="submit"]')?.focus({ preventScroll: true });
+            },
+        },
+    });
 });
 
 // ---------- Modal ----------
@@ -88,6 +203,7 @@ if (dialogo) {
         el.contenido.value = datos.contenido ?? '';
         el.contexto_id.value = datos.contexto_id ?? '';
         el.fecha.value = datos.fecha ?? '';
+        el.columna_id.value = datos.columna_id ?? '';
         el.fijada[1].checked = Boolean(datos.fijada);
         const color = datos.color ?? '';
         [...formulario.querySelectorAll('input[name="color"]')].forEach((radio) => { radio.checked = radio.value === color; });

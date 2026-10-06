@@ -51,6 +51,7 @@ class EstudianteTecnologiaSeeder extends Seeder
         $this->tablero();
         $this->recordatorios();
         $this->notas();
+        $this->tarjetasDeNotas();
         $this->estudio();
         $this->agenda();
     }
@@ -99,7 +100,9 @@ class EstudianteTecnologiaSeeder extends Seeder
     private function tablero(): void
     {
         $col = [
-            'pendiente' => ColumnaTablero::where('categoria', EstadoTarea::Pendiente)->orderBy('posicion')->first(),
+            // "Sin asignar" es la columna fija donde caen las tarjetas nuevas; "Pendiente" es la de fábrica.
+            'sin' => ColumnaTablero::where('fija', true)->first(),
+            'pendiente' => ColumnaTablero::where('categoria', EstadoTarea::Pendiente)->where('fija', false)->orderBy('posicion')->first(),
             'progreso' => ColumnaTablero::where('categoria', EstadoTarea::EnProgreso)->orderBy('posicion')->first(),
             'hecha' => ColumnaTablero::where('categoria', EstadoTarea::Completada)->orderBy('posicion')->first(),
         ];
@@ -139,8 +142,8 @@ class EstudianteTecnologiaSeeder extends Seeder
             ['Leer la documentación de Docker en inglés', 'Para el glosario de la materia.', 'Inglés Técnico', $d(6), $B, 'pendiente'],
             ['Presentación oral: mi stack favorito', '5 minutos, en inglés.', 'Inglés Técnico', $d(12), $M, 'pendiente'],
             ['Terminar el portfolio con Astro', 'Sección de proyectos y contacto.', 'Portfolio y side projects', $d(15), $M, 'progreso'],
-            ['Subir el bot de Discord a un VPS', null, 'Portfolio y side projects', null, $B, 'pendiente'],
-            ['Configurar Proxmox y una VM con Ubuntu Server', null, 'Homelab', null, $B, 'pendiente'],
+            ['Subir el bot de Discord a un VPS', null, 'Portfolio y side projects', null, $B, 'sin'],
+            ['Configurar Proxmox y una VM con Ubuntu Server', null, 'Homelab', null, $B, 'sin'],
             ['Entregar el TP de Programación I atrasado', null, 'Programación II', $d(-2), $A, 'pendiente'],
             ['Matemática Discreta: inscribirse al final', 'Cierra la inscripción esta semana.', 'Matemática Discreta', $d(1), $M, 'pendiente'],
             ['Hacer backup del repositorio de la facultad', null, 'Homelab', $d(0), $B, 'hecha', 0],
@@ -230,6 +233,26 @@ class EstudianteTecnologiaSeeder extends Seeder
                 'fijada' => $fijada,
                 'color' => $color,
             ]);
+        }
+    }
+
+    /** Las notas también son tarjetas del tablero (algunas avanzan por las columnas) y se vinculan a tareas. */
+    private function tarjetasDeNotas(): void
+    {
+        $columna = fn (EstadoTarea $categoria) => ColumnaTablero::where('categoria', $categoria)->where('fija', false)->orderBy('posicion')->value('id');
+
+        Nota::where('titulo', 'Vocabulario de IT')->update(['columna_id' => $columna(EstadoTarea::EnProgreso)]);
+        Nota::where('titulo', 'Recorridos en grafos')->update(['columna_id' => $columna(EstadoTarea::Completada)]);
+
+        // [título de la tarea, títulos de las notas vinculadas]
+        $vinculos = [
+            ['Historias de usuario del proyecto grupal', ['Ideas para el proyecto integrador']],
+            ['Terminar el portfolio con Astro', ['Ideas para el proyecto integrador', 'Comandos de Git que siempre olvido']],
+            ['Entregar el TP de Programación I atrasado', ['Comandos de Git que siempre olvido']],
+        ];
+
+        foreach ($vinculos as [$tarea, $notas]) {
+            Tarea::where('titulo', $tarea)->first()?->notas()->syncWithoutDetaching(Nota::whereIn('titulo', $notas)->pluck('id'));
         }
     }
 

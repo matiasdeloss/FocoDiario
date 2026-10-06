@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\EstadoTarea;
 use App\Models\ColumnaTablero;
+use App\Support\ReglasDeUsuario;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -28,6 +29,8 @@ class ColumnaTableroRequest extends FormRequest
         return [
             'nombre' => [$this->isMethod('POST') ? 'required' : 'sometimes', 'string', 'max:60'],
             'categoria' => ['sometimes', Rule::enum(EstadoTarea::class)],
+            // Al crear: en qué tablero va (por defecto, el principal).
+            'tablero_id' => ['sometimes', 'nullable', 'integer', ReglasDeUsuario::existe('tableros')],
         ];
     }
 
@@ -37,6 +40,12 @@ class ColumnaTableroRequest extends FormRequest
             function (Validator $validator) {
                 /** @var ColumnaTablero|null $columna */
                 $columna = $this->route('columna');
+
+                if ($columna?->fija) {
+                    $validator->errors()->add('columna', 'La columna "Sin asignar" es fija: no se puede renombrar ni cambiar de tipo.');
+
+                    return;
+                }
 
                 if ($columna === null || ! $this->has('categoria') || $validator->errors()->has('categoria')) {
                     return;
@@ -55,6 +64,7 @@ class ColumnaTableroRequest extends FormRequest
             'nombre.required' => 'Escribí un nombre para la columna.',
             'nombre.max' => 'El nombre no puede superar los 60 caracteres.',
             'categoria.enum' => 'El tipo de columna no es válido.',
+            'tablero_id.exists' => 'El tablero elegido no existe.',
         ];
     }
 }

@@ -24,7 +24,7 @@
 {{-- Un clic en la tarjeta (fuera de sus botones) abre el modal para editarla: comentario, color, etc. (tablero.js). --}}
 <article class="tarea-tarjeta prioridad-{{ $tarea->prioridad->value }} @if ($colorVisible) con-color @endif" id="tarea-{{ $tarea->id }}" draggable="true"
          @if ($colorVisible) style="--tarjeta-fondo: {{ $colorVisible->fondo() }}; --tarjeta-marca: {{ $colorVisible->marca() }}" @endif
-         data-id="{{ $tarea->id }}" data-estado="{{ $tarea->estado->value }}" data-titulo="{{ $tarea->titulo }}"
+         data-id="{{ $tarea->id }}" data-tipo="tarea" data-estado="{{ $tarea->estado->value }}" data-titulo="{{ $tarea->titulo }}"
          data-prioridad="{{ $tarea->prioridad->value }}" data-contexto="{{ $tarea->contexto_id }}"
          data-buscar="{{ mb_strtolower($tarea->titulo.' '.$tarea->contexto?->nombre) }}"
          @if ($estadoFecha === 'vencida') data-pasada="1" @endif>
@@ -33,9 +33,21 @@
         <p class="tarea-comentario" title="Comentario"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>{{ $tarea->descripcion }}</span></p>
     @endif
     <div class="tarea-meta">
+        <span class="k-tipo k-tipo-tarea" title="Tarea"><i class="bi bi-check2-square" aria-hidden="true"></i>Tarea</span>
         <span class="k-chip badge-prioridad-{{ $tarea->prioridad->value }}" title="Prioridad {{ mb_strtolower($tarea->prioridad->etiqueta()) }}"><span class="k-chip-punto" aria-hidden="true"></span>{{ $tarea->prioridad->etiqueta() }}</span>
         @if ($tarea->contexto)
             <span class="k-chip k-chip-contexto" title="{{ $tarea->contexto->tipo->etiqueta() }}"><i class="bi bi-folder2" aria-hidden="true"></i><span class="k-chip-texto">{{ $tarea->contexto->nombre }}</span></span>
+        @endif
+        @if ($tarea->notas->isNotEmpty())
+            {{-- Notas vinculadas: el contador abre la lista y cada nota se abre en su diálogo. --}}
+            <details class="k-notas-vinc">
+                <summary class="k-chip k-chip-notas" title="Notas vinculadas"><i class="bi bi-journal-text" aria-hidden="true"></i>{{ $tarea->notas->count() }}<span class="visually-hidden"> {{ $tarea->notas->count() === 1 ? 'nota vinculada' : 'notas vinculadas' }}</span></summary>
+                <ul class="k-notas-lista">
+                    @foreach ($tarea->notas as $vinculada)
+                        <li><a href="{{ route('notas.edit', $vinculada) }}" data-abrir-nota="editar" data-nota="{{ json_encode($vinculada->datosEdicion(), JSON_UNESCAPED_UNICODE) }}">{{ $vinculada->tituloVisible() }}</a></li>
+                    @endforeach
+                </ul>
+            </details>
         @endif
         @if ($tarea->fecha_limite)
             <span class="k-chip k-chip-fecha k-fecha-{{ $estadoFecha }}" title="Fecha límite: {{ $tarea->fecha_limite->locale('es')->isoFormat('dddd D [de] MMMM') }}">
